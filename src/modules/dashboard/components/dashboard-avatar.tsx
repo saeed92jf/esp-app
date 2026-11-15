@@ -254,7 +254,7 @@ export function DashboardAvatar() {
         </Tooltip>
       </TooltipProvider>
       
-      <PopoverAnchor className={cn("fixed top-[calc(var(--header-height)+8px)] w-0 h-0 pointer-events-none", anchorEdge === "left" ? "left-3 sm:left-6" : "right-3 sm:right-6")} />
+      <PopoverAnchor className={cn("fixed top-[calc(var(--header-height)+8px)] w-0 h-0 pointer-events-none", anchorEdge === "left" ? "start-3 sm:start-6" : "end-3 sm:end-6")} />
       
       <PopoverContent 
         className="relative w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] sm:w-[380px] sm:max-w-[380px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden" 
@@ -409,7 +409,7 @@ export function DashboardAvatar() {
                    <div className="relative z-10 flex flex-col items-start overflow-hidden w-full gap-1">
                      <h2 className="text-base sm:text-lg font-semibold truncate leading-tight w-full text-start">{nameToUse}</h2>
                      <div className="w-full flex justify-start overflow-hidden">
-                       <span className="text-sm text-muted-foreground truncate text-left" dir="ltr">{user.email || user.mobile || ''}</span>
+                       <span className="text-sm text-muted-foreground truncate text-start" dir="ltr">{user.email || user.mobile || ''}</span>
                      </div>
                      <div className="w-full flex items-center justify-start mt-0.5 overflow-hidden">
                        <span

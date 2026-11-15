@@ -175,7 +175,7 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
         </DialogHeader>
 
         <Tabs orientation="vertical" defaultValue="general" className="flex flex-1 overflow-hidden min-h-[50vh]">
-          <div className="w-56 shrink-0 border-r border-border bg-muted/10 p-3">
+          <div className="w-56 shrink-0 border-e border-border bg-muted/10 p-3">
             <TabsList variant="line" className="flex w-full flex-col items-stretch gap-1">
               <TabsTrigger value="general" className="justify-start gap-2 px-3 py-2">
                 <Workflow className="size-4" />
@@ -417,7 +417,7 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
                             value={dirHandle ? dirHandle.name : ""}
                           />
                           <Button variant="secondary" size="sm" className="h-7 text-[11px] px-3" onClick={handleSelectDirectory}>
-                            <FolderOpen className="mr-1.5 h-3.5 w-3.5" />
+                            <FolderOpen className="me-1.5 h-3.5 w-3.5" />
                             {safeT(t, "editorSettings.browseLocation", "Browse...")}
                           </Button>
                         </div>
@@ -435,7 +435,7 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
                         disabled={isGeneratingPdf}
                         onClick={handleGeneratePdf}
                       >
-                        <FileDown className="mr-1.5 h-3.5 w-3.5" />
+                        <FileDown className="me-1.5 h-3.5 w-3.5" />
                         {isGeneratingPdf ? '...' : safeT(t, "editorSettings.generatePdf", "Generate PDF Report")}
                       </Button>
                     </div>

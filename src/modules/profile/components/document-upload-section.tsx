@@ -797,7 +797,7 @@ export function DocumentUploadSection({
           </div>
 
           {/* Floating Bottom Helper */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/70 text-[11px] pointer-events-none flex items-center gap-3">
+          <div className="absolute bottom-4 start-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/70 text-[11px] pointer-events-none flex items-center gap-3">
             <span>{isRtl ? "اسکرول یا دابل‌کلیک: زوم" : "Scroll / Double-click: Zoom"}</span>
             <span>•</span>
             <span>{isRtl ? "درگ: جابجایی تصویر" : "Drag: Pan"}</span>

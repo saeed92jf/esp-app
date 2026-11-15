@@ -600,7 +600,7 @@ export function NodePalette() {
   };
 
   return (
-    <aside className="flex h-full border-r border-border/50 bg-gradient-to-b from-card to-card/50 backdrop-blur-xl shadow-2xl fa-num">
+    <aside className="flex h-full border-e border-border/50 bg-gradient-to-b from-card to-card/50 backdrop-blur-xl shadow-2xl fa-num">
       {/* ── Category rail — vertical, alongside the panel ── */}
       <div className="flex w-10 shrink-0 flex-col items-center gap-1 border-e border-border bg-muted/30 py-3">
         {CATEGORIES.map((cat) => {

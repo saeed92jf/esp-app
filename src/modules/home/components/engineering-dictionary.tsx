@@ -139,7 +139,7 @@ const DiceRollButton = React.memo(function DiceRollButton({
     <>
       {/* Off-screen pre-warming container to ensure all 6 Phosphor SVGs are pre-compiled and GPU-cached immediately on load */}
       <div
-        className="fixed -top-[9999px] -left-[9999px] opacity-0 pointer-events-none select-none"
+        className="fixed -top-[9999px] -start-[9999px] opacity-0 pointer-events-none select-none"
         aria-hidden="true"
       >
         <DiceOne weight="bold" className="size-6" />
@@ -936,7 +936,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
               />
 
               {/* Modal Header */}
-              <DialogHeader className={cn("relative z-10 space-y-2.5 px-5 pt-5 sm:px-7 sm:pt-7 pb-3.5 border-b border-border/60 shrink-0", isModalEnglish ? "text-left" : isRtl ? "text-right" : "text-left")}>
+              <DialogHeader className={cn("relative z-10 space-y-2.5 px-5 pt-5 sm:px-7 sm:pt-7 pb-3.5 border-b border-border/60 shrink-0", isModalEnglish ? "text-start" : isRtl ? "text-end" : "text-start")}>
                 {/* Category & Abbr Tags Row */}
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge
@@ -946,7 +946,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
                       modalTheme.pill
                     )}
                   >
-                    <span className={cn("size-2 rounded-full mr-2 shrink-0", modalTheme.dot)} />
+                    <span className={cn("size-2 rounded-full me-2 shrink-0", modalTheme.dot)} />
                     {activeModalTerm.categoryName}
                   </Badge>
                   {activeModalTerm.abbreviation && (

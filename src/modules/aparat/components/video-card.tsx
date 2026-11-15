@@ -57,7 +57,7 @@ export function VideoCard({ video, isActive, onClick }: VideoCardProps) {
         )}
 
         {/* Duration Badge */}
-        <div className="absolute bottom-2 right-2 rounded bg-black/80 px-1.5 py-0.5 text-xs font-bold text-white shadow-sm fa-num">
+        <div className="absolute bottom-2 end-2 rounded bg-black/80 px-1.5 py-0.5 text-xs font-bold text-white shadow-sm fa-num">
           {formatDuration(video.duration)}
         </div>
 

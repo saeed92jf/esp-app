@@ -150,7 +150,7 @@ export function SettingsSection() {
                 className="relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
               >
                 {active && (
-                  <div className="absolute top-1.5 right-1.5 size-4 rounded-full bg-white/90 flex items-center justify-center shadow-xs">
+                  <div className="absolute top-1.5 end-1.5 size-4 rounded-full bg-white/90 flex items-center justify-center shadow-xs">
                     <Check className="size-2.5 text-slate-900" />
                   </div>
                 )}

@@ -391,7 +391,7 @@ export function EditCustomerModal({
                   <Input
                     value={companyNameEn}
                     onChange={(e) => setCompanyNameEn(e.target.value)}
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -403,7 +403,7 @@ export function EditCustomerModal({
                   <Input
                     value={abbrv}
                     onChange={(e) => setAbbrv(e.target.value.toUpperCase())}
-                    className="h-9 text-xs rounded-lg text-left uppercase font-sans"
+                    className="h-9 text-xs rounded-lg text-start uppercase font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -433,7 +433,7 @@ export function EditCustomerModal({
                   <Input
                     value={website}
                     onChange={(e) => setWebsite(e.target.value)}
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -442,7 +442,7 @@ export function EditCustomerModal({
                   <Input
                     value={tel1}
                     onChange={(e) => setTel1(e.target.value)}
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -497,7 +497,7 @@ export function EditCustomerModal({
                   <Input
                     value={plantCode}
                     onChange={(e) => setPlantCode(e.target.value.toUpperCase())}
-                    className="h-9 text-xs rounded-lg text-left uppercase font-sans"
+                    className="h-9 text-xs rounded-lg text-start uppercase font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -537,7 +537,7 @@ export function EditCustomerModal({
                     value={capacityTonsPerYear}
                     onChange={(e) => setCapacityTonsPerYear(e.target.value ? Number(e.target.value) : "")}
                     placeholder="1320000"
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -550,7 +550,7 @@ export function EditCustomerModal({
                     value={licensorsText}
                     onChange={(e) => setLicensorsText(e.target.value)}
                     placeholder="Technip, Linde"
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -593,7 +593,7 @@ export function EditCustomerModal({
                   <Input
                     value={nationalId}
                     onChange={(e) => setNationalId(e.target.value)}
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -602,7 +602,7 @@ export function EditCustomerModal({
                   <Input
                     value={economicCode}
                     onChange={(e) => setEconomicCode(e.target.value)}
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -614,7 +614,7 @@ export function EditCustomerModal({
                   <Input
                     value={regNumber}
                     onChange={(e) => setRegNumber(e.target.value)}
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -623,7 +623,7 @@ export function EditCustomerModal({
                   <Input
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>

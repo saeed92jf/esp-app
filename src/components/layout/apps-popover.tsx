@@ -128,7 +128,7 @@ export function AppsPopover({ triggerClassName, iconClassName }: { triggerClassN
         </Tooltip>
       </TooltipProvider>
       
-      <PopoverAnchor className={cn("fixed top-[calc(var(--header-height)+8px)] w-0 h-0 pointer-events-none", anchorEdge === "left" ? "left-3 sm:left-6" : "right-3 sm:right-6")} />
+      <PopoverAnchor className={cn("fixed top-[calc(var(--header-height)+8px)] w-0 h-0 pointer-events-none", anchorEdge === "left" ? "start-3 sm:start-6" : "end-3 sm:end-6")} />
       
       <PopoverContent 
         align={anchorEdge === "left" ? (dir === "rtl" ? "end" : "start") : (dir === "rtl" ? "start" : "end")}

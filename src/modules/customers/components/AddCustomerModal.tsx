@@ -356,7 +356,7 @@ export function AddCustomerModal({
                     value={companyNameEn}
                     onChange={(e) => setCompanyNameEn(e.target.value)}
                     placeholder="e.g. Jam Petrochemical Co."
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -369,7 +369,7 @@ export function AddCustomerModal({
                     value={abbrv}
                     onChange={(e) => setAbbrv(e.target.value.toUpperCase())}
                     placeholder="JPC"
-                    className="h-9 text-xs rounded-lg text-left uppercase font-sans"
+                    className="h-9 text-xs rounded-lg text-start uppercase font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -400,7 +400,7 @@ export function AddCustomerModal({
                     value={website}
                     onChange={(e) => setWebsite(e.target.value)}
                     placeholder="https://..."
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -410,7 +410,7 @@ export function AddCustomerModal({
                     value={tel1}
                     onChange={(e) => setTel1(e.target.value)}
                     placeholder="021-..."
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -470,7 +470,7 @@ export function AddCustomerModal({
                     value={plantCode}
                     onChange={(e) => setPlantCode(e.target.value.toUpperCase())}
                     placeholder="OLEFIN-10"
-                    className="h-9 text-xs rounded-lg text-left uppercase font-sans"
+                    className="h-9 text-xs rounded-lg text-start uppercase font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -511,7 +511,7 @@ export function AddCustomerModal({
                     value={capacityTonsPerYear}
                     onChange={(e) => setCapacityTonsPerYear(e.target.value ? Number(e.target.value) : "")}
                     placeholder="1320000"
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -524,7 +524,7 @@ export function AddCustomerModal({
                     value={licensorsText}
                     onChange={(e) => setLicensorsText(e.target.value)}
                     placeholder="Technip, Linde"
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -570,7 +570,7 @@ export function AddCustomerModal({
                     value={nationalId}
                     onChange={(e) => setNationalId(e.target.value)}
                     placeholder="1010xxxxxxx"
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -580,7 +580,7 @@ export function AddCustomerModal({
                     value={economicCode}
                     onChange={(e) => setEconomicCode(e.target.value)}
                     placeholder="411xxxxxxxxx"
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -593,7 +593,7 @@ export function AddCustomerModal({
                     value={regNumber}
                     onChange={(e) => setRegNumber(e.target.value)}
                     placeholder="154820"
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>
@@ -603,7 +603,7 @@ export function AddCustomerModal({
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
                     placeholder="19xxxxxxxx"
-                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    className="h-9 text-xs rounded-lg text-start font-sans"
                     dir="ltr"
                   />
                 </div>

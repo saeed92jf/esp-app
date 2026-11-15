@@ -236,7 +236,7 @@ function ResetPasswordContent() {
   return (
     <Card className="w-full max-w-[480px] shadow-2xl border-border/50 bg-card/90 dark:bg-card/80 backdrop-blur-xl rounded-3xl p-6 sm:p-8 my-auto shrink-0 transition-all relative overflow-hidden">
       {/* Subtle Ambient Radial Glow */}
-      <div className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-64 h-32 rounded-full blur-3xl opacity-30 bg-gradient-to-b from-primary/30 to-indigo-500/10" />
+      <div className="pointer-events-none absolute -top-16 start-1/2 -translate-x-1/2 w-64 h-32 rounded-full blur-3xl opacity-30 bg-gradient-to-b from-primary/30 to-indigo-500/10" />
 
       {/* Header */}
       <CardHeader className="space-y-3 text-center p-0 pb-6">
@@ -389,9 +389,9 @@ function ResetPasswordContent() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="name@company.com"
                       disabled={isSubmitting}
-                      className="h-11 sm:h-12 text-sm sm:text-base pl-10 pr-3 font-sans rounded-xl border-border/60 bg-background/60 focus:bg-background transition-colors"
+                      className="h-11 sm:h-12 text-sm sm:text-base ps-10 pe-3 font-sans rounded-xl border-border/60 bg-background/60 focus:bg-background transition-colors"
                     />
-                    <Mail className="size-4.5 text-muted-foreground/70 absolute top-1/2 -translate-y-1/2 left-3.5 pointer-events-none" />
+                    <Mail className="size-4.5 text-muted-foreground/70 absolute top-1/2 -translate-y-1/2 start-3.5 pointer-events-none" />
                   </div>
                 </div>
               )}
@@ -410,9 +410,9 @@ function ResetPasswordContent() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isSubmitting}
-                    className="h-11 sm:h-12 text-sm sm:text-base pl-10 pr-10 font-sans rounded-xl border-border/60 bg-background/60 focus:bg-background transition-colors auth-input-ltr"
+                    className="h-11 sm:h-12 text-sm sm:text-base ps-10 pe-10 font-sans rounded-xl border-border/60 bg-background/60 focus:bg-background transition-colors auth-input-ltr"
                   />
-                  <Lock className="size-4.5 text-muted-foreground/70 absolute top-1/2 -translate-y-1/2 left-3.5 pointer-events-none" />
+                  <Lock className="size-4.5 text-muted-foreground/70 absolute top-1/2 -translate-y-1/2 start-3.5 pointer-events-none" />
                 </div>
               </div>
 
@@ -498,7 +498,7 @@ function ResetPasswordContent() {
                       doPasswordsMatch && "border-emerald-500"
                     )}
                   />
-                  <Lock className="size-4.5 text-muted-foreground/70 absolute top-1/2 -translate-y-1/2 left-3.5 pointer-events-none" />
+                  <Lock className="size-4.5 text-muted-foreground/70 absolute top-1/2 -translate-y-1/2 start-3.5 pointer-events-none" />
                 </div>
                 {showMismatchError && (
                   <p className="text-[11px] font-medium text-destructive">

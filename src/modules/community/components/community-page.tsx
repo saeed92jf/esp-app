@@ -1250,7 +1250,7 @@ export function CommunityPage() {
                         <button
                           type="button"
                           onClick={() => setPostAttachments((prev) => prev.filter((a) => a.id !== att.id))}
-                          className="hover:text-destructive text-muted-foreground ml-1"
+                          className="hover:text-destructive text-muted-foreground ms-1"
                         >
                           <X className="size-3" />
                         </button>

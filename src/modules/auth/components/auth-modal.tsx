@@ -45,8 +45,8 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               <Lock className="size-8 text-primary" />
             </div>
             {/* Sparkles around */}
-            <Sparkles className="absolute top-6 right-12 size-4 text-amber-500 animate-pulse" />
-            <Sparkles className="absolute bottom-8 left-10 size-5 text-purple-500 animate-pulse delay-150" />
+            <Sparkles className="absolute top-6 end-12 size-4 text-amber-500 animate-pulse" />
+            <Sparkles className="absolute bottom-8 start-10 size-5 text-purple-500 animate-pulse delay-150" />
           </div>
 
           <div className="p-6 space-y-6 text-center">
@@ -60,13 +60,13 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
             <div className="flex flex-col gap-3 w-full pt-2">
               <Button asChild size="lg" className="w-full h-12 rounded-xl text-base shadow-md shadow-primary/20 transition-all" onClick={() => handleOpenChange(false)}>
                 <Link href="/account-request">
-                  <UserPlus className={cn("size-5", isRtl ? "ml-2" : "mr-2")} />
+                  <UserPlus className={cn("size-5", isRtl ? "ms-2" : "me-2")} />
                   {tAuth("requestAccount")}
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="w-full h-12 rounded-xl" onClick={() => handleOpenChange(false)}>
                 <Link href="/login">
-                  <LogIn className={cn("size-5", isRtl ? "ml-2" : "mr-2")} />
+                  <LogIn className={cn("size-5", isRtl ? "ms-2" : "me-2")} />
                   {tAuth("login")}
                 </Link>
               </Button>

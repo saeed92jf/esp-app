@@ -341,7 +341,7 @@ export default function LocationPickerMap({
       <div ref={mapContainerRef} className="w-full h-full z-[0]" />
 
       {/* Floating Zoom Controls (Bottom right/left based on layout) */}
-      <div className="absolute bottom-16 ltr:right-3 rtl:left-3 z-[1000] flex flex-col gap-1.5 pointer-events-auto">
+      <div className="absolute bottom-16 ltr:end-3 rtl:start-3 z-[1000] flex flex-col gap-1.5 pointer-events-auto">
         <button
           type="button"
           onClick={handleZoomIn}

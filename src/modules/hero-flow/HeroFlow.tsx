@@ -384,9 +384,9 @@ export function HeroFlow() {
         className="absolute inset-0 z-0 pointer-events-none opacity-70"
         style={{ WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)", maskImage: "linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)" }}
       >
-        <div className="absolute top-[10%] left-[10%] w-[50%] h-[30%] rounded-full blur-[100px]" style={{ backgroundColor: "color-mix(in srgb, var(--theme) 10%, transparent)" }} />
-        <div className="absolute top-[45%] right-[10%] w-[45%] h-[30%] rounded-full blur-[100px]" style={{ backgroundColor: "color-mix(in srgb, var(--theme) 12%, transparent)" }} />
-        <div className="absolute bottom-[5%] left-[20%] w-[50%] h-[30%] rounded-full blur-[100px]" style={{ backgroundColor: "color-mix(in srgb, var(--theme) 10%, transparent)" }} />
+        <div className="absolute top-[10%] start-[10%] w-[50%] h-[30%] rounded-full blur-[100px]" style={{ backgroundColor: "color-mix(in srgb, var(--theme) 10%, transparent)" }} />
+        <div className="absolute top-[45%] end-[10%] w-[45%] h-[30%] rounded-full blur-[100px]" style={{ backgroundColor: "color-mix(in srgb, var(--theme) 12%, transparent)" }} />
+        <div className="absolute bottom-[5%] start-[20%] w-[50%] h-[30%] rounded-full blur-[100px]" style={{ backgroundColor: "color-mix(in srgb, var(--theme) 10%, transparent)" }} />
       </div>
 
       <div className="w-full max-w-[100vw] overflow-hidden flex flex-col h-full min-h-0 relative z-10 pointer-events-none justify-center items-center">

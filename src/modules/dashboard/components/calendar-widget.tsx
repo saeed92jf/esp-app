@@ -97,7 +97,7 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
         {/* Events Column */}
         <div className="flex-1 flex flex-col min-h-0">
           <div className="flex items-center gap-2 px-1 mb-1.5 shrink-0">
-            <span className="text-[11px] font-semibold text-muted-foreground rtl:text-right">
+            <span className="text-[11px] font-semibold text-muted-foreground rtl:text-end">
               {t("eventsCount", { count: filteredEvents.length })}
             </span>
           </div>
@@ -119,7 +119,7 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
                         <Icon className="size-4" />
                       </div>
                       <div className="flex flex-col min-w-0 w-full">
-                        <span className="text-[13px] font-normal text-foreground/80 leading-tight whitespace-normal break-words pr-2">
+                        <span className="text-[13px] font-normal text-foreground/80 leading-tight whitespace-normal break-words pe-2">
                           {event.title}
                         </span>
                         <span className="text-[11px] font-medium opacity-80 mt-0.5">

@@ -1415,7 +1415,7 @@ export function ProfilePage({
             onFocus={() => setIsSearchFocused(true)}
             onKeyDown={handleSearchKeyDown}
             placeholder={t("searchPlaceholder")} 
-            className="w-full ps-12 pe-12 text-start rtl:text-right h-14 rounded-full bg-white dark:bg-card border border-border/80 shadow-sm text-base focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-0 transition-all hover:shadow-md"
+            className="w-full ps-12 pe-12 text-start rtl:text-end h-14 rounded-full bg-white dark:bg-card border border-border/80 shadow-sm text-base focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-0 transition-all hover:shadow-md"
             dir="auto"
           />
           {searchQuery && (
@@ -1794,7 +1794,7 @@ export function ProfilePage({
             <div className="space-y-6 max-w-lg">
                {/* Persian Name */}
                <div className="space-y-2">
-                 <Label htmlFor="firstNameFa" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.firstNameFa")}</Label>
+                 <Label htmlFor="firstNameFa" className="rtl:text-end block font-medium text-muted-foreground">{t("fields.firstNameFa")}</Label>
                  <Input 
                    id="firstNameFa" 
                    value={formData.personal.firstNameFa || ""} 
@@ -1805,13 +1805,13 @@ export function ProfilePage({
                      handleChange("personal", "firstNameFa", val);
                    }} 
                    dir="rtl"
-                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none rtl:text-right" 
+                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none rtl:text-end" 
                    placeholder={t("fields.firstNameFaPlaceholder")}
                    autoFocus 
                  />
                </div>
                <div className="space-y-2">
-                 <Label htmlFor="lastNameFa" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.lastNameFa")}</Label>
+                 <Label htmlFor="lastNameFa" className="rtl:text-end block font-medium text-muted-foreground">{t("fields.lastNameFa")}</Label>
                  <Input 
                    id="lastNameFa" 
                    value={formData.personal.lastNameFa || ""} 
@@ -1822,14 +1822,14 @@ export function ProfilePage({
                      handleChange("personal", "lastNameFa", val);
                    }} 
                    dir="rtl"
-                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none rtl:text-right" 
+                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none rtl:text-end" 
                    placeholder={t("fields.lastNameFaPlaceholder")}
                  />
                </div>
 
                {/* English Name */}
                <div className="space-y-2 pt-2 border-t border-border/40">
-                 <Label htmlFor="firstName" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.firstNameEn")}</Label>
+                 <Label htmlFor="firstName" className="rtl:text-end block font-medium text-muted-foreground">{t("fields.firstNameEn")}</Label>
                  <Input 
                    id="firstName" 
                    value={formData.personal.firstName} 
@@ -1837,13 +1837,13 @@ export function ProfilePage({
                      const val = e.target.value.replace(/[^a-zA-Z\s'-]/g, "");
                      handleChange("personal", "firstName", val);
                    }} 
-                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-left font-sans" 
+                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-start font-sans" 
                    dir="ltr"
                    placeholder={t("fields.firstNameEnPlaceholder")}
                  />
                </div>
                <div className="space-y-2">
-                 <Label htmlFor="lastName" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.lastNameEn")}</Label>
+                 <Label htmlFor="lastName" className="rtl:text-end block font-medium text-muted-foreground">{t("fields.lastNameEn")}</Label>
                  <Input 
                    id="lastName" 
                    value={formData.personal.lastName} 
@@ -1851,7 +1851,7 @@ export function ProfilePage({
                      const val = e.target.value.replace(/[^a-zA-Z\s'-]/g, "");
                      handleChange("personal", "lastName", val);
                    }} 
-                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-left font-sans" 
+                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-start font-sans" 
                    dir="ltr"
                    placeholder={t("fields.lastNameEnPlaceholder")}
                  />
@@ -1865,12 +1865,12 @@ export function ProfilePage({
           content = (
             <div className="space-y-4 max-w-lg">
                <div className="space-y-2">
-                 <Label htmlFor="fatherName" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.fatherName")}</Label>
+                 <Label htmlFor="fatherName" className="rtl:text-end block font-medium text-muted-foreground">{t("fields.fatherName")}</Label>
                  <Input 
                    id="fatherName" 
                    value={formData.personal.fatherName || ""} 
                    onChange={(e) => handleChange("personal", "fatherName", e.target.value)} 
-                   className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none rtl:text-right" 
+                   className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none rtl:text-end" 
                    dir="rtl"
                    placeholder="مثال: محمدجواد"
                    autoFocus 
@@ -1885,7 +1885,7 @@ export function ProfilePage({
           content = (
             <div className="space-y-4 max-w-lg">
                <div className="space-y-2">
-                 <Label htmlFor="nationalId" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.nationalId")}</Label>
+                 <Label htmlFor="nationalId" className="rtl:text-end block font-medium text-muted-foreground">{t("fields.nationalId")}</Label>
                  <Input id="nationalId" value={formData.personal.nationalId} onChange={(e) => handleChange("personal", "nationalId", e.target.value)} className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none" autoFocus />
                </div>
             </div>
@@ -1897,7 +1897,7 @@ export function ProfilePage({
           content = (
             <div className="space-y-4 max-w-lg">
                <div className="space-y-2">
-                 <Label htmlFor="birthDate" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.birthDate")}</Label>
+                 <Label htmlFor="birthDate" className="rtl:text-end block font-medium text-muted-foreground">{t("fields.birthDate")}</Label>
                  <DatePicker
                    value={parseDateString(formData.personal.birthDate)}
                    onChange={(date) => handleChange("personal", "birthDate", formatDateToString(date))}
@@ -1920,12 +1920,12 @@ export function ProfilePage({
           content = (
             <div className="space-y-4 max-w-lg">
                <div className="space-y-2">
-                 <Label htmlFor="birthPlace" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.birthPlace")}</Label>
+                 <Label htmlFor="birthPlace" className="rtl:text-end block font-medium text-muted-foreground">{t("fields.birthPlace")}</Label>
                  <Input 
                    id="birthPlace" 
                    value={formData.personal.birthPlace || ""} 
                    onChange={(e) => handleChange("personal", "birthPlace", e.target.value)} 
-                   className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none rtl:text-right" 
+                   className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none rtl:text-end" 
                    dir="rtl"
                    placeholder="مثال: تهران / اقلید / شیراز"
                    autoFocus 
@@ -1940,7 +1940,7 @@ export function ProfilePage({
           content = (
             <div className="space-y-6 max-w-lg">
               <div className="space-y-2">
-                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.gender")}</Label>
+                <Label className="rtl:text-end block font-medium text-muted-foreground">{t("fields.gender")}</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[
                     { id: "male", label: t("fields.genderMale") },
@@ -1976,7 +1976,7 @@ export function ProfilePage({
           content = (
             <div className="space-y-6 max-w-lg">
               <div className="space-y-2">
-                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.militaryStatus")}</Label>
+                <Label className="rtl:text-end block font-medium text-muted-foreground">{t("fields.militaryStatus")}</Label>
                 <div className="grid grid-cols-1 gap-2.5">
                   {MILITARY_STATUS_OPTIONS.map((opt) => {
                     const isSelected = (formData.personal.militaryStatus || "") === opt.value;
@@ -2012,7 +2012,7 @@ export function ProfilePage({
             <div className="space-y-6 max-w-lg">
                <div className="space-y-2">
                  <div className="flex items-center justify-between">
-                   <Label htmlFor="phone" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.phone")}</Label>
+                   <Label htmlFor="phone" className="rtl:text-end block font-medium text-muted-foreground">{t("fields.phone")}</Label>
                    {isPhoneVerified ? (
                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                        <CheckCircle2 className="size-3.5" />
@@ -2051,7 +2051,7 @@ export function ProfilePage({
                     )}
                     autoFocus 
                   />
-                  <Phone className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 right-2 pointer-events-none" />
+                  <Phone className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 end-2 pointer-events-none" />
                 </div>
                  {formData.personal.phone && !isPhoneValid ? (
                    <p className="text-xs text-destructive font-medium">
@@ -2159,7 +2159,7 @@ export function ProfilePage({
             <div className="space-y-6 max-w-lg">
                <div className="space-y-2">
                  <div className="flex items-center justify-between">
-                   <Label htmlFor="email" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.email")}</Label>
+                   <Label htmlFor="email" className="rtl:text-end block font-medium text-muted-foreground">{t("fields.email")}</Label>
                    {isEmailVerified ? (
                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                        <CheckCircle2 className="size-3.5" />
@@ -2193,7 +2193,7 @@ export function ProfilePage({
                     )}
                     autoFocus 
                   />
-                  <Mail className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 right-2 pointer-events-none" />
+                  <Mail className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 end-2 pointer-events-none" />
                 </div>
                  {formData.personal.email && !isEmailValid ? (
                    <p className="text-xs text-destructive font-medium">
@@ -2297,7 +2297,7 @@ export function ProfilePage({
           content = (
             <div className="space-y-6 max-w-2xl">
               <div className="space-y-2">
-                <Label htmlFor="address" className="rtl:text-right block font-medium text-muted-foreground">
+                <Label htmlFor="address" className="rtl:text-end block font-medium text-muted-foreground">
                   {t("fields.address")}
                 </Label>
                 <Input 
@@ -2351,7 +2351,7 @@ export function ProfilePage({
           content = (
             <div className="space-y-6 max-w-lg">
               <div className="space-y-2">
-                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.maritalStatus")}</Label>
+                <Label className="rtl:text-end block font-medium text-muted-foreground">{t("fields.maritalStatus")}</Label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
@@ -2389,7 +2389,7 @@ export function ProfilePage({
           content = (
             <div className="space-y-6 max-w-lg">
               <div className="space-y-2">
-                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.childrenCount")}</Label>
+                <Label className="rtl:text-end block font-medium text-muted-foreground">{t("fields.childrenCount")}</Label>
                 <div className="flex items-center gap-4">
                   <Button
                     type="button"
@@ -2449,7 +2449,7 @@ export function ProfilePage({
                <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
                  <Button variant="ghost" onClick={() => setEditingField(null)} className="rounded-full px-6 font-medium text-primary hover:bg-primary/5">{t("actions.cancel")}</Button>
                  <Button onClick={handlePersonalSave} disabled={isUpdating || !isPersonalFormValid()} className="rounded-full px-8 font-medium">
-                   {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                   {isUpdating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                    {t("actions.save")}
                  </Button>
                </div>
@@ -2738,7 +2738,7 @@ export function ProfilePage({
               <div className="space-y-6 max-w-lg">
                 <div className="space-y-4">
                   {editingField !== 'workLocation' && editingField !== 'contractType' && editingField !== 'subordinates' && (
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">{title}</Label>
+                    <Label className="rtl:text-end block font-medium text-muted-foreground">{title}</Label>
                   )}
                   {fieldKey === 'joinDate' ? (
                     <DatePicker
@@ -2944,7 +2944,7 @@ export function ProfilePage({
               <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
                 <Button variant="ghost" onClick={() => setEditingField(null)} className="rounded-full px-6 font-medium text-primary hover:bg-primary/5">{t("actions.cancel")}</Button>
                 <Button onClick={handleLocalSave} disabled={isUpdating} className="rounded-full px-8 font-medium">
-                  {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isUpdating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                   {t("actions.save")}
                 </Button>
               </div>
@@ -3374,7 +3374,7 @@ export function ProfilePage({
                  <div className="space-y-6 max-w-lg">
                    {/* Skill Name Input */}
                    <div className="space-y-2">
-                     <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.skillName")}</Label>
+                     <Label className="rtl:text-end block font-medium text-muted-foreground">{t("fields.skillName")}</Label>
                      <Input 
                        value={skill.name} 
                        onChange={(e) => {
@@ -3410,7 +3410,7 @@ export function ProfilePage({
                    {/* Skill Tags & Categories (قابلیت تگ‌گذاری) */}
                    <div className="space-y-3 pt-2">
                      <div className="flex items-center justify-between">
-                       <Label className="rtl:text-right block font-medium text-muted-foreground">
+                       <Label className="rtl:text-end block font-medium text-muted-foreground">
                          {isRtl ? "دسته‌بندی و برچسب‌های مهارت (تگ‌ها)" : "Skill Tags & Category"}
                        </Label>
                        <span className="text-[11px] text-muted-foreground font-medium">
@@ -3431,7 +3431,7 @@ export function ProfilePage({
                              <button
                                type="button"
                                onClick={() => toggleTag(tag)}
-                               className="hover:text-destructive transition-colors ml-0.5 rtl:mr-0.5"
+                               className="hover:text-destructive transition-colors ms-0.5 rtl:me-0.5"
                                title={isRtl ? "حذف برچسب" : "Remove tag"}
                              >
                                <X className="size-3" />
@@ -3486,7 +3486,7 @@ export function ProfilePage({
                          disabled={!customTagInput.trim()}
                          className="h-10 rounded-xl px-3 text-xs shrink-0"
                        >
-                         <Plus className="size-3.5 mr-1 rtl:ml-1" />
+                         <Plus className="size-3.5 me-1 rtl:ms-1" />
                          <span>{isRtl ? "افزودن تگ" : "Add"}</span>
                        </Button>
                      </div>
@@ -3495,7 +3495,7 @@ export function ProfilePage({
                    {/* Proficiency Level Selector */}
                    <div className="space-y-3 pt-4">
                      <div className="flex items-center justify-between">
-                       <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.level")}</Label>
+                       <Label className="rtl:text-end block font-medium text-muted-foreground">{t("fields.level")}</Label>
                        <span 
                          dir="ltr"
                          className={cn(
@@ -3563,7 +3563,7 @@ export function ProfilePage({
                        disabled={isUpdating || !skill.name.trim()} 
                        className="rounded-full px-8 font-medium"
                      >
-                       {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                       {isUpdating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                        {t("actions.save")}
                      </Button>
                    </div>
@@ -3614,7 +3614,7 @@ export function ProfilePage({
                 <div className="space-y-6 max-w-xl">
                   {/* Project Type Segmented Selector (ESP vs Personal) */}
                   <div className="space-y-2">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    <Label className="rtl:text-end block font-medium text-muted-foreground">
                       {isRtl ? "نوع پروژه" : "Project Type"}
                     </Label>
                     <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/40 border border-border/50">
@@ -3649,7 +3649,7 @@ export function ProfilePage({
 
                   {/* Project Title */}
                   <div className="space-y-2">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    <Label className="rtl:text-end block font-medium text-muted-foreground">
                       {isRtl ? "عنوان پروژه *" : "Project Title *"}
                     </Label>
                     <Input
@@ -3664,7 +3664,7 @@ export function ProfilePage({
                   {/* Role & Client in 2 columns */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      <Label className="rtl:text-end block font-medium text-muted-foreground">
                         {isRtl ? "سمت / نقش در پروژه" : "Your Role / Position"}
                       </Label>
                       <Input
@@ -3675,7 +3675,7 @@ export function ProfilePage({
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      <Label className="rtl:text-end block font-medium text-muted-foreground">
                         {isRtl ? "کارفرما / سازمان مشتری" : "Client / Organization"}
                       </Label>
                       <Input
@@ -3690,7 +3690,7 @@ export function ProfilePage({
                   {/* Period: Start Date & End Date / Ongoing */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      <Label className="rtl:text-end block font-medium text-muted-foreground">
                         {isRtl ? "دوره زمانی پروژه" : "Project Timeline"}
                       </Label>
                       <label className="flex items-center gap-1.5 cursor-pointer text-xs text-muted-foreground hover:text-foreground">
@@ -3727,7 +3727,7 @@ export function ProfilePage({
 
                   {/* Project Description */}
                   <div className="space-y-2">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    <Label className="rtl:text-end block font-medium text-muted-foreground">
                       {isRtl ? "شرح پروژه و دستاوردها" : "Description & Key Achievements"}
                     </Label>
                     <Textarea
@@ -3741,7 +3741,7 @@ export function ProfilePage({
 
                   {/* Technologies & Tags */}
                   <div className="space-y-2">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    <Label className="rtl:text-end block font-medium text-muted-foreground">
                       {isRtl ? "فناوری‌ها، استانداردها یا مهارت‌های کلیدی (با کاما جدا کنید)" : "Technologies & Skills Used (Comma-separated)"}
                     </Label>
                     <Input
@@ -3757,7 +3757,7 @@ export function ProfilePage({
 
                   {/* Project URL / Link */}
                   <div className="space-y-2">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    <Label className="rtl:text-end block font-medium text-muted-foreground">
                       {isRtl ? "لینک مستندات یا معرفی پروژه (اختیاری)" : "Project Link / Documentation (Optional)"}
                     </Label>
                     <Input
@@ -3797,7 +3797,7 @@ export function ProfilePage({
                       disabled={isUpdating || !project.title.trim()} 
                       className="rounded-full px-8 font-medium"
                     >
-                      {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {isUpdating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                       {t("actions.save")}
                     </Button>
                   </div>
@@ -3848,7 +3848,7 @@ export function ProfilePage({
                 <div className="space-y-6 max-w-xl">
                   {/* Experience Type Segmented Selector (ESP vs Personal/External) */}
                   <div className="space-y-2">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    <Label className="rtl:text-end block font-medium text-muted-foreground">
                       {isRtl ? "نوع سابقه شغلی" : "Experience Type"}
                     </Label>
                     <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/40 border border-border/50">
@@ -3886,7 +3886,7 @@ export function ProfilePage({
 
                   {/* Job Title / Role */}
                   <div className="space-y-2">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    <Label className="rtl:text-end block font-medium text-muted-foreground">
                       {isRtl ? "عنوان شغلی / سمت *" : "Job Title / Role *"}
                     </Label>
                     <Input
@@ -3901,7 +3901,7 @@ export function ProfilePage({
                   {/* Company & Department in 2 columns */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      <Label className="rtl:text-end block font-medium text-muted-foreground">
                         {isRtl ? "نام شرکت یا سازمان *" : "Company / Organization *"}
                       </Label>
                       <Input
@@ -3912,7 +3912,7 @@ export function ProfilePage({
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      <Label className="rtl:text-end block font-medium text-muted-foreground">
                         {isRtl ? "واحد / دپارتمان" : "Department / Unit"}
                       </Label>
                       <Input
@@ -3927,7 +3927,7 @@ export function ProfilePage({
                   {/* Employment Type & Location */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      <Label className="rtl:text-end block font-medium text-muted-foreground">
                         {isRtl ? "نوع همکاری" : "Employment Type"}
                       </Label>
                       <select
@@ -3943,7 +3943,7 @@ export function ProfilePage({
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      <Label className="rtl:text-end block font-medium text-muted-foreground">
                         {isRtl ? "شهر / محل کار" : "Location"}
                       </Label>
                       <Input
@@ -3958,7 +3958,7 @@ export function ProfilePage({
                   {/* Dates: Start Date & End Date / Current */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      <Label className="rtl:text-end block font-medium text-muted-foreground">
                         {isRtl ? "دوره اشتغال" : "Employment Period"}
                       </Label>
                       <label className="flex items-center gap-1.5 cursor-pointer text-xs text-muted-foreground hover:text-foreground">
@@ -3995,7 +3995,7 @@ export function ProfilePage({
 
                   {/* Responsibilities & Key Contributions */}
                   <div className="space-y-2">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    <Label className="rtl:text-end block font-medium text-muted-foreground">
                       {isRtl ? "شرح وظایف و تجارب کلیدی" : "Responsibilities & Key Achievements"}
                     </Label>
                     <Textarea
@@ -4035,7 +4035,7 @@ export function ProfilePage({
                       disabled={isUpdating || !experience.title.trim()} 
                       className="rounded-full px-8 font-medium"
                     >
-                      {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {isUpdating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                       {t("actions.save")}
                     </Button>
                   </div>
@@ -4587,7 +4587,7 @@ export function ProfilePage({
                     onClick={handleAddProject}
                     className="text-xs mt-3 rounded-full"
                   >
-                    <Plus className="size-3.5 mr-1 rtl:ml-1" />
+                    <Plus className="size-3.5 me-1 rtl:ms-1" />
                     <span>{isRtl ? "افزودن اولین پروژه" : "Add First Project"}</span>
                   </Button>
                 </div>
@@ -4810,7 +4810,7 @@ export function ProfilePage({
                     onClick={handleAddExperience}
                     className="text-xs mt-3 rounded-full"
                   >
-                    <Plus className="size-3.5 mr-1 rtl:ml-1" />
+                    <Plus className="size-3.5 me-1 rtl:ms-1" />
                     <span>{isRtl ? "افزودن اولین سابقه شغلی" : "Add First Experience"}</span>
                   </Button>
                 </div>
@@ -4907,7 +4907,7 @@ export function ProfilePage({
                     </p>
                   </div>
                   <div className="space-y-2">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.provider")}</Label>
+                    <Label className="rtl:text-end block font-medium text-muted-foreground">{t("fields.provider")}</Label>
                     <Input 
                       value={formData.insurance.provider || t("fields.taminEjtemaei")} 
                       onChange={(e) => handleChange("insurance", "provider", e.target.value)}
@@ -4928,7 +4928,7 @@ export function ProfilePage({
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.supplementaryPlan")}</Label>
+                    <Label className="rtl:text-end block font-medium text-muted-foreground">{t("fields.supplementaryPlan")}</Label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                       {[
                         { id: "golden", label: t("fields.planGolden"), desc: t("fields.planGoldenDesc"), color: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400" },
@@ -4964,7 +4964,7 @@ export function ProfilePage({
                 <div className="space-y-6 max-w-lg">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.shebaNumber")}</Label>
+                      <Label className="rtl:text-end block font-medium text-muted-foreground">{t("fields.shebaNumber")}</Label>
                       <span className={cn(
                         "fa-num font-sans font-mono px-2 py-0.5 rounded-md text-[11px] font-semibold border",
                         shebaStatus.isCompleteLength
@@ -4993,7 +4993,7 @@ export function ProfilePage({
                         )}
                         autoFocus
                       />
-                      <CreditCard className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 right-3 pointer-events-none" />
+                      <CreditCard className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 end-3 pointer-events-none" />
                     </div>
                     <p className="text-xs text-muted-foreground pt-1">{t("fields.shebaHelp")}</p>
 
@@ -5042,7 +5042,7 @@ export function ProfilePage({
                           onChange={(val) => setNewDepRelationship(val)}
                           placeholder={t("fields.selectRelationship")}
                           variant="underline"
-                          className="w-full h-10 rtl:text-right"
+                          className="w-full h-10 rtl:text-end"
                         />
                       </div>
                       <div className="space-y-1">
@@ -5196,7 +5196,7 @@ export function ProfilePage({
               ) : (
                 <div className="space-y-6 max-w-lg">
                   <div className="space-y-2">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">{title}</Label>
+                    <Label className="rtl:text-end block font-medium text-muted-foreground">{title}</Label>
                     {fieldKey === 'validUntil' ? (
                       <DatePicker
                         value={parseDateString(formData.insurance.validUntil)}
@@ -5216,10 +5216,10 @@ export function ProfilePage({
                           }}
                           placeholder="12345678"
                           dir="ltr"
-                          className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none font-mono text-left ltr"
+                          className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none font-mono text-start ltr"
                           autoFocus
                         />
-                        <KeyRound className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 rtl:left-2 ltr:right-2 pointer-events-none" />
+                        <KeyRound className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 rtl:start-2 ltr:end-2 pointer-events-none" />
                       </div>
                     ) : (
                       <Input 
@@ -5236,7 +5236,7 @@ export function ProfilePage({
               <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
                 <Button variant="ghost" onClick={() => setEditingField(null)} className="rounded-full px-6 font-medium text-primary hover:bg-primary/5">{t("actions.cancel")}</Button>
                 <Button onClick={handleLocalSave} disabled={isUpdating} className="rounded-full px-8 font-medium">
-                  {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isUpdating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                   {t("actions.save")}
                 </Button>
               </div>
@@ -5655,7 +5655,7 @@ export function ProfilePage({
                 
                 {/* 1. مقطع تحصیلی Combobox */}
                 <div className="space-y-2">
-                  <Label className="rtl:text-right block font-medium text-muted-foreground">
+                  <Label className="rtl:text-end block font-medium text-muted-foreground">
                     {t("fields.degree")}
                   </Label>
                   <Combobox
@@ -5671,7 +5671,7 @@ export function ProfilePage({
                 {/* 2. دانشگاه یا موسسه آموزشی (کومبو + گزینه دستی) */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    <Label className="rtl:text-end block font-medium text-muted-foreground">
                       {t("fields.university")}
                     </Label>
                     <button
@@ -5712,7 +5712,7 @@ export function ProfilePage({
                 {/* 3. رشته تحصیلی (کومبو در حوزه‌های نفت، گاز، پتروشیمی، اداری، IT، کنترل پروژه و ... + گزینه دستی) */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    <Label className="rtl:text-end block font-medium text-muted-foreground">
                       {t("fields.fieldOfStudy")}
                     </Label>
                     <button
@@ -5752,7 +5752,7 @@ export function ProfilePage({
 
                 {/* 4. تاریخ فارغ‌التحصیلی (فقط دیتاپیکر با استایل ساده زیرخط) */}
                 <div className="space-y-2">
-                  <Label className="rtl:text-right block font-medium text-muted-foreground">
+                  <Label className="rtl:text-end block font-medium text-muted-foreground">
                     {t("fields.graduationDate")}
                   </Label>
                   <DatePicker
@@ -5796,7 +5796,7 @@ export function ProfilePage({
                     disabled={isUpdating || !currentRecordState.degree?.trim()}
                     className="rounded-full px-8 font-medium"
                   >
-                    {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isUpdating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                     {t("actions.save")}
                   </Button>
                 </div>
@@ -6005,7 +6005,7 @@ export function ProfilePage({
                                 className="relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
                               >
                                 {active && (
-                                  <div className="absolute top-2 right-2 size-5 rounded-full bg-white/90 flex items-center justify-center shadow-md">
+                                  <div className="absolute top-2 end-2 size-5 rounded-full bg-white/90 flex items-center justify-center shadow-md">
                                     <Check className="size-3 text-slate-900" />
                                   </div>
                                 )}
@@ -6074,7 +6074,7 @@ export function ProfilePage({
                           disabled={isUpdating} 
                           className="rounded-full px-8 font-medium cursor-pointer"
                         >
-                          {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          {isUpdating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                           {t("themeColor.saveButton")}
                         </Button>
                       </div>

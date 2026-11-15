@@ -235,7 +235,7 @@ export function ProjectWorkspacePage({
               </Badge>
             )}
             <Badge variant="outline" className="border-primary/20 text-primary text-xs">
-              <Building2 className="w-3 h-3 ml-1" />
+              <Building2 className="w-3 h-3 ms-1" />
               {project.organization}
             </Badge>
             <Badge variant="secondary" className="text-xs">

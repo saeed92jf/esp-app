@@ -196,7 +196,7 @@ export default function AccountPendingPage() {
       
       <Card className="w-full max-w-2xl bg-card/90 dark:bg-card/80 backdrop-blur-xl border border-border/50 shadow-2xl rounded-3xl overflow-hidden p-6 sm:p-10 my-auto shrink-0 min-h-[500px] sm:min-h-[520px] relative">
         {/* Subtle Ambient Radial Glow */}
-        <div className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-80 h-36 rounded-full blur-3xl opacity-30 bg-gradient-to-b from-primary/30 to-indigo-500/10" />
+        <div className="pointer-events-none absolute -top-16 start-1/2 -translate-x-1/2 w-80 h-36 rounded-full blur-3xl opacity-30 bg-gradient-to-b from-primary/30 to-indigo-500/10" />
         <CardContent className="p-0 space-y-7">
           
           {/* Top Sleek Progress Bar with Flowing Pulse Beam & Radar Ping on Active Step */}
@@ -424,7 +424,7 @@ export default function AccountPendingPage() {
                 disabled={hrApproved}
                 className="h-7.5 text-[11px] font-medium"
               >
-                <UserCheck className="size-3.5 mr-1" />
+                <UserCheck className="size-3.5 me-1" />
                 {t("demoHrApprove")}
               </Button>
               <Button
@@ -434,7 +434,7 @@ export default function AccountPendingPage() {
                 disabled={isFullyApproved}
                 className="h-7.5 text-[11px] font-medium bg-primary hover:bg-primary/90 text-primary-foreground"
               >
-                <ShieldCheck className="size-3.5 mr-1" />
+                <ShieldCheck className="size-3.5 me-1" />
                 {t("demoManagerApprove")}
               </Button>
             </div>

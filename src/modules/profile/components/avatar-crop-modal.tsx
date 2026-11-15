@@ -453,7 +453,7 @@ export function AvatarCropModal({
             onClick={onClose}
             className="h-10 px-4 rounded-xl text-xs font-semibold border-border/60 cursor-pointer"
           >
-            <X className="size-3.5 rtl:ml-1 ltr:mr-1" />
+            <X className="size-3.5 rtl:ms-1 ltr:me-1" />
             <span>{isFa ? "انصراف" : "Cancel"}</span>
           </Button>
 

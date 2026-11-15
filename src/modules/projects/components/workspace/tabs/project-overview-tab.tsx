@@ -341,7 +341,7 @@ export function ProjectOverviewTab({
                           DMS / Shared Network
                         </span>
                       </div>
-                      <code className="text-sm font-mono text-foreground select-all break-all dir-ltr text-left inline-block mt-0.5">
+                      <code className="text-sm font-mono text-foreground select-all break-all dir-ltr text-start inline-block mt-0.5">
                         {project.dmsNetworkPath}
                       </code>
                     </div>
@@ -482,14 +482,14 @@ export function ProjectOverviewTab({
                   </div>
 
                   <div className="overflow-x-auto rounded-xl border border-border/50 bg-white dark:bg-[#1a1a1a]">
-                    <table className="w-full text-xs text-right">
+                    <table className="w-full text-xs text-end">
                       <thead className="bg-muted/50 text-muted-foreground border-b border-border/60 font-medium">
                         <tr>
-                          <th className="p-3 text-right">{t("accordion.member")}</th>
-                          <th className="p-3 text-right">{t("accordion.projectRole")}</th>
-                          <th className="p-3 text-right">{t("accordion.department")}</th>
+                          <th className="p-3 text-end">{t("accordion.member")}</th>
+                          <th className="p-3 text-end">{t("accordion.projectRole")}</th>
+                          <th className="p-3 text-end">{t("accordion.department")}</th>
                           <th className="p-3 text-center">{t("accordion.raciMatrix")}</th>
-                          <th className="p-3 text-right">{t("accordion.contactInfo")}</th>
+                          <th className="p-3 text-end">{t("accordion.contactInfo")}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border/40">
@@ -543,7 +543,7 @@ export function ProjectOverviewTab({
                               </span>
                             </td>
                             <td className="p-3">
-                              <div className="space-y-0.5 font-sans text-[11px] text-muted-foreground dir-ltr text-right">
+                              <div className="space-y-0.5 font-sans text-[11px] text-muted-foreground dir-ltr text-end">
                                 <div>{member.email}</div>
                                 {member.phone && (
                                   <div className="fa-num">{member.phone}</div>

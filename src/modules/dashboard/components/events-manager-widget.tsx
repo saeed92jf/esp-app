@@ -280,7 +280,7 @@ export function EventsManagerWidget({ events }: { events: CalendarEvent[] }) {
                 options={filterTypeOptions}
                 value={typeFilter}
                 onChange={(val) => setTypeFilter(val || "all")}
-                className="h-8 w-full text-[11px] rounded-lg bg-white dark:bg-card border-border/50 shadow-xs rtl:text-right font-medium"
+                className="h-8 w-full text-[11px] rounded-lg bg-white dark:bg-card border-border/50 shadow-xs rtl:text-end font-medium"
                 showSearch={false}
               />
             </div>
@@ -389,14 +389,14 @@ export function EventsManagerWidget({ events }: { events: CalendarEvent[] }) {
                   value={newEventTitle}
                   onChange={(e) => setNewEventTitle(e.target.value)}
                   placeholder={t("addPlaceholder")}
-                  className="text-xs shadow-none rtl:text-right resize-none flex-1 min-h-[90px] bg-background/50 border-border/50 focus-visible:ring-primary/20"
+                  className="text-xs shadow-none rtl:text-end resize-none flex-1 min-h-[90px] bg-background/50 border-border/50 focus-visible:ring-primary/20"
                 />
 
                 <Combobox 
                   options={eventTypeOptions}
                   value={newEventType}
                   onChange={(val) => setNewEventType(val || "event")}
-                  className="h-9 text-xs rtl:text-right w-full bg-background/50 border-border/50 shadow-xs"
+                  className="h-9 text-xs rtl:text-end w-full bg-background/50 border-border/50 shadow-xs"
                   showSearch={false}
                 />
 

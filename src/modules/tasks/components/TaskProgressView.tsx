@@ -1752,7 +1752,7 @@ export function TaskProgressView({
                     )}
                   </div>
                   {currentTask.assignees?.length > 0 ? (
-                    <div className="max-h-36 overflow-y-auto pr-1 flex flex-wrap gap-1.5 scrollbar-thin">
+                    <div className="max-h-36 overflow-y-auto pe-1 flex flex-wrap gap-1.5 scrollbar-thin">
                       {currentTask.assignees.map((a, idx) => (
                         <span
                           key={a.userId || idx}
@@ -1773,7 +1773,7 @@ export function TaskProgressView({
                               disabled={isUpdatingAssignees}
                               aria-label={isRtl ? `حذف ${a.name} از مجریان` : `Remove ${a.name}`}
                               title={isRtl ? `حذف ${a.name} از مجریان` : `Remove ${a.name}`}
-                              className="size-4 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors ml-0.5 rtl:mr-0.5 rtl:ml-0 cursor-pointer disabled:opacity-50"
+                              className="size-4 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors ms-0.5 rtl:me-0.5 rtl:ms-0 cursor-pointer disabled:opacity-50"
                             >
                               <X className="size-3" />
                             </button>
@@ -2576,7 +2576,7 @@ export function TaskProgressView({
                                   dir={isRtl ? "rtl" : "ltr"}
                                 >
                                   <div className="size-9 rounded-lg bg-[#2481cc] text-white flex flex-col items-center justify-center relative overflow-hidden shrink-0 shadow-2xs">
-                                    <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-white/40 rounded-bl-[2px]" />
+                                    <div className="absolute top-0 end-0 w-2.5 h-2.5 bg-white/40 rounded-bl-[2px]" />
                                     <span className="font-bold text-[9px] lowercase tracking-tight leading-none mt-0.5">
                                       {ext.slice(0, 4)}
                                     </span>
@@ -3241,7 +3241,7 @@ function TelegramDocumentCard({
     >
       {/* Telegram Blue Document Badge with folded top-right corner */}
       <div className="size-11 rounded-xl bg-[#2481cc] text-white flex flex-col items-center justify-center relative overflow-hidden shrink-0 shadow-2xs group-hover/doc:scale-105 transition-transform">
-        <div className="absolute top-0 right-0 w-3.5 h-3.5 bg-white/35 rounded-bl-[4px]" />
+        <div className="absolute top-0 end-0 w-3.5 h-3.5 bg-white/35 rounded-bl-[4px]" />
         <span className="font-bold text-[10px] lowercase tracking-tight leading-none mt-1">
           {ext.slice(0, 4)}
         </span>
@@ -3432,7 +3432,7 @@ function ProgressItem({
         {!isPureEmojiMessage && (
           isMe ? (
             <svg
-              className="absolute bottom-0 -right-[8px] w-[9px] h-[16px] text-[#effdde] dark:text-[#2b5278] fill-current pointer-events-none"
+              className="absolute bottom-0 -end-[8px] w-[9px] h-[16px] text-[#effdde] dark:text-[#2b5278] fill-current pointer-events-none"
               viewBox="0 0 9 16"
               preserveAspectRatio="none"
             >
@@ -3440,7 +3440,7 @@ function ProgressItem({
             </svg>
           ) : (
             <svg
-              className="absolute bottom-0 -left-[8px] w-[9px] h-[16px] text-white dark:text-[#182533] fill-current pointer-events-none"
+              className="absolute bottom-0 -start-[8px] w-[9px] h-[16px] text-white dark:text-[#182533] fill-current pointer-events-none"
               viewBox="0 0 9 16"
               preserveAspectRatio="none"
             >

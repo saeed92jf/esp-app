@@ -164,7 +164,7 @@ export function ElementHunterOverlay({
       aria-live="assertive"
     >
       {/* ── Top Floating Hunter HUD Banner ─────────────────────────────────── */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-auto z-[9999999]">
+      <div className="absolute top-4 start-1/2 -translate-x-1/2 pointer-events-auto z-[9999999]">
         <div
           className={cn(
             "flex items-center gap-3.5 px-4 py-2 rounded-full",
@@ -224,10 +224,10 @@ export function ElementHunterOverlay({
           )}
         >
           {/* Reticle Corner Crosshair Marks */}
-          <div className="absolute -top-1 -left-1 size-2 border-t-2 border-l-2 border-[#EC2527]" />
-          <div className="absolute -top-1 -right-1 size-2 border-t-2 border-r-2 border-[#EC2527]" />
-          <div className="absolute -bottom-1 -left-1 size-2 border-b-2 border-l-2 border-[#EC2527]" />
-          <div className="absolute -bottom-1 -right-1 size-2 border-b-2 border-r-2 border-[#EC2527]" />
+          <div className="absolute -top-1 -start-1 size-2 border-t-2 border-s-2 border-[#EC2527]" />
+          <div className="absolute -top-1 -end-1 size-2 border-t-2 border-e-2 border-[#EC2527]" />
+          <div className="absolute -bottom-1 -start-1 size-2 border-b-2 border-s-2 border-[#EC2527]" />
+          <div className="absolute -bottom-1 -end-1 size-2 border-b-2 border-e-2 border-[#EC2527]" />
 
           {/* Center Target Indicator */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">

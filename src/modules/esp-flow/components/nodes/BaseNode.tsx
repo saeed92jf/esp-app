@@ -238,8 +238,8 @@ function FreeConnectHandles() {
       {/* Target handles — pure drop targets, rendered first (underneath) */}
       <Handle type="target" position={Position.Top} id="top-in" className={HANDLE_NEUTRAL_CLS} />
       <Handle type="target" position={Position.Bottom} id="bottom-in" className={HANDLE_NEUTRAL_CLS} />
-      <Handle type="target" position={Position.Left} id="left-in" className={HANDLE_NEUTRAL_CLS} />
-      <Handle type="target" position={Position.Right} id="right-in" className={HANDLE_NEUTRAL_CLS} />
+      <Handle type="target" position={Position.Left} id="start-in" className={HANDLE_NEUTRAL_CLS} />
+      <Handle type="target" position={Position.Right} id="end-in" className={HANDLE_NEUTRAL_CLS} />
       {/* Source handles — where new connections start from, rendered last (on top) */}
       <Handle type="source" position={Position.Top} id="top" className={HANDLE_NEUTRAL_CLS} />
       <Handle type="source" position={Position.Bottom} id="bottom" className={HANDLE_NEUTRAL_CLS} />
@@ -502,7 +502,7 @@ function ShapeCanvas({
             openNodeLink(data.url);
           }}
           title={data.url}
-          className="nodrag absolute -top-2 -right-2 z-10 flex size-5 items-center justify-center rounded-full bg-indigo-500 text-white shadow-sm transition-transform hover:scale-110"
+          className="nodrag absolute -top-2 -end-2 z-10 flex size-5 items-center justify-center rounded-full bg-indigo-500 text-white shadow-sm transition-transform hover:scale-110"
         >
           <ExternalLink className="size-3" />
         </button>

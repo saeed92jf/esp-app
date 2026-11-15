@@ -359,7 +359,7 @@ export function DictionaryPage() {
             onClick={() => setActiveTab("add")}
             className="rounded-full px-4 h-10 font-medium shadow-xs"
           >
-            <Plus className="size-4 mr-1.5 rtl:ml-1.5 rtl:mr-0 shrink-0" />
+            <Plus className="size-4 me-1.5 rtl:ms-1.5 rtl:me-0 shrink-0" />
             <span>{isRtl ? "افزودن دستی لغت" : "Add New Term"}</span>
           </Button>
 
@@ -516,7 +516,7 @@ export function DictionaryPage() {
             {isRtl ? "عبارت دیگری را جستجو کنید یا یک واژه جدید به‌صورت دستی اضافه نمایید." : "Try searching for another term or add a new term manually."}
           </p>
           <Button onClick={() => setActiveTab("add")} variant="outline" className="rounded-full">
-            <Plus className="size-4 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+            <Plus className="size-4 me-1.5 rtl:ms-1.5 rtl:me-0" />
             <span>{isRtl ? "افزودن این واژه" : "Add this term"}</span>
           </Button>
         </div>
@@ -890,7 +890,7 @@ export function DictionaryPage() {
             disabled={isSubmitting}
             className="rounded-full px-7 font-semibold"
           >
-            <Plus className="size-4 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+            <Plus className="size-4 me-1.5 rtl:ms-1.5 rtl:me-0" />
             <span>{isRtl ? "ثبت و ذخیره واژه" : "Save Custom Term"}</span>
           </Button>
         </div>
@@ -1232,7 +1232,7 @@ export function DictionaryPage() {
               onClick={() => fileInputRef.current?.click()}
               className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white"
             >
-              <Upload className="size-4 mr-2 rtl:ml-2 rtl:mr-0" />
+              <Upload className="size-4 me-2 rtl:ms-2 rtl:me-0" />
               <span>{isRtl ? "انتخاب فایل JSON و بارگذاری" : "Select JSON File"}</span>
             </Button>
           </div>
@@ -1257,7 +1257,7 @@ export function DictionaryPage() {
               }}
               className="rounded-full text-xs text-destructive hover:bg-destructive/10 border-destructive/30"
             >
-              <Trash2 className="size-3.5 mr-1 rtl:ml-1 rtl:mr-0" />
+              <Trash2 className="size-3.5 me-1 rtl:ms-1 rtl:me-0" />
               <span>{isRtl ? "حذف همه لغات دستی" : "Clear All"}</span>
             </Button>
           )}
@@ -1312,7 +1312,7 @@ export function DictionaryPage() {
             initial={{ opacity: 0, y: -20, x: "-50%" }}
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: -20, x: "-50%" }}
-            className="fixed top-8 sm:top-10 left-1/2 -translate-x-1/2 z-[100] bg-foreground text-background px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold shadow-2xl flex items-center justify-center gap-2 pointer-events-none text-center"
+            className="fixed top-8 sm:top-10 start-1/2 -translate-x-1/2 z-[100] bg-foreground text-background px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold shadow-2xl flex items-center justify-center gap-2 pointer-events-none text-center"
           >
             <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
             <span>{toastMessage}</span>
@@ -1511,7 +1511,7 @@ export function DictionaryPage() {
                   size="sm"
                   className="rounded-full px-4"
                 >
-                  <Copy className="size-3.5 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+                  <Copy className="size-3.5 me-1.5 rtl:ms-1.5 rtl:me-0" />
                   <span>{isRtl ? "کپی مشخصات" : "Copy Info"}</span>
                 </Button>
 

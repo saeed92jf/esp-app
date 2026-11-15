@@ -1269,7 +1269,7 @@ export function AdminUserConfig({
                     setOpenSegment(isOpen ? null : seg.id);
                     setActiveSegment(seg.id);
                   }}
-                  className="w-full flex items-center justify-between p-4 sm:p-5 cursor-pointer select-none text-right rtl:text-right ltr:text-left transition-colors"
+                  className="w-full flex items-center justify-between p-4 sm:p-5 cursor-pointer select-none text-end rtl:text-end ltr:text-start transition-colors"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
                     <div
@@ -1593,7 +1593,7 @@ export function AdminUserConfig({
                               <div className="relative">
                                 <UserCircle2
                                   size={18}
-                                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                  className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
                                 />
                                 <Input
                                   id="firstName"
@@ -1611,7 +1611,7 @@ export function AdminUserConfig({
                                     });
                                   }}
                                   placeholder={t("firstNameEnPlaceholder")}
-                                  className="pl-10 h-11 bg-background border-border/50 rounded-xl text-sm"
+                                  className="ps-10 h-11 bg-background border-border/50 rounded-xl text-sm"
                                   dir="ltr"
                                 />
                               </div>
@@ -1629,7 +1629,7 @@ export function AdminUserConfig({
                               <div className="relative">
                                 <UserCircle2
                                   size={18}
-                                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                  className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
                                 />
                                 <Input
                                   id="lastName"
@@ -1647,7 +1647,7 @@ export function AdminUserConfig({
                                     });
                                   }}
                                   placeholder={t("lastNameEnPlaceholder")}
-                                  className="pl-10 h-11 bg-background border-border/50 rounded-xl text-sm"
+                                  className="ps-10 h-11 bg-background border-border/50 rounded-xl text-sm"
                                   dir="ltr"
                                 />
                               </div>
@@ -1663,7 +1663,7 @@ export function AdminUserConfig({
                               <div className="relative">
                                 <Phone
                                   size={18}
-                                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                  className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
                                 />
                                 <Input
                                   id="phone"
@@ -1675,7 +1675,7 @@ export function AdminUserConfig({
                                     })
                                   }
                                   placeholder="0912..."
-                                  className="pl-10 h-11 bg-background border-border/50 rounded-xl text-sm fa-num text-left"
+                                  className="ps-10 h-11 bg-background border-border/50 rounded-xl text-sm fa-num text-start"
                                   dir="ltr"
                                 />
                               </div>
@@ -1691,7 +1691,7 @@ export function AdminUserConfig({
                               <div className="relative">
                                 <CreditCard
                                   size={18}
-                                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                  className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
                                 />
                                 <Input
                                   id="nationalId"
@@ -1705,7 +1705,7 @@ export function AdminUserConfig({
                                     })
                                   }
                                   placeholder={t("nationalIdPlaceholder")}
-                                  className="pl-10 h-11 bg-background border-border/50 rounded-xl text-sm fa-num text-left"
+                                  className="ps-10 h-11 bg-background border-border/50 rounded-xl text-sm fa-num text-start"
                                   dir="ltr"
                                 />
                               </div>
@@ -1792,7 +1792,7 @@ export function AdminUserConfig({
                                 }
                                 placeholder={t("selectDepartment")}
                                 emptyText={t("noResults")}
-                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />
                             </div>
 
@@ -1821,7 +1821,7 @@ export function AdminUserConfig({
                                 emptyText={t("noResults")}
                                 creatable={true}
                                 showSearch={true}
-                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />
                             </div>
 
@@ -1848,7 +1848,7 @@ export function AdminUserConfig({
                                 emptyText={t("noResults")}
                                 creatable={true}
                                 showSearch={true}
-                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />
                             </div>
 
@@ -1905,7 +1905,7 @@ export function AdminUserConfig({
                                 }
                                 placeholder={t("contractTypeLabel")}
                                 emptyText={t("noResults")}
-                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />
                             </div>
 
@@ -1925,7 +1925,7 @@ export function AdminUserConfig({
                                 }
                                 placeholder={t("workFormatLabel")}
                                 emptyText={t("noResults")}
-                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />
                             </div>
 
@@ -1986,7 +1986,7 @@ export function AdminUserConfig({
                                 }
                                 placeholder={t("selectMaritalStatus")}
                                 emptyText={t("noResults")}
-                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />
                             </div>
 
@@ -2068,7 +2068,7 @@ export function AdminUserConfig({
                                 }
                                 placeholder={t("selectInsurance")}
                                 emptyText={t("noResults")}
-                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />
                             </div>
 
@@ -2106,7 +2106,7 @@ export function AdminUserConfig({
                                 }
                                 placeholder={t("supplementaryPlanLabel")}
                                 emptyText={t("noResults")}
-                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />
                             </div>
 
@@ -2122,7 +2122,7 @@ export function AdminUserConfig({
                                 }
                                 placeholder={t("supplementaryProviderLabel")}
                                 emptyText={t("noResults")}
-                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />
                             </div>
 
@@ -2178,7 +2178,7 @@ export function AdminUserConfig({
                                 }
                                 placeholder={t("selectDegree")}
                                 emptyText={t("noResults")}
-                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />
                             </div>
 
@@ -2201,7 +2201,7 @@ export function AdminUserConfig({
                                 emptyText={t("noResults")}
                                 creatable={true}
                                 showSearch={true}
-                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />
                             </div>
 
@@ -2221,7 +2221,7 @@ export function AdminUserConfig({
                                 emptyText={t("noResults")}
                                 creatable={true}
                                 showSearch={true}
-                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />
                             </div>
 
@@ -3706,7 +3706,7 @@ export function AdminUserConfig({
             </span>
           </div>
 
-          <div className="flex flex-col gap-2 overflow-y-auto max-h-[320px] pr-1 scrollbar-thin">
+          <div className="flex flex-col gap-2 overflow-y-auto max-h-[320px] pe-1 scrollbar-thin">
             {users.slice(0, 5).map((u) => (
               <div
                 key={u.id}

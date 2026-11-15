@@ -254,7 +254,7 @@ export function VesselNodeHeader({
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 shrink-0 ml-2">
+      <div className="flex items-center gap-1.5 shrink-0 ms-2">
         {actions}
         {onToggleCollapse && (
           <Button

@@ -498,12 +498,12 @@ export const MtoReportNode = memo(({ id, data, selected }: Props) => {
           {/* Filter & Search Bar */}
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Search size={12} className="absolute start-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search tag, description, material..."
-                className="h-7 text-[11px] pl-7 bg-white dark:bg-black/60 border-sky-200/90 dark:border-sky-800/60"
+                className="h-7 text-[11px] ps-7 bg-white dark:bg-black/60 border-sky-200/90 dark:border-sky-800/60"
               />
             </div>
             {categoriesList.length > 2 && (
@@ -529,15 +529,15 @@ export const MtoReportNode = memo(({ id, data, selected }: Props) => {
           {/* Itemized Report Table */}
           <div className="rounded-lg border border-sky-300/60 dark:border-sky-800/60 overflow-hidden bg-white dark:bg-zinc-950 shadow-xs">
             <div className="max-h-[260px] overflow-y-auto custom-scrollbar">
-              <table className="w-full text-left text-[11px] whitespace-nowrap border-collapse">
+              <table className="w-full text-start text-[11px] whitespace-nowrap border-collapse">
                 <thead className="sticky top-0 z-10 bg-sky-100/90 dark:bg-sky-950 text-sky-900 dark:text-sky-200 uppercase text-[9px] font-extrabold tracking-wider border-b border-sky-300/60 dark:border-sky-800/60 backdrop-blur-xs">
                   <tr>
-                    <th className="px-2.5 py-1.5 border-r border-sky-200/60 dark:border-sky-800/40">Tag / Item</th>
-                    <th className="px-2 py-1.5 border-r border-sky-200/60 dark:border-sky-800/40">Cat.</th>
-                    <th className="px-2.5 py-1.5 border-r border-sky-200/60 dark:border-sky-800/40">Description</th>
-                    <th className="px-2 py-1.5 border-r border-sky-200/60 dark:border-sky-800/40">Material</th>
-                    <th className="px-2 py-1.5 text-center border-r border-sky-200/60 dark:border-sky-800/40">Qty</th>
-                    <th className="px-2.5 py-1.5 text-right font-extrabold">Weight (kg)</th>
+                    <th className="px-2.5 py-1.5 border-e border-sky-200/60 dark:border-sky-800/40">Tag / Item</th>
+                    <th className="px-2 py-1.5 border-e border-sky-200/60 dark:border-sky-800/40">Cat.</th>
+                    <th className="px-2.5 py-1.5 border-e border-sky-200/60 dark:border-sky-800/40">Description</th>
+                    <th className="px-2 py-1.5 border-e border-sky-200/60 dark:border-sky-800/40">Material</th>
+                    <th className="px-2 py-1.5 text-center border-e border-sky-200/60 dark:border-sky-800/40">Qty</th>
+                    <th className="px-2.5 py-1.5 text-end font-extrabold">Weight (kg)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-sky-100 dark:divide-sky-900/40 text-[10px]">
@@ -550,24 +550,24 @@ export const MtoReportNode = memo(({ id, data, selected }: Props) => {
                   ) : (
                     filteredRows.map((row) => (
                       <tr key={row.id} className="hover:bg-sky-50/70 dark:hover:bg-sky-900/20 transition-colors">
-                        <td className="px-2.5 py-1.5 font-bold text-sky-900 dark:text-sky-100 border-r border-sky-100/60 dark:border-sky-900/30">
+                        <td className="px-2.5 py-1.5 font-bold text-sky-900 dark:text-sky-100 border-e border-sky-100/60 dark:border-sky-900/30">
                           {row.componentId}
                         </td>
-                        <td className="px-2 py-1.5 border-r border-sky-100/60 dark:border-sky-900/30">
+                        <td className="px-2 py-1.5 border-e border-sky-100/60 dark:border-sky-900/30">
                           <span className="inline-block px-1.5 py-0.2 rounded text-[8px] font-bold uppercase tracking-wider bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300">
                             {row.category}
                           </span>
                         </td>
-                        <td className="px-2.5 py-1.5 text-foreground truncate max-w-[180px] border-r border-sky-100/60 dark:border-sky-900/30" title={row.description}>
+                        <td className="px-2.5 py-1.5 text-foreground truncate max-w-[180px] border-e border-sky-100/60 dark:border-sky-900/30" title={row.description}>
                           {row.description}
                         </td>
-                        <td className="px-2 py-1.5 text-muted-foreground truncate max-w-[100px] border-r border-sky-100/60 dark:border-sky-900/30" title={row.material}>
+                        <td className="px-2 py-1.5 text-muted-foreground truncate max-w-[100px] border-e border-sky-100/60 dark:border-sky-900/30" title={row.material}>
                           {row.material || "—"}
                         </td>
-                        <td className="px-2 py-1.5 text-center tabular-nums font-semibold border-r border-sky-100/60 dark:border-sky-900/30">
+                        <td className="px-2 py-1.5 text-center tabular-nums font-semibold border-e border-sky-100/60 dark:border-sky-900/30">
                           {row.quantity || 1}
                         </td>
-                        <td className="px-2.5 py-1.5 text-right tabular-nums font-extrabold text-sky-900 dark:text-sky-100">
+                        <td className="px-2.5 py-1.5 text-end tabular-nums font-extrabold text-sky-900 dark:text-sky-100">
                           {row.totalWeight.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
                         </td>
                       </tr>

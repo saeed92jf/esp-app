@@ -27,7 +27,8 @@ export type AdminTab =
   | "requests"
   | "moduleRequests"
   | "auditLogs"
-  | "settings";
+  | "settings"
+  | "qualityGuardian";
 
 export const ADMIN_TAB_ROUTES: Record<AdminTab, string> = {
   home: "/admin",
@@ -37,6 +38,7 @@ export const ADMIN_TAB_ROUTES: Record<AdminTab, string> = {
   moduleRequests: "/admin/module-requests",
   auditLogs: "/admin/audit-logs",
   settings: "/admin/settings",
+  qualityGuardian: "/admin/quality-guardian",
 };
 
 export interface AdminContextValue {

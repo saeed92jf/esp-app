@@ -673,7 +673,7 @@ export function SettingsPanel() {
       selectedNode.type ?? "",
     );
     return (
-      <aside className="flex h-full w-72 flex-col overflow-hidden border-l border-border/50 bg-gradient-to-b from-card to-card/50 backdrop-blur-xl shadow-2xl fa-num">
+      <aside className="flex h-full w-72 flex-col overflow-hidden border-s border-border/50 bg-gradient-to-b from-card to-card/50 backdrop-blur-xl shadow-2xl fa-num">
         <PanelHeader
           title={isGroup ? safeT(t, "settings.subflowSettings", "Sub-flow settings") : t("settings.nodeSettings")}
           showDuplicate={!isGroup}

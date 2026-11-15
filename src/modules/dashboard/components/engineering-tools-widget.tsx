@@ -90,10 +90,10 @@ export function EngineeringToolsWidget({ locale }: { locale: string }) {
                 </div>
                 
                 <div className="flex flex-col flex-1 min-w-0">
-                  <span className={cn("text-xs sm:text-sm font-semibold text-foreground/90 truncate", isFa ? "text-right" : "text-left")}>
+                  <span className={cn("text-xs sm:text-sm font-semibold text-foreground/90 truncate", isFa ? "text-end" : "text-start")}>
                     {tItem.label}
                   </span>
-                  <span className={cn("text-[11px] text-muted-foreground truncate", isFa ? "text-right" : "text-left")}>
+                  <span className={cn("text-[11px] text-muted-foreground truncate", isFa ? "text-end" : "text-start")}>
                     {tItem.desc}
                   </span>
                 </div>

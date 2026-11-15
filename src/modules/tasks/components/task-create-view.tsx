@@ -334,7 +334,7 @@ export function TaskCreateView({
         fieldContent = (
           <div className="space-y-6 max-w-xl">
             <div className="space-y-2">
-              <Label htmlFor="task-title" className="rtl:text-right block font-medium text-muted-foreground">
+              <Label htmlFor="task-title" className="rtl:text-end block font-medium text-muted-foreground">
                 {t("createModal.fields.title")}
               </Label>
               <Input
@@ -358,7 +358,7 @@ export function TaskCreateView({
             {/* If admin: can choose team vs personal */}
             {isAdmin && (
               <div className="space-y-3 pb-4 border-b border-border/40">
-                <Label className="rtl:text-right block font-medium text-muted-foreground">
+                <Label className="rtl:text-end block font-medium text-muted-foreground">
                   {t("roles.roleMode")}
                 </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -407,7 +407,7 @@ export function TaskCreateView({
             {!isPersonalActive && (
               <div className="space-y-3 pt-2">
                 <div className="flex flex-col gap-1">
-                  <Label className="rtl:text-right block font-medium text-foreground text-sm">
+                  <Label className="rtl:text-end block font-medium text-foreground text-sm">
                     {t("createModal.optionalProjectLink")}
                   </Label>
                   <span className="text-xs text-muted-foreground">
@@ -446,7 +446,7 @@ export function TaskCreateView({
                       placeholder={t("createModal.selectProjectPlaceholder")}
                       searchPlaceholder={isRtl ? "جستجوی پروژه..." : "Search project..."}
                       emptyText={t("createModal.noProjectsFound")}
-                      className="h-12 rounded-xl bg-card border-border/60 text-sm w-full rtl:text-right"
+                      className="h-12 rounded-xl bg-card border-border/60 text-sm w-full rtl:text-end"
                     />
 
                     {/* Selected Project Card Chip */}
@@ -495,7 +495,7 @@ export function TaskCreateView({
             {/* If personal scope: choose Project-linked vs Standalone */}
             {isPersonalActive && (
               <div className="space-y-4">
-                <Label className="rtl:text-right block font-medium text-muted-foreground">
+                <Label className="rtl:text-end block font-medium text-muted-foreground">
                   {t("createModal.personalTypeLabel")}
                 </Label>
 
@@ -546,7 +546,7 @@ export function TaskCreateView({
                 {/* Project Selection if Project-linked */}
                 {personalType === "project" && (
                   <div className="space-y-3 pt-3">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground text-xs">
+                    <Label className="rtl:text-end block font-medium text-muted-foreground text-xs">
                       {t("createModal.selectProjectLabel")}
                     </Label>
 
@@ -578,7 +578,7 @@ export function TaskCreateView({
                         placeholder={t("createModal.selectProjectPlaceholder")}
                         searchPlaceholder={isRtl ? "جستجوی پروژه..." : "Search project..."}
                         emptyText={t("createModal.noProjectsFound")}
-                        className="h-12 rounded-xl bg-card border-border/60 text-sm w-full rtl:text-right"
+                        className="h-12 rounded-xl bg-card border-border/60 text-sm w-full rtl:text-end"
                       />
                     )}
 
@@ -638,7 +638,7 @@ export function TaskCreateView({
         fieldDescription = t("createModal.descriptions.description");
         fieldContent = (
           <div className="space-y-4 max-w-2xl">
-            <Label htmlFor="task-desc" className="rtl:text-right block font-medium text-muted-foreground">
+            <Label htmlFor="task-desc" className="rtl:text-end block font-medium text-muted-foreground">
               {t("createModal.fields.description")}
             </Label>
             <Textarea
@@ -742,7 +742,7 @@ export function TaskCreateView({
         fieldContent = (
           <div className="space-y-6 max-w-lg">
             <div className="space-y-2">
-              <Label className="rtl:text-right block font-medium text-muted-foreground">
+              <Label className="rtl:text-end block font-medium text-muted-foreground">
                 {t("createModal.fields.dueDate")}
               </Label>
               <DatePicker
@@ -773,7 +773,7 @@ export function TaskCreateView({
                     onClick={() => handleQuickAddDays(item.days)}
                     className="rounded-full text-xs font-medium px-4 h-8 hover:bg-primary/10 hover:text-primary hover:border-primary/40"
                   >
-                    <CalendarClock className="size-3.5 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+                    <CalendarClock className="size-3.5 me-1.5 rtl:ms-1.5 rtl:me-0" />
                     {item.label}
                   </Button>
                 ))}
@@ -857,7 +857,7 @@ export function TaskCreateView({
         fieldContent = (
           <div className="space-y-6 max-w-md">
             <div className="space-y-2">
-              <Label htmlFor="estimated-hours" className="rtl:text-right block font-medium text-muted-foreground">
+              <Label htmlFor="estimated-hours" className="rtl:text-end block font-medium text-muted-foreground">
                 {t("createModal.fields.estimatedHours")}
               </Label>
               <Input
@@ -945,7 +945,7 @@ export function TaskCreateView({
         fieldContent = (
           <div className="space-y-6 max-w-xl">
             <div className="space-y-2">
-              <Label htmlFor="task-category" className="rtl:text-right block font-medium text-muted-foreground">
+              <Label htmlFor="task-category" className="rtl:text-end block font-medium text-muted-foreground">
                 {t("createModal.fields.category")}
               </Label>
               <Input
@@ -975,7 +975,7 @@ export function TaskCreateView({
                       category === cat && "border-primary bg-primary/10 text-primary"
                     )}
                   >
-                    <Tag className="size-3 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+                    <Tag className="size-3 me-1.5 rtl:ms-1.5 rtl:me-0" />
                     {cat}
                   </Button>
                 ))}
@@ -993,7 +993,7 @@ export function TaskCreateView({
             {/* Primary Assignee */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b border-border/40">
               <div className="space-y-2">
-                <Label className="rtl:text-right block font-medium text-muted-foreground">
+                <Label className="rtl:text-end block font-medium text-muted-foreground">
                   {t("createModal.assignee")}
                 </Label>
                 <Input
@@ -1004,7 +1004,7 @@ export function TaskCreateView({
               </div>
 
               <div className="space-y-2">
-                <Label className="rtl:text-right block font-medium text-muted-foreground">
+                <Label className="rtl:text-end block font-medium text-muted-foreground">
                   {t("collaborators.role")}
                 </Label>
                 <Input
@@ -1017,7 +1017,7 @@ export function TaskCreateView({
 
             {/* Extra Collaborators */}
             <div className="space-y-3">
-              <Label className="rtl:text-right block font-medium text-muted-foreground">
+              <Label className="rtl:text-end block font-medium text-muted-foreground">
                 {t("createModal.collaborators")}
               </Label>
 
@@ -1482,8 +1482,8 @@ export function TaskCreateView({
             disabled={isSubmitting}
             className="rounded-full px-8 font-medium h-11 shadow-sm"
           >
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin rtl:ml-2 rtl:mr-0" />}
-            <Check className="size-4 mr-2 rtl:ml-2 rtl:mr-0" />
+            {isSubmitting && <Loader2 className="me-2 h-4 w-4 animate-spin rtl:ms-2 rtl:me-0" />}
+            <Check className="size-4 me-2 rtl:ms-2 rtl:me-0" />
             {t("createModal.submitTask")}
           </Button>
         </div>

@@ -442,7 +442,7 @@ export function CreateCustomerView({
                       value={companyNameEn}
                       onChange={(e) => setCompanyNameEn(e.target.value)}
                       placeholder="e.g. Jam Petrochemical Co."
-                      className="h-10 text-sm rounded-xl text-left font-sans"
+                      className="h-10 text-sm rounded-xl text-start font-sans"
                       dir="ltr"
                     />
                   </div>
@@ -458,7 +458,7 @@ export function CreateCustomerView({
                       value={abbrv}
                       onChange={(e) => setAbbrv(e.target.value.toUpperCase())}
                       placeholder="e.g. JPC, APC"
-                      className="h-10 text-sm rounded-xl text-left uppercase font-sans"
+                      className="h-10 text-sm rounded-xl text-start uppercase font-sans"
                       dir="ltr"
                     />
                   </div>
@@ -501,7 +501,7 @@ export function CreateCustomerView({
                       value={website}
                       onChange={(e) => setWebsite(e.target.value)}
                       placeholder="https://example.com"
-                      className="h-10 text-sm rounded-xl text-left font-sans"
+                      className="h-10 text-sm rounded-xl text-start font-sans"
                       dir="ltr"
                     />
                   </div>
@@ -515,7 +515,7 @@ export function CreateCustomerView({
                       value={tel1}
                       onChange={(e) => setTel1(e.target.value)}
                       placeholder="021-xxxxxxxx"
-                      className="h-10 text-sm rounded-xl text-left font-sans"
+                      className="h-10 text-sm rounded-xl text-start font-sans"
                       dir="ltr"
                     />
                   </div>
@@ -529,7 +529,7 @@ export function CreateCustomerView({
                       value={tel2}
                       onChange={(e) => setTel2(e.target.value)}
                       placeholder="077-xxxxxxxx"
-                      className="h-10 text-sm rounded-xl text-left font-sans"
+                      className="h-10 text-sm rounded-xl text-start font-sans"
                       dir="ltr"
                     />
                   </div>
@@ -658,7 +658,7 @@ export function CreateCustomerView({
                       value={plantCode}
                       onChange={(e) => setPlantCode(e.target.value.toUpperCase())}
                       placeholder="e.g. OLEFIN-10"
-                      className="h-10 text-sm rounded-xl text-left uppercase font-sans"
+                      className="h-10 text-sm rounded-xl text-start uppercase font-sans"
                       dir="ltr"
                     />
                   </div>
@@ -741,7 +741,7 @@ export function CreateCustomerView({
                       value={capacityTonsPerYear}
                       onChange={(e) => setCapacityTonsPerYear(e.target.value ? Number(e.target.value) : "")}
                       placeholder="e.g. 1320000"
-                      className="h-10 text-sm rounded-xl text-left font-sans"
+                      className="h-10 text-sm rounded-xl text-start font-sans"
                       dir="ltr"
                     />
                   </div>
@@ -755,7 +755,7 @@ export function CreateCustomerView({
                       value={commissionedYear}
                       onChange={(e) => setCommissionedYear(e.target.value ? Number(e.target.value) : "")}
                       placeholder={isRtl ? "مثال: 1387" : "e.g. 2008"}
-                      className="h-10 text-sm rounded-xl text-left font-sans"
+                      className="h-10 text-sm rounded-xl text-start font-sans"
                       dir="ltr"
                     />
                   </div>
@@ -806,7 +806,7 @@ export function CreateCustomerView({
                           }
                         }}
                         placeholder={isRtl ? "نام لایسنسور جدید..." : "Add licensor..."}
-                        className="h-8 text-xs rounded-lg w-40 text-left font-sans"
+                        className="h-8 text-xs rounded-lg w-40 text-start font-sans"
                         dir="ltr"
                       />
                       <Button
@@ -1054,7 +1054,7 @@ export function CreateCustomerView({
                       value={codalUrl}
                       onChange={(e) => setCodalUrl(e.target.value)}
                       placeholder="https://codal.ir/..."
-                      className="h-10 text-sm rounded-xl text-left font-sans"
+                      className="h-10 text-sm rounded-xl text-start font-sans"
                       dir="ltr"
                     />
                   </div>
@@ -1108,7 +1108,7 @@ export function CreateCustomerView({
                       value={nationalId}
                       onChange={(e) => setNationalId(e.target.value)}
                       placeholder="1010xxxxxxx"
-                      className="h-10 text-sm rounded-xl text-left font-sans"
+                      className="h-10 text-sm rounded-xl text-start font-sans"
                       dir="ltr"
                     />
                   </div>
@@ -1121,7 +1121,7 @@ export function CreateCustomerView({
                       value={economicCode}
                       onChange={(e) => setEconomicCode(e.target.value)}
                       placeholder="411xxxxxxxxx"
-                      className="h-10 text-sm rounded-xl text-left font-sans"
+                      className="h-10 text-sm rounded-xl text-start font-sans"
                       dir="ltr"
                     />
                   </div>
@@ -1134,7 +1134,7 @@ export function CreateCustomerView({
                       value={regNumber}
                       onChange={(e) => setRegNumber(e.target.value)}
                       placeholder="e.g. 154820"
-                      className="h-10 text-sm rounded-xl text-left font-sans"
+                      className="h-10 text-sm rounded-xl text-start font-sans"
                       dir="ltr"
                     />
                   </div>
@@ -1147,7 +1147,7 @@ export function CreateCustomerView({
                       value={postalCode}
                       onChange={(e) => setPostalCode(e.target.value)}
                       placeholder="19xxxxxxxx"
-                      className="h-10 text-sm rounded-xl text-left font-sans"
+                      className="h-10 text-sm rounded-xl text-start font-sans"
                       dir="ltr"
                     />
                   </div>

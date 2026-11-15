@@ -495,7 +495,7 @@ export function TaskDetailView({
         fieldDescription = t("createModal.descriptions.description");
         fieldContent = (
           <div className="space-y-4 max-w-2xl">
-            <Label htmlFor="task-desc" className="rtl:text-right block font-medium text-muted-foreground">
+            <Label htmlFor="task-desc" className="rtl:text-end block font-medium text-muted-foreground">
               {t("detailPage.fields.description")}
             </Label>
             <Textarea
@@ -609,7 +609,7 @@ export function TaskDetailView({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="project-title" className="rtl:text-right block font-medium text-muted-foreground">
+              <Label htmlFor="project-title" className="rtl:text-end block font-medium text-muted-foreground">
                 {t("createModal.selectProjectLabel")}
               </Label>
               {availableProjects && availableProjects.length > 0 ? (
@@ -636,7 +636,7 @@ export function TaskDetailView({
                   }}
                   placeholder={t("createModal.selectProjectPlaceholder")}
                   emptyText={t("createModal.noProjectsFound")}
-                  className="h-11 rounded-xl bg-muted/20 border-border/60 rtl:text-right w-full"
+                  className="h-11 rounded-xl bg-muted/20 border-border/60 rtl:text-end w-full"
                 />
               ) : (
                 <Input
@@ -658,7 +658,7 @@ export function TaskDetailView({
         fieldContent = (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
             <div className="space-y-2">
-              <Label htmlFor="hours-est" className="rtl:text-right block font-medium text-muted-foreground">
+              <Label htmlFor="hours-est" className="rtl:text-end block font-medium text-muted-foreground">
                 {t("drawer.hoursEstimated")}
               </Label>
               <Input
@@ -672,7 +672,7 @@ export function TaskDetailView({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="hours-log" className="rtl:text-right block font-medium text-muted-foreground">
+              <Label htmlFor="hours-log" className="rtl:text-end block font-medium text-muted-foreground">
                 {t("drawer.hoursLogged")}
               </Label>
               <Input
@@ -1252,7 +1252,7 @@ export function TaskDetailView({
                         {isActive && (
                           <motion.div
                             layoutId="workspace-active-tab-indicator"
-                            className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-t-full"
+                            className="absolute bottom-0 start-0 end-0 h-[2px] bg-primary rounded-t-full"
                             transition={{
                               type: "spring",
                               bounce: 0.2,

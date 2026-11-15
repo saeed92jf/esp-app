@@ -60,7 +60,7 @@ export default function WelcomePage() {
     <div className="w-full flex-1 min-h-[var(--home-height)] max-h-[var(--home-height)] flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-y-auto custom-scrollbar bg-transparent">
       <Card className="w-full max-w-[540px] shadow-2xl border-border/50 bg-card/90 dark:bg-card/80 backdrop-blur-xl rounded-3xl p-6 sm:p-8 my-auto shrink-0 transition-all relative overflow-hidden">
         {/* Subtle Ambient Radial Glow */}
-        <div className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-72 h-36 rounded-full blur-3xl opacity-35 bg-gradient-to-b from-primary/30 to-indigo-500/10" />
+        <div className="pointer-events-none absolute -top-16 start-1/2 -translate-x-1/2 w-72 h-36 rounded-full blur-3xl opacity-35 bg-gradient-to-b from-primary/30 to-indigo-500/10" />
 
         {/* Header */}
         <CardHeader className="space-y-3 text-center p-0 pb-6">
@@ -101,7 +101,7 @@ export default function WelcomePage() {
                   <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
                     <Icon className="size-4.5" />
                   </div>
-                  <div className="space-y-0.5 text-right rtl:text-right ltr:text-left">
+                  <div className="space-y-0.5 text-end rtl:text-end ltr:text-start">
                     <h4 className="text-xs sm:text-sm font-bold text-foreground">
                       {feat.title}
                     </h4>

@@ -92,21 +92,21 @@ export function ProjectPhasesWbsTab({
       case "completed":
         return (
           <Badge className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs">
-            <CheckCircle2 className="w-3 h-3 ml-1" />
+            <CheckCircle2 className="w-3 h-3 ms-1" />
             {isRtl ? "تکمیل شده" : "Completed"}
           </Badge>
         );
       case "in_progress":
         return (
           <Badge className="bg-blue-500/10 text-blue-500 border border-blue-500/20 text-xs">
-            <Clock className="w-3 h-3 ml-1 animate-pulse" />
+            <Clock className="w-3 h-3 ms-1 animate-pulse" />
             {isRtl ? "در حال اجرا" : "In Progress"}
           </Badge>
         );
       case "delayed":
         return (
           <Badge className="bg-rose-500/10 text-rose-500 border border-rose-500/20 text-xs">
-            <AlertCircle className="w-3 h-3 ml-1" />
+            <AlertCircle className="w-3 h-3 ms-1" />
             {isRtl ? "دارای تاخیر" : "Delayed"}
           </Badge>
         );
@@ -163,7 +163,7 @@ export function ProjectPhasesWbsTab({
                     </h3>
                     {phase.isCustom ? (
                       <Badge variant="outline" className="text-[10px] border-amber-500/30 text-amber-500 bg-amber-500/5">
-                        <Sparkles className="w-2.5 h-2.5 ml-1" />
+                        <Sparkles className="w-2.5 h-2.5 ms-1" />
                         {t("phases.isCustom")}
                       </Badge>
                     ) : (
@@ -225,7 +225,7 @@ export function ProjectPhasesWbsTab({
       {/* Add Custom Phase Dialog */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent className="max-w-md" dir={isRtl ? "rtl" : "ltr"}>
-          <DialogHeader className={isRtl ? "text-right" : "text-left"}>
+          <DialogHeader className={isRtl ? "text-end" : "text-start"}>
             <DialogTitle>{t("phases.addPhase")}</DialogTitle>
             <DialogDescription>
               {isRtl ? "تعریف مرحله اختصاصی برای ساختار شکست کار (WBS) این پروژه" : "Create custom stage for project Work Breakdown Structure (WBS)"}
@@ -233,7 +233,7 @@ export function ProjectPhasesWbsTab({
           </DialogHeader>
 
           <form onSubmit={handleCreatePhase} className="space-y-4 pt-2">
-            <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
+            <div className={`space-y-1.5 ${isRtl ? "text-end" : "text-start"}`}>
               <Label htmlFor="phase-name">{t("phases.phaseName")} *</Label>
               <Input
                 id="phase-name"
@@ -244,7 +244,7 @@ export function ProjectPhasesWbsTab({
               />
             </div>
 
-            <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
+            <div className={`space-y-1.5 ${isRtl ? "text-end" : "text-start"}`}>
               <Label htmlFor="phase-lead">{t("phases.phaseLead")}</Label>
               <Input
                 id="phase-lead"
@@ -255,7 +255,7 @@ export function ProjectPhasesWbsTab({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
+              <div className={`space-y-1.5 ${isRtl ? "text-end" : "text-start"}`}>
                 <Label htmlFor="phase-start">{isRtl ? "تاریخ شروع" : "Start Date"}</Label>
                 <Input
                   id="phase-start"
@@ -264,7 +264,7 @@ export function ProjectPhasesWbsTab({
                   placeholder="1403/08/01"
                 />
               </div>
-              <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
+              <div className={`space-y-1.5 ${isRtl ? "text-end" : "text-start"}`}>
                 <Label htmlFor="phase-end">{isRtl ? "تاریخ پایان" : "End Date"}</Label>
                 <Input
                   id="phase-end"
@@ -275,7 +275,7 @@ export function ProjectPhasesWbsTab({
               </div>
             </div>
 
-            <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
+            <div className={`space-y-1.5 ${isRtl ? "text-end" : "text-start"}`}>
               <Label htmlFor="phase-desc">{isRtl ? "توضیحات تکمیلی" : "Additional Notes"}</Label>
               <Input
                 id="phase-desc"

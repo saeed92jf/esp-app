@@ -484,7 +484,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               }}
               dir="rtl"
               placeholder={t("personnelForm.firstNameFaPlaceholder")}
-              className={`h-10 text-sm rtl:text-right ${errors["personal.firstNameFa"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
+              className={`h-10 text-sm rtl:text-end ${errors["personal.firstNameFa"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
             />
             {errors["personal.firstNameFa"] && (
               <span className="text-[11px] text-destructive">{errors["personal.firstNameFa"]}</span>
@@ -507,7 +507,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               }}
               dir="rtl"
               placeholder={t("personnelForm.lastNameFaPlaceholder")}
-              className={`h-10 text-sm rtl:text-right ${errors["personal.lastNameFa"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
+              className={`h-10 text-sm rtl:text-end ${errors["personal.lastNameFa"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
             />
             {errors["personal.lastNameFa"] && (
               <span className="text-[11px] text-destructive">{errors["personal.lastNameFa"]}</span>
@@ -528,7 +528,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               }}
               placeholder={t("personnelForm.firstNameEnPlaceholder")}
               dir="ltr"
-              className={`h-10 text-sm font-sans text-left ${errors["personal.firstName"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
+              className={`h-10 text-sm font-sans text-start ${errors["personal.firstName"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
             />
             {errors["personal.firstName"] && (
               <span className="text-[11px] text-destructive">{errors["personal.firstName"]}</span>
@@ -549,7 +549,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               }}
               placeholder={t("personnelForm.lastNameEnPlaceholder")}
               dir="ltr"
-              className={`h-10 text-sm font-sans text-left ${errors["personal.lastName"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
+              className={`h-10 text-sm font-sans text-start ${errors["personal.lastName"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
             />
             {errors["personal.lastName"] && (
               <span className="text-[11px] text-destructive">{errors["personal.lastName"]}</span>
@@ -575,9 +575,9 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
                 maxLength={10}
                 placeholder="0012345678"
                 dir="ltr"
-                className={`h-10 font-mono text-sm ltr:pl-9 rtl:pr-9 ${errors["personal.nationalId"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
+                className={`h-10 font-mono text-sm ltr:ps-9 rtl:pe-9 ${errors["personal.nationalId"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
               />
-              <Fingerprint className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 ltr:left-3 rtl:right-3 pointer-events-none" />
+              <Fingerprint className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 ltr:start-3 rtl:end-3 pointer-events-none" />
             </div>
             {errors["personal.nationalId"] ? (
               <span className="text-[11px] text-destructive">{errors["personal.nationalId"]}</span>
@@ -640,9 +640,9 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
                 maxLength={11}
                 placeholder={isFa ? "۰۹۱۲۰۰۰۰۰۰۰" : "09120000000"}
                 dir="ltr"
-                className={`h-10 font-sans fa-num text-sm text-left pl-9 pr-3 ${errors["personal.phone"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
+                className={`h-10 font-sans fa-num text-sm text-start ps-9 pe-3 ${errors["personal.phone"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
               />
-              <Phone className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none" />
+              <Phone className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 start-3 pointer-events-none" />
             </div>
             {errors["personal.phone"] ? (
               <span className="text-[11px] text-destructive">{errors["personal.phone"]}</span>
@@ -677,7 +677,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
                     : "bg-muted/40 cursor-not-allowed opacity-90"
                 )}
               />
-              <Mail className="size-4 text-emerald-500 absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none" />
+              <Mail className="size-4 text-emerald-500 absolute top-1/2 -translate-y-1/2 start-3 pointer-events-none" />
             </div>
             <p className="text-[11px] text-muted-foreground">
               {isAdmin 
@@ -714,7 +714,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               value={formData.personal.maritalStatus || "single"}
               onChange={(val) => handleFieldChange("personal", "maritalStatus", val)}
               placeholder={t("personnelForm.maritalStatusPlaceholder")}
-              className="w-full h-10 rtl:text-right"
+              className="w-full h-10 rtl:text-end"
             />
           </div>
 
@@ -826,7 +826,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               onChange={(val) => handleFieldChange("organizational", "department", val)}
               placeholder={t("personnelForm.departmentPlaceholder")}
               searchPlaceholder={t("personnelForm.departmentSearch")}
-              className={`w-full h-10 rtl:text-right ${errors["organizational.department"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
+              className={`w-full h-10 rtl:text-end ${errors["organizational.department"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
             />
             {errors["organizational.department"] && (
               <span className="text-[11px] text-destructive">{errors["organizational.department"]}</span>
@@ -844,7 +844,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               onChange={(val) => handleFieldChange("organizational", "role", val)}
               placeholder={t("personnelForm.rolePlaceholder")}
               searchPlaceholder={t("personnelForm.roleSearch")}
-              className={`w-full h-10 rtl:text-right ${errors["organizational.role"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
+              className={`w-full h-10 rtl:text-end ${errors["organizational.role"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
             />
             {errors["organizational.role"] && (
               <span className="text-[11px] text-destructive">{errors["organizational.role"]}</span>
@@ -862,7 +862,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               onChange={(val) => handleFieldChange("organizational", "workLocation", val)}
               placeholder={t("personnelForm.workLocationPlaceholder")}
               searchPlaceholder={t("personnelForm.workLocationSearch")}
-              className="w-full h-10 rtl:text-right"
+              className="w-full h-10 rtl:text-end"
             />
             <p className="text-[11px] text-muted-foreground">{t("personnelForm.workLocationHelp")}</p>
           </div>
@@ -878,7 +878,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               onChange={(val) => handleFieldChange("organizational", "contractType", val)}
               placeholder={t("personnelForm.contractTypePlaceholder")}
               searchPlaceholder={t("personnelForm.contractTypeSearch")}
-              className="w-full h-10 rtl:text-right"
+              className="w-full h-10 rtl:text-end"
             />
             <p className="text-[11px] text-muted-foreground">{t("personnelForm.contractTypeHelp")}</p>
           </div>
@@ -911,9 +911,9 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
                 onChange={(e) => handleFieldChange("organizational", "extensionNumber", e.target.value)}
                 placeholder={t("personnelForm.extensionPlaceholder")}
                 dir="ltr"
-                className="h-10 font-mono text-sm ltr:pl-9 rtl:pr-9"
+                className="h-10 font-mono text-sm ltr:ps-9 rtl:pe-9"
               />
-              <PhoneCall className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 ltr:left-3 rtl:right-3 pointer-events-none" />
+              <PhoneCall className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 ltr:start-3 rtl:end-3 pointer-events-none" />
             </div>
             <p className="text-[11px] text-muted-foreground">{t("personnelForm.extensionHelp")}</p>
           </div>
@@ -1081,7 +1081,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               value={formData.education.degree}
               onChange={(val) => handleFieldChange("education", "degree", val)}
               placeholder={t("fields.selectDegree")}
-              className="w-full h-10 rtl:text-right"
+              className="w-full h-10 rtl:text-end"
             />
           </div>
 
@@ -1121,7 +1121,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
                 }}
                 placeholder={t("fields.selectFieldOfStudy")}
                 showSearch={true}
-                className="w-full h-10 rtl:text-right"
+                className="w-full h-10 rtl:text-end"
               />
             )}
           </div>
@@ -1162,7 +1162,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
                 }}
                 placeholder={t("fields.selectUniversity")}
                 showSearch={true}
-                className="w-full h-10 rtl:text-right"
+                className="w-full h-10 rtl:text-end"
               />
             )}
           </div>
@@ -1269,7 +1269,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
                 value={formData.insurance.supplementaryPlan || "none"}
                 onChange={(val) => handleFieldChange("insurance", "supplementaryPlan", val)}
                 placeholder={t("fields.selectSupplementaryPlan")}
-                className="w-full h-10 rtl:text-right"
+                className="w-full h-10 rtl:text-end"
               />
             </div>
           </div>
@@ -1326,7 +1326,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
                 )}
               />
               {/* Rule 12: Fixed trailing icon right-3, strictly identical in RTL and LTR */}
-              <CreditCard className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 right-3 pointer-events-none" />
+              <CreditCard className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 end-3 pointer-events-none" />
             </div>
 
             {errors["insurance.shebaNumber"] ? (
@@ -1425,7 +1425,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
                         value={newDepRelationship}
                         onChange={(val) => setNewDepRelationship(val)}
                         placeholder={t("fields.selectRelationship")}
-                        className="w-full h-10 text-xs rtl:text-right rounded-lg"
+                        className="w-full h-10 text-xs rtl:text-end rounded-lg"
                       />
                     </div>
 

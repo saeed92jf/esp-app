@@ -805,7 +805,7 @@ export function TaskTable({
                       <span>{t("table.selectAll")}</span>
                     </label>
                   </div>
-                  <div className="max-h-36 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                  <div className="max-h-36 overflow-y-auto space-y-1 pe-1 custom-scrollbar">
                     {distinctData.categories
                       .filter((c) => c.value.toLowerCase().includes(categorySearch.toLowerCase()))
                       .map((cat) => (
@@ -1043,7 +1043,7 @@ export function TaskTable({
                         onClick={resetAllFilters}
                         className="rounded-full text-xs h-8"
                       >
-                        <RotateCcw className="size-3 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+                        <RotateCcw className="size-3 me-1.5 rtl:ms-1.5 rtl:me-0" />
                         <span>{t("table.clearAllFilters")}</span>
                       </Button>
                     )}

@@ -74,7 +74,7 @@ export function NotFoundPage() {
       <div className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-5 gap-0 md:gap-2 items-center h-full flex-1">
         
         {/* Left Side: SVG Animation */}
-        <div className="w-full flex items-center justify-center md:justify-end h-full px-0 md:pr-0 md:col-span-3">
+        <div className="w-full flex items-center justify-center md:justify-end h-full px-0 md:pe-0 md:col-span-3">
           <svg version="1.1" viewBox="-200 0 1000 600" preserveAspectRatio="xMaxYMid slice" shapeRendering="geometricPrecision" textRendering="geometricPrecision" className="w-full h-auto max-w-[800px] svg-404">
             <g>
               <defs>
@@ -175,7 +175,7 @@ export function NotFoundPage() {
         </div>
 
         {/* Right Side: Text Content */}
-        <div className="flex flex-col justify-start items-center md:items-start text-center md:text-start px-8 md:pl-0 md:col-span-2 -mt-10 md:mt-0 z-10">
+        <div className="flex flex-col justify-start items-center md:items-start text-center md:text-start px-8 md:ps-0 md:col-span-2 -mt-10 md:mt-0 z-10">
           <h1 className="text-6xl lg:text-8xl font-black tracking-tighter text-foreground mb-2">404</h1>
           <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-2">
             {t("title")}

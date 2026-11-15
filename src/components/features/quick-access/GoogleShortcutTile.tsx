@@ -112,7 +112,7 @@ export function GoogleShortcutTile({
                     setIsMenuOpen(false);
                     onEdit();
                   }}
-                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg cursor-pointer transition-colors rtl:text-right ltr:text-left w-full justify-start"
+                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg cursor-pointer transition-colors rtl:text-end ltr:text-start w-full justify-start"
                 >
                   <span>{t("quickAccess.editCards")}</span>
                 </DropdownMenuItem>
@@ -124,7 +124,7 @@ export function GoogleShortcutTile({
                     setIsMenuOpen(false);
                     onRemove(href);
                   }}
-                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 transition-colors rtl:text-right ltr:text-left w-full justify-start"
+                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 transition-colors rtl:text-end ltr:text-start w-full justify-start"
                 >
                   <span>{t("quickAccess.delete")}</span>
                 </DropdownMenuItem>

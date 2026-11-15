@@ -553,7 +553,7 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
                         <ChevronDown className="size-3 shrink-0 text-muted-foreground" />
                       </button>
                       {showTagMenu && (
-                        <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border border-border bg-card shadow-lg text-xs overflow-hidden">
+                        <div className="absolute top-full start-0 z-50 mt-1 w-full rounded-md border border-border bg-card shadow-lg text-xs overflow-hidden">
                           {connectedProjectItems.map((item) => (
                             <button
                               key={item.id}
@@ -566,12 +566,12 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
                                 });
                                 setShowTagMenu(false);
                               }}
-                              className="w-full flex items-center gap-2 px-2 py-1.5 text-left hover:bg-form-primary/10 hover:text-form-primary transition-colors"
+                              className="w-full flex items-center gap-2 px-2 py-1.5 text-start hover:bg-form-primary/10 hover:text-form-primary transition-colors"
                             >
                               <span className="font-sans font-bold text-form-primary">{item.tagNo}</span>
                               <span className="text-muted-foreground">×{item.qty}</span>
                               {item.equipmentType && (
-                                <span className="ml-auto text-[9px] text-muted-foreground bg-muted px-1 rounded">{item.equipmentType}</span>
+                                <span className="ms-auto text-[9px] text-muted-foreground bg-muted px-1 rounded">{item.equipmentType}</span>
                               )}
                             </button>
                           ))}

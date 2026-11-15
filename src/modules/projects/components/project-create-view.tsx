@@ -424,7 +424,7 @@ export function ProjectCreateView({
             disabled={isSubmitting || !title.trim() || !clientName.trim() || !quotationNumber.trim()}
             className="rounded-full text-xs font-semibold px-5 bg-primary text-white hover:bg-primary/90 cursor-pointer shadow-xs"
           >
-            {isSubmitting && <RefreshCw className="size-3.5 mr-1.5 rtl:ml-1.5 rtl:mr-0 animate-spin" />}
+            {isSubmitting && <RefreshCw className="size-3.5 me-1.5 rtl:ms-1.5 rtl:me-0 animate-spin" />}
             <span>{t("createModal.finalSubmit")}</span>
           </Button>
         </div>
@@ -669,7 +669,7 @@ export function ProjectCreateView({
                       className="rounded-full text-xs font-semibold px-6 cursor-pointer"
                     >
                       <span>{t("createModal.next")}</span>
-                      {isRtl ? <ArrowLeft className="size-3.5 mr-1" /> : <ArrowRight className="size-3.5 ml-1" />}
+                      {isRtl ? <ArrowLeft className="size-3.5 me-1" /> : <ArrowRight className="size-3.5 ms-1" />}
                     </Button>
                   </div>
                 </div>
@@ -822,7 +822,7 @@ export function ProjectCreateView({
                       onClick={() => handleGoToPrev("commercial")}
                       className="rounded-full text-xs font-semibold px-5 cursor-pointer"
                     >
-                      {isRtl ? <ArrowRight className="size-3.5 ml-1" /> : <ArrowLeft className="size-3.5 mr-1" />}
+                      {isRtl ? <ArrowRight className="size-3.5 ms-1" /> : <ArrowLeft className="size-3.5 me-1" />}
                       <span>{t("createModal.prev")}</span>
                     </Button>
                     <Button
@@ -831,7 +831,7 @@ export function ProjectCreateView({
                       className="rounded-full text-xs font-semibold px-6 cursor-pointer"
                     >
                       <span>{t("createModal.next")}</span>
-                      {isRtl ? <ArrowLeft className="size-3.5 mr-1" /> : <ArrowRight className="size-3.5 ml-1" />}
+                      {isRtl ? <ArrowLeft className="size-3.5 me-1" /> : <ArrowRight className="size-3.5 ms-1" />}
                     </Button>
                   </div>
                 </div>
@@ -971,7 +971,7 @@ export function ProjectCreateView({
                         onClick={handleAddCustomPhase}
                         className="h-10 rounded-xl px-3 shrink-0 text-xs font-semibold"
                       >
-                        <Plus className="size-3.5 mr-1 rtl:ml-1 rtl:mr-0" />
+                        <Plus className="size-3.5 me-1 rtl:ms-1 rtl:me-0" />
                         <span>{t("createModal.addCustomPhase")}</span>
                       </Button>
                     </div>
@@ -985,7 +985,7 @@ export function ProjectCreateView({
                       onClick={() => handleGoToPrev("schedule")}
                       className="rounded-full text-xs font-semibold px-5 cursor-pointer"
                     >
-                      {isRtl ? <ArrowRight className="size-3.5 ml-1" /> : <ArrowLeft className="size-3.5 mr-1" />}
+                      {isRtl ? <ArrowRight className="size-3.5 ms-1" /> : <ArrowLeft className="size-3.5 me-1" />}
                       <span>{t("createModal.prev")}</span>
                     </Button>
                     <Button
@@ -994,7 +994,7 @@ export function ProjectCreateView({
                       className="rounded-full text-xs font-semibold px-6 cursor-pointer"
                     >
                       <span>{t("createModal.next")}</span>
-                      {isRtl ? <ArrowLeft className="size-3.5 mr-1" /> : <ArrowRight className="size-3.5 ml-1" />}
+                      {isRtl ? <ArrowLeft className="size-3.5 me-1" /> : <ArrowRight className="size-3.5 ms-1" />}
                     </Button>
                   </div>
                 </div>
@@ -1114,7 +1114,7 @@ export function ProjectCreateView({
                       onClick={() => handleGoToPrev("packages")}
                       className="rounded-full text-xs font-semibold px-5 cursor-pointer"
                     >
-                      {isRtl ? <ArrowRight className="size-3.5 ml-1" /> : <ArrowLeft className="size-3.5 mr-1" />}
+                      {isRtl ? <ArrowRight className="size-3.5 ms-1" /> : <ArrowLeft className="size-3.5 me-1" />}
                       <span>{t("createModal.prev")}</span>
                     </Button>
                     <Button
@@ -1123,7 +1123,7 @@ export function ProjectCreateView({
                       className="rounded-full text-xs font-semibold px-6 cursor-pointer"
                     >
                       <span>{t("createModal.next")}</span>
-                      {isRtl ? <ArrowLeft className="size-3.5 mr-1" /> : <ArrowRight className="size-3.5 ml-1" />}
+                      {isRtl ? <ArrowLeft className="size-3.5 me-1" /> : <ArrowRight className="size-3.5 ms-1" />}
                     </Button>
                   </div>
                 </div>
@@ -1281,7 +1281,7 @@ export function ProjectCreateView({
                       onClick={() => handleGoToPrev("review")}
                       className="rounded-full text-xs font-semibold px-5 w-full sm:w-auto cursor-pointer"
                     >
-                      {isRtl ? <ArrowRight className="size-3.5 ml-1" /> : <ArrowLeft className="size-3.5 mr-1" />}
+                      {isRtl ? <ArrowRight className="size-3.5 ms-1" /> : <ArrowLeft className="size-3.5 me-1" />}
                       <span>{t("createModal.prev")}</span>
                     </Button>
 
@@ -1293,12 +1293,12 @@ export function ProjectCreateView({
                     >
                       {isSubmitting ? (
                         <>
-                          <RefreshCw className="size-4 mr-2 rtl:ml-2 rtl:mr-0 animate-spin" />
+                          <RefreshCw className="size-4 me-2 rtl:ms-2 rtl:me-0 animate-spin" />
                           <span>در حال ایجاد پروژه...</span>
                         </>
                       ) : (
                         <>
-                          <Sparkles className="size-4 mr-2 rtl:ml-2 rtl:mr-0" />
+                          <Sparkles className="size-4 me-2 rtl:ms-2 rtl:me-0" />
                           <span>{t("createModal.finalSubmit")}</span>
                         </>
                       )}

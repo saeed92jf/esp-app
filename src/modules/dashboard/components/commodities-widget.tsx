@@ -179,7 +179,7 @@ export function CommoditiesWidget() {
 
                       {/* Right: price */}
                       <div className="flex items-center gap-4">
-                        <div className="text-right">
+                        <div className="text-end">
                           <div className="flex items-center justify-end gap-1.5">
                             {/* % badge */}
                             <span className={cn(

@@ -256,7 +256,7 @@ export function CustomLinksWidget({
                     : t("urlPlaceholder")
                 }
                 dir="ltr"
-                className="h-8.5 text-xs bg-muted/30 border-border/50 font-mono text-left"
+                className="h-8.5 text-xs bg-muted/30 border-border/50 font-mono text-start"
               />
             </div>
 

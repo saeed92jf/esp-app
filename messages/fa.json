@@ -1913,6 +1913,7 @@
     "userConfig": "پیکربندی کاربر",
     "sidebarReq": "درخواست‌ها",
     "moduleRequests": "درخواست‌های دسترسی",
+    "qualityGuardian": "مدیریت کیفیت و کد",
     "sidebarSettings": "تنظیمات",
     "fillRequiredFields": "لطفاً فیلدهای الزامی را پر کنید",
     "userAddedSuccess": "کاربر جدید با موفقیت اضافه شد",
@@ -3019,6 +3020,138 @@
       "university": "دانشگاه:",
       "close": "بستن",
       "none": "ندارد"
+    }
+  },
+  "QualityGuardian": {
+    "header": {
+      "title": "سامانه مدیریت و پایش کیفیت کد (Code Quality Guardian)",
+      "subtitle": "پایش هوشمند و مداوم استانداردها، کشف خطاهای دیزاین‌سیستم و اعمال اصلاحات خودکار و امن در پروژه"
+    },
+    "metrics": {
+      "healthScore": "شاخص سلامت کد",
+      "statusGood": "عالی و بهینه",
+      "statusModerate": "قابل قبول",
+      "statusCritical": "نیازمند رسیدگی",
+      "criticalAndHigh": "خطاهای بحرانی و بالا",
+      "requiresAction": "نیازمند اقدام فوری",
+      "mediumAndLow": "موارد متوسط و جزئی",
+      "fixed": "اصلاح‌شده",
+      "ignored": "نادیده‌گرفته",
+      "minorOrStyle": "موارد ساختاری و استایل",
+      "scannedFiles": "فایل‌های بررسی‌شده"
+    },
+    "tabs": {
+      "violations": "فهرست خطاها و ناسازگاری‌ها",
+      "rules": "قوانین و محدوده اسکن",
+      "history": "تاریخچه پایش"
+    },
+    "table": {
+      "severity": "شدت",
+      "rule": "شناسه قانون",
+      "file": "مسیر فایل",
+      "description": "شرح خطا",
+      "status": "وضعیت",
+      "actions": "عملیات",
+      "loading": "در حال دریافت اطلاعات کیفیت...",
+      "noViolationsFound": "هیچ خطایی مطابق با فیلترهای انتخابی یافت نشد.",
+      "totalRecords": "تعداد کل موارد: {count}",
+      "pageOf": "صفحه {page} از {totalPages}"
+    },
+    "filters": {
+      "searchPlaceholder": "جستجو در فایل، شرح یا کد...",
+      "status": "وضعیت",
+      "allStatuses": "همه وضعیت‌ها",
+      "severity": "شدت",
+      "allSeverities": "همه شدت‌ها",
+      "category": "دسته‌بندی",
+      "allCategories": "همه دسته‌ها"
+    },
+    "categories": {
+      "non_standard_ui": "کامپوننت‌های غیر استاندارد",
+      "third_party_ui": "نفوذ کتابخانه‌های جانبی",
+      "hardcoded_text": "متن هاردکد شده در JSX",
+      "i18n_missing_en": "کسری ترجمه انگلیسی",
+      "i18n_missing_fa": "کسری ترجمه فارسی",
+      "i18n_duplicate_keys": "کلیدهای تکراری ترجمه",
+      "i18n_unused_keys": "کلیدهای استفاده‌نشده ترجمه",
+      "rtl_ltr_inconsistency": "ناسازگاری جهات RTL/LTR",
+      "duplicate_component": "کامپوننت تکراری",
+      "inconsistent_design_system": "ناهماهنگی دیزاین‌سیستم",
+      "accessibility": "دسترس‌پذیری (A11y)",
+      "quality_regression": "افت کیفیت جدید"
+    },
+    "severity": {
+      "critical": "بحرانی",
+      "high": "بالا",
+      "medium": "متوسط",
+      "low": "جزئی"
+    },
+    "status": {
+      "pending": "در انتظار",
+      "resolved": "حل‌شده",
+      "ignored": "نادیده‌گرفته",
+      "remediated": "اصلاح خودکار"
+    },
+    "actions": {
+      "scan": "اسکن",
+      "fullScan": "اسکن کامل پروژه",
+      "incrementalScan": "اسکن افزایشی",
+      "autoFixSafe": "اصلاح خودکار موارد امن",
+      "inspect": "بررسی جزئیات",
+      "previewFix": "پیش‌نمایش اصلاح",
+      "applyFix": "اعمال اصلاح",
+      "applyFixNow": "تایید و اعمال اصلاح",
+      "applying": "در حال اعمال...",
+      "ignore": "نادیده‌گیری",
+      "confirmIgnore": "تایید نادیده‌گیری",
+      "cancel": "انصراف",
+      "close": "بستن",
+      "copy": "کپی",
+      "copied": "کپی شد",
+      "pathCopied": "مسیر فایل در کلیپ‌بورد کپی شد",
+      "startingFullScan": "اسکن کامل کل فایل‌های پروژه آغاز شد...",
+      "startingScan": "اسکن افزایشی فایل‌های تغییریافته آغاز شد...",
+      "scanComplete": "اسکن با موفقیت تکمیل شد. شاخص سلامت: {score}٪ ({count} مورد)",
+      "fixSuccess": "اصلاح با موفقیت روی فایل اعمال شد.",
+      "noFixableViolations": "مورد قابل اصلاح خودکار در میان نتایج فیلترشده یافت نشد.",
+      "applyingBatchFixes": "در حال اعمال خودکار {count} اصلاح امن...",
+      "batchFixComplete": "عملیات اصلاح دسته‌ای انجام شد: {successful} موفق، {failed} ناموفق.",
+      "ignoreSuccess": "خطا نادیده گرفته شد."
+    },
+    "dialog": {
+      "location": "موقعیت در کد منبع",
+      "codeSnippet": "قطعه کد مرتبط",
+      "recommendation": "راهکار و توصیه مهندسی",
+      "suggestedFix": "پیشنهاد اصلاح",
+      "ignorePrompt": "دلیل نادیده‌گیری این خطا:",
+      "ignorePlaceholder": "مثال: استفاده عمدی و ایزوله در لایه زیرساخت..."
+    },
+    "remediation": {
+      "previewTitle": "پیش‌نمایش اصلاح خودکار",
+      "previewDesc": "بررسی تغییرات دقیق قبل از اعمال روی فایل منبع",
+      "diffPreview": "تفاوت خطوط (Diff)",
+      "generatingDiff": "در حال محاسبه تغییرات...",
+      "noDiffAvailable": "پیش‌نمایشی در دسترس نیست",
+      "safeGuaranteeTitle": "تضمین ایمنی و قابلیت بازگشت",
+      "safeGuaranteeDesc": "این تغییر تنها روی جهات یا کلیدهای معتبر اعمال می‌شود و منطق بیزینس را دستکاری نمی‌کند. با Git قابل بازگشت است."
+    },
+    "config": {
+      "scopeTitle": "محدوده و فیلترهای اسکن مداوم",
+      "scopeDesc": "تنظیمات دایرکتوری‌ها، پسوندهای مجاز و الگوهای استثنا",
+      "targets": "پوشه‌های هدف",
+      "extensions": "پسوندهای مجاز",
+      "ignored": "الگوهای نادیده‌گرفته",
+      "rulesTitle": "قوانین فعال Code Quality Guardian",
+      "rulesDesc": "فهرست استانداردهای مهندسی پایش‌شده و نوع مداخله",
+      "autoFixable": "قابل اصلاح خودکار",
+      "active": "فعال"
+    },
+    "history": {
+      "title": "تاریخچه و روندهای کیفیت کد",
+      "description": "سوابق اجراهای قبلی اسکن، تغییرات شاخص سلامت و رفع خطاها",
+      "noHistory": "هنوز سابقه‌ای ثبت نشده است.",
+      "violationsFound": "خطا شناسایی‌شده",
+      "resolved": "مورد رفع‌شده"
     }
   }
 }

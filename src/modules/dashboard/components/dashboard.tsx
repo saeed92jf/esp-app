@@ -689,7 +689,7 @@ export function Dashboard() {
                           {isActive && (
                             <motion.div
                               layoutId="dashboard-main-tab-line"
-                              className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-t-full"
+                              className="absolute bottom-0 start-0 end-0 h-[2px] bg-primary rounded-t-full"
                               transition={{
                                 type: "spring",
                                 bounce: 0.2,

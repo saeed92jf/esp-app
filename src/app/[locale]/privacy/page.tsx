@@ -40,8 +40,8 @@ export default async function PrivacyPage(props: { params: Promise<{ locale: str
     <div className="relative min-h-full flex-1 flex flex-col overflow-hidden bg-background">
       {/* Subtle Background Gradients */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-[25%] -left-[10%] h-[50%] w-[50%] rounded-full bg-primary/5 blur-[120px]" />
-        <div className="absolute -bottom-[25%] -right-[10%] h-[50%] w-[50%] rounded-full bg-primary/5 blur-[120px]" />
+        <div className="absolute -top-[25%] -start-[10%] h-[50%] w-[50%] rounded-full bg-primary/5 blur-[120px]" />
+        <div className="absolute -bottom-[25%] -end-[10%] h-[50%] w-[50%] rounded-full bg-primary/5 blur-[120px]" />
       </div>
 
       <div className="container relative mx-auto px-6 py-20 md:py-32 max-w-4xl z-10">

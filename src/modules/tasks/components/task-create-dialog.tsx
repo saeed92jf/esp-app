@@ -393,7 +393,7 @@ export function TaskCreateDialog({
                       }}
                       placeholder={t("createModal.selectProjectPlaceholder")}
                       emptyText={t("createModal.noProjectsFound")}
-                      className="text-xs rounded-xl bg-white dark:bg-card rtl:text-right"
+                      className="text-xs rounded-xl bg-white dark:bg-card rtl:text-end"
                     />
                   ) : (
                     <Input
@@ -445,7 +445,7 @@ export function TaskCreateDialog({
                   }}
                   placeholder={t("createModal.selectProjectPlaceholder")}
                   emptyText={t("createModal.noProjectsFound")}
-                  className="text-xs rounded-xl bg-background rtl:text-right"
+                  className="text-xs rounded-xl bg-background rtl:text-end"
                 />
               ) : (
                 <Input

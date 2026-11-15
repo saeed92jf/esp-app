@@ -1656,7 +1656,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                             return nextSet;
                           });
                         }}
-                        className="w-full flex items-center justify-between p-4 sm:p-5 cursor-pointer select-none text-right rtl:text-right ltr:text-left transition-colors"
+                        className="w-full flex items-center justify-between p-4 sm:p-5 cursor-pointer select-none text-end rtl:text-end ltr:text-start transition-colors"
                       >
                         <div className="flex items-center gap-3.5 min-w-0">
                           <div
@@ -1823,7 +1823,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                     <div className="relative">
                                       <CreditCard
                                         size={18}
-                                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                        className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
                                       />
                                       <Input
                                         value={reviewData.nationalId || ""}
@@ -1836,7 +1836,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                           })
                                         }
                                         placeholder="0012345678"
-                                        className={cn("pl-10 h-11 bg-background border-border/50 rounded-xl text-sm text-left", isRtl && "fa-num")}
+                                        className={cn("ps-10 h-11 bg-background border-border/50 rounded-xl text-sm text-start", isRtl && "fa-num")}
                                         dir="ltr"
                                       />
                                     </div>
@@ -1849,7 +1849,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                     <div className="relative">
                                       <Phone
                                         size={18}
-                                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                        className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
                                       />
                                       <Input
                                         value={reviewData.phone || ""}
@@ -1862,7 +1862,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                           })
                                         }
                                         placeholder="0912..."
-                                        className={cn("pl-10 h-11 bg-background border-border/50 rounded-xl text-sm text-left", isRtl && "fa-num")}
+                                        className={cn("ps-10 h-11 bg-background border-border/50 rounded-xl text-sm text-start", isRtl && "fa-num")}
                                         dir="ltr"
                                       />
                                     </div>
@@ -1989,7 +1989,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                       }
                                       placeholder={t("selectMaritalStatus")}
                                       emptyText={t("noResults")}
-                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                                     />
                                   </div>
 
@@ -2155,7 +2155,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                       }
                                       placeholder={t("selectDepartment")}
                                       emptyText={t("noResults")}
-                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                                     />
                                   </div>
 
@@ -2181,7 +2181,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                       emptyText={t("noResults")}
                                       creatable={true}
                                       showSearch={true}
-                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                                     />
                                   </div>
 
@@ -2245,7 +2245,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                       emptyText={t("noResults")}
                                       creatable={true}
                                       showSearch={true}
-                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                                     />
                                   </div>
 
@@ -2284,7 +2284,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                       }
                                       placeholder={t("workLocationLabel")}
                                       emptyText={t("noResults")}
-                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                                     />
                                   </div>
 
@@ -2305,7 +2305,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                       }
                                       placeholder={t("contractTypeLabel")}
                                       emptyText={t("noResults")}
-                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                                     />
                                   </div>
 
@@ -2379,7 +2379,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                         emptyText={t("noResults")}
                                         creatable={true}
                                         showSearch={true}
-                                        className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                        className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                                       />
                                     </div>
 
@@ -2428,7 +2428,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                         emptyText={t("noResults")}
                                         creatable={true}
                                         showSearch={true}
-                                        className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                        className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                                       />
                                     </div>
 
@@ -2449,7 +2449,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                         }
                                         placeholder={t("supplementaryPlanLabel")}
                                         emptyText={t("noResults")}
-                                        className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                        className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                                       />
                                     </div>
 
@@ -2460,7 +2460,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                       <div className="relative">
                                         <CreditCard
                                           size={18}
-                                          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                          className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
                                         />
                                         <Input
                                           value={reviewData.shebaNumber || ""}
@@ -2536,7 +2536,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                                   )
                                                 }
                                                 placeholder={t("relationshipPlaceholder")}
-                                                className="h-9 text-xs bg-background rtl:text-right"
+                                                className="h-9 text-xs bg-background rtl:text-end"
                                               />
                                               <div className="flex items-center gap-2">
                                                 <Input
@@ -2606,7 +2606,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                         }
                                         placeholder={t("selectDegree")}
                                         emptyText={t("noResults")}
-                                        className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                        className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                                       />
                                     </div>
 
@@ -2659,7 +2659,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                           placeholder={t("studyFieldPlaceholder")}
                                           showSearch={true}
                                           emptyText={t("noResults")}
-                                          className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                          className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                                         />
                                       )}
                                     </div>
@@ -2713,7 +2713,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                           placeholder={t("universityPlaceholder")}
                                           showSearch={true}
                                           emptyText={t("noResults")}
-                                          className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                          className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                                         />
                                       )}
                                     </div>
@@ -3787,7 +3787,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
             </div>
 
             {/* Requests List Cards */}
-            <div className="flex flex-col gap-2.5 max-h-[640px] overflow-y-auto pr-1 scrollbar-thin">
+            <div className="flex flex-col gap-2.5 max-h-[640px] overflow-y-auto pe-1 scrollbar-thin">
               {filteredRequests.length === 0 ? (
                 <div className="py-8 text-center text-xs text-muted-foreground italic">
                   {t("noRequestsFound")}

@@ -1263,7 +1263,7 @@ export function AdminUsersTable({
                 align={align === 'start' ? 'start' : 'center'}
                 sideOffset={6}
                 dir="rtl"
-                className="w-64 p-3 bg-popover border border-border/60 shadow-xl rounded-2xl text-xs flex flex-col gap-2.5 rtl:text-right"
+                className="w-64 p-3 bg-popover border border-border/60 shadow-xl rounded-2xl text-xs flex flex-col gap-2.5 rtl:text-end"
               >
                 {/* Header Title & Sorting options */}
                 <div className="flex flex-col gap-1 pb-2 border-b border-border/40">
@@ -2556,7 +2556,7 @@ export function AdminUsersTable({
                                           onChange={(e) => setEditFormData(prev => ({ ...prev, firstName: e.target.value }))}
                                           dir="ltr"
                                           placeholder="e.g. Morteza"
-                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-left"
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-start"
                                         />
                                       </div>
 
@@ -2569,7 +2569,7 @@ export function AdminUsersTable({
                                           onChange={(e) => setEditFormData(prev => ({ ...prev, lastName: e.target.value }))}
                                           dir="ltr"
                                           placeholder="e.g. Shafiee"
-                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-left"
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-start"
                                         />
                                       </div>
 
@@ -2605,7 +2605,7 @@ export function AdminUsersTable({
                                           value={editFormData.email || ""}
                                           onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
                                           dir="ltr"
-                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-left"
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-start"
                                         />
                                       </div>
 
@@ -2617,7 +2617,7 @@ export function AdminUsersTable({
                                           value={editFormData.phone || ""}
                                           onChange={(e) => setEditFormData(prev => ({ ...prev, phone: e.target.value }))}
                                           dir="ltr"
-                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-left fa-num"
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-start fa-num"
                                         />
                                       </div>
 
@@ -2630,7 +2630,7 @@ export function AdminUsersTable({
                                           onChange={(e) => setEditFormData(prev => ({ ...prev, extensionNumber: e.target.value }))}
                                           dir="ltr"
                                           placeholder="101"
-                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-left fa-num"
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-start fa-num"
                                         />
                                       </div>
 
@@ -2643,7 +2643,7 @@ export function AdminUsersTable({
                                           value={editFormData.salary || 0}
                                           onChange={(e) => setEditFormData(prev => ({ ...prev, salary: Number(e.target.value) }))}
                                           dir="ltr"
-                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-left fa-num"
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-start fa-num"
                                         />
                                       </div>
 

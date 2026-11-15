@@ -330,7 +330,7 @@ export function MiniChart({ data }: { data?: ChartPoint[] }) {
             </span>
 
             <div
-              className="hidden @[420px]:flex items-baseline gap-1 text-right"
+              className="hidden @[420px]:flex items-baseline gap-1 text-end"
               dir={isFa ? 'rtl' : 'ltr'}
             >
               <span className="text-[11px] text-muted-foreground">{t('miniChart.peak')}:</span>

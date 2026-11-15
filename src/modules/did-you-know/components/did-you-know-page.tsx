@@ -317,7 +317,7 @@ export function DidYouKnowPage() {
             onClick={() => setActiveTab("add")}
             className="rounded-full px-4 h-10 font-medium shadow-xs"
           >
-            <Plus className="size-4 mr-1.5 rtl:ml-1.5 rtl:mr-0 shrink-0" />
+            <Plus className="size-4 me-1.5 rtl:ms-1.5 rtl:me-0 shrink-0" />
             <span>{isRtl ? "افزودن نکته جدید" : "Add New Fact"}</span>
           </Button>
 
@@ -326,7 +326,7 @@ export function DidYouKnowPage() {
             onClick={() => setActiveTab("random")}
             className="rounded-full px-3.5 h-10 font-medium border-border/70 shadow-xs"
           >
-            <Shuffle className="size-4 mr-1.5 rtl:ml-1.5 rtl:mr-0 text-primary" />
+            <Shuffle className="size-4 me-1.5 rtl:ms-1.5 rtl:me-0 text-primary" />
             <span>{isRtl ? "کشف تصادفی" : "Random Fact"}</span>
           </Button>
         </div>
@@ -466,7 +466,7 @@ export function DidYouKnowPage() {
             {isRtl ? "می‌توانید یک کارت جدید به‌صورت دستی اضافه کنید." : "You can add a custom card with this concept."}
           </p>
           <Button onClick={() => setActiveTab("add")} variant="outline" className="rounded-full">
-            <Plus className="size-4 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+            <Plus className="size-4 me-1.5 rtl:ms-1.5 rtl:me-0" />
             <span>{isRtl ? "افزودن این نکته علمی" : "Add this card"}</span>
           </Button>
         </div>
@@ -483,7 +483,7 @@ export function DidYouKnowPage() {
                       card.borderAccent
                     )}
                   >
-                    <div className={cn("absolute -top-24 -right-24 size-64 rounded-full bg-gradient-to-br blur-3xl pointer-events-none opacity-60", card.glowGradient)} />
+                    <div className={cn("absolute -top-24 -end-24 size-64 rounded-full bg-gradient-to-br blur-3xl pointer-events-none opacity-60", card.glowGradient)} />
 
                     <div className="relative z-10">
                       <div className="flex items-center justify-between gap-3 mb-4">
@@ -540,7 +540,7 @@ export function DidYouKnowPage() {
                           onClick={() => handleCopyCard(card)}
                           className="rounded-full text-xs h-8"
                         >
-                          <Copy className="size-3.5 mr-1 rtl:ml-1 rtl:mr-0" />
+                          <Copy className="size-3.5 me-1 rtl:ms-1 rtl:me-0" />
                           <span>{isRtl ? "کپی نکته" : "Copy Fact"}</span>
                         </Button>
                       </div>
@@ -591,7 +591,7 @@ export function DidYouKnowPage() {
                   bookmarked ? "border-amber-500/30" : "border-border/70"
                 )}
               >
-                <div className={cn("absolute -top-16 -right-16 size-48 rounded-full bg-gradient-to-br blur-2xl pointer-events-none opacity-40 group-hover:opacity-75 transition-opacity", card.glowGradient)} />
+                <div className={cn("absolute -top-16 -end-16 size-48 rounded-full bg-gradient-to-br blur-2xl pointer-events-none opacity-40 group-hover:opacity-75 transition-opacity", card.glowGradient)} />
 
                 <div className="relative z-10">
                   <div className="flex items-center justify-between gap-2 mb-3">
@@ -847,7 +847,7 @@ export function DidYouKnowPage() {
             {isRtl ? "انصراف" : "Cancel"}
           </Button>
           <Button type="submit" disabled={isSubmitting} className="rounded-full px-7 font-semibold">
-            <Plus className="size-4 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+            <Plus className="size-4 me-1.5 rtl:ms-1.5 rtl:me-0" />
             <span>{isRtl ? "ثبت کارت جدید" : "Save Fact Card"}</span>
           </Button>
         </div>
@@ -971,7 +971,7 @@ export function DidYouKnowPage() {
             revealedRandomCard.borderAccent
           )}
         >
-          <div className={cn("absolute -top-24 -right-24 size-64 rounded-full bg-gradient-to-br blur-3xl pointer-events-none opacity-60", revealedRandomCard.glowGradient)} />
+          <div className={cn("absolute -top-24 -end-24 size-64 rounded-full bg-gradient-to-br blur-3xl pointer-events-none opacity-60", revealedRandomCard.glowGradient)} />
 
           <div className="relative z-10">
             <div className="flex items-center justify-between gap-3 mb-3">
@@ -1015,7 +1015,7 @@ export function DidYouKnowPage() {
                   onClick={() => handleCopyCard(revealedRandomCard)}
                   className="rounded-full text-xs h-8"
                 >
-                  <Copy className="size-3.5 mr-1 rtl:ml-1 rtl:mr-0" />
+                  <Copy className="size-3.5 me-1 rtl:ms-1 rtl:me-0" />
                   <span>{isRtl ? "کپی" : "Copy"}</span>
                 </Button>
                 <Button
@@ -1023,7 +1023,7 @@ export function DidYouKnowPage() {
                   onClick={handleRollRandomFact}
                   className="rounded-full text-xs h-8"
                 >
-                  <Shuffle className="size-3.5 mr-1 rtl:ml-1 rtl:mr-0" />
+                  <Shuffle className="size-3.5 me-1 rtl:ms-1 rtl:me-0" />
                   <span>{isRtl ? "نکته بعدی" : "Next Fact"}</span>
                 </Button>
               </div>
@@ -1064,7 +1064,7 @@ export function DidYouKnowPage() {
             </p>
           </div>
           <Button onClick={exportJSON} className="rounded-2xl w-full">
-            <Download className="size-4 mr-2 rtl:ml-2 rtl:mr-0" />
+            <Download className="size-4 me-2 rtl:ms-2 rtl:me-0" />
             <span>{isRtl ? "دانلود فایل JSON" : "Download JSON"}</span>
           </Button>
         </div>
@@ -1093,7 +1093,7 @@ export function DidYouKnowPage() {
               onClick={() => fileInputRef.current?.click()}
               className="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white"
             >
-              <Upload className="size-4 mr-2 rtl:ml-2 rtl:mr-0" />
+              <Upload className="size-4 me-2 rtl:ms-2 rtl:me-0" />
               <span>{isRtl ? "انتخاب فایل JSON" : "Select File"}</span>
             </Button>
           </div>
@@ -1153,7 +1153,7 @@ export function DidYouKnowPage() {
             initial={{ opacity: 0, y: -20, x: "-50%" }}
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: -20, x: "-50%" }}
-            className="fixed top-8 sm:top-10 left-1/2 -translate-x-1/2 z-[100] bg-foreground text-background px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold shadow-2xl flex items-center justify-center gap-2 pointer-events-none text-center"
+            className="fixed top-8 sm:top-10 start-1/2 -translate-x-1/2 z-[100] bg-foreground text-background px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold shadow-2xl flex items-center justify-center gap-2 pointer-events-none text-center"
           >
             <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
             <span>{toastMessage}</span>
@@ -1317,7 +1317,7 @@ export function DidYouKnowPage() {
                   size="sm"
                   className="rounded-full px-4"
                 >
-                  <Copy className="size-3.5 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+                  <Copy className="size-3.5 me-1.5 rtl:ms-1.5 rtl:me-0" />
                   <span>{isRtl ? "کپی مشخصات" : "Copy"}</span>
                 </Button>
 

@@ -221,7 +221,7 @@ export function InsecureOriginSetupBanner({ forceShow = false, onClose }: Insecu
   return (
     <div
       dir={isRtl ? 'rtl' : 'ltr'}
-      className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-[480px] z-[9999] shadow-2xl rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-zinc-900 dark:to-zinc-800 dark:border-amber-700 overflow-hidden"
+      className="fixed bottom-4 start-4 end-4 md:start-auto md:end-4 md:w-[480px] z-[9999] shadow-2xl rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-zinc-900 dark:to-zinc-800 dark:border-amber-700 overflow-hidden"
       role="dialog"
       aria-label={isRtl ? 'راهنمای فعال‌سازی اعلان مرورگر' : 'Browser Notification Setup Guide'}
     >

@@ -9,6 +9,7 @@ import {
   KeyRound,
   ScrollText,
   Settings,
+  ShieldCheck,
 } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
@@ -77,6 +78,14 @@ export const ADMIN_NAV_ITEMS = [
     icon: ScrollText,
     labelKey: "auditLogs",
     superAdminOnly: true,
+  },
+  {
+    id: "qualityGuardian" as const,
+    href: "/admin/quality-guardian",
+    exact: false,
+    icon: ShieldCheck,
+    labelKey: "qualityGuardian",
+    superAdminOnly: false,
   },
   {
     id: "settings" as const,
@@ -156,6 +165,10 @@ export function AdminSidebar({
                   ? locale === "fa"
                     ? "لاگ‌های سیستم"
                     : "Audit Logs"
+                  : item.id === "qualityGuardian"
+                  ? locale === "fa"
+                    ? "مدیریت کیفیت و کد"
+                    : "Quality Guardian"
                   : t(item.labelKey);
 
               const linkElement = (

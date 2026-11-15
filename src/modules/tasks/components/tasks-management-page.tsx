@@ -664,7 +664,7 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
                 onClick={() => setSelectedCompanyPortfolio("all")}
                 className="text-xs rounded-full"
               >
-                <X className="size-3 mr-1 rtl:ml-1 rtl:mr-0" />
+                <X className="size-3 me-1 rtl:ms-1 rtl:me-0" />
                 <span>{isRtl ? "نمایش همه شرکت‌ها" : "Show all companies"}</span>
               </Button>
             )}
@@ -1074,7 +1074,7 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
               onClick={refreshTasks}
               className="rounded-full text-xs font-semibold"
             >
-              <RefreshCw className={cn("size-3.5 mr-1.5 rtl:ml-1.5 rtl:mr-0", isLoading && "animate-spin")} />
+              <RefreshCw className={cn("size-3.5 me-1.5 rtl:ms-1.5 rtl:me-0", isLoading && "animate-spin")} />
               <span>{isRtl ? "بروزرسانی داده‌ها" : "Refresh Data"}</span>
             </Button>
           </div>

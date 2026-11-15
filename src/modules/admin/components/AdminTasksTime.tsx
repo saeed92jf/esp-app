@@ -206,7 +206,7 @@ export function AdminTasksTime({
           </div>
 
           {/* All 8 Specs Stacked Vertically & Sequentially (بدون space-between - لیبل بالا و مقدار زیر هم) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 xl:gap-2.5 flex-1 justify-start py-1 overflow-y-auto pr-0.5 custom-scrollbar text-xs content-start">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 xl:gap-2.5 flex-1 justify-start py-1 overflow-y-auto pe-0.5 custom-scrollbar text-xs content-start">
             {/* National ID */}
             <div className="flex flex-col gap-1 p-2.5 rounded-xl bg-background/60 hover:bg-background/90 border border-border/30 hover:border-primary/30 transition-all shadow-2xs group">
               <span className="text-muted-foreground/80 text-[10.5px] font-medium flex items-center gap-1.5">
@@ -333,7 +333,7 @@ export function AdminTasksTime({
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-0.5 custom-scrollbar">
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pe-0.5 custom-scrollbar">
             {userTasks.length > 0 ? (
               userTasks.map((task) => {
                 const isUrgent = task.priority === "critical" || task.priority === "high";

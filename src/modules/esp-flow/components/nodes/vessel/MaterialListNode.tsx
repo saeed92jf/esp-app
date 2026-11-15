@@ -878,7 +878,7 @@ export const MaterialListNode = memo(({ id, data, selected }: Props) => {
             <div className="flex items-center justify-between gap-2">
               {/* Search Bar with clear icon */}
               <div className="relative flex-1 max-w-[320px]">
-                <Search className="absolute left-2.5 top-2 size-3.5 text-muted-foreground pointer-events-none" />
+                <Search className="absolute start-2.5 top-2 size-3.5 text-muted-foreground pointer-events-none" />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -889,7 +889,7 @@ export const MaterialListNode = memo(({ id, data, selected }: Props) => {
                   <button
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-2 top-2 text-muted-foreground hover:text-foreground"
+                    className="absolute end-2 top-2 text-muted-foreground hover:text-foreground"
                     title="Clear search"
                   >
                     <X className="size-3.5" />
@@ -922,7 +922,7 @@ export const MaterialListNode = memo(({ id, data, selected }: Props) => {
 
             {/* CAD Style Material Schedule Table */}
             <div className="overflow-x-auto rounded-md border border-cyan-500/30 dark:border-cyan-500/20 bg-background shadow-inner">
-              <table className="w-full text-left border-collapse text-[11px]">
+              <table className="w-full text-start border-collapse text-[11px]">
                 <thead>
                   <tr className="border-b border-cyan-500/30 bg-cyan-950/20 text-cyan-700 dark:text-cyan-300 font-bold uppercase tracking-wider font-sans">
                     <th className="py-1.5 px-2.5 w-[200px]">Item / Component</th>

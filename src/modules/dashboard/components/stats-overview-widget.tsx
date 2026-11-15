@@ -189,7 +189,7 @@ export function StatsOverviewWidget({
                   </div>
 
                   {isEditing && isSelected && (
-                    <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full p-0.5 shadow-md z-20">
+                    <div className="absolute -top-2 -end-2 bg-primary text-primary-foreground rounded-full p-0.5 shadow-md z-20">
                       <Check className="size-3" />
                     </div>
                   )}

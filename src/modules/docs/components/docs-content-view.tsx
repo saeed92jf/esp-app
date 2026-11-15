@@ -356,7 +356,7 @@ export function DocsContentView({
                       )}
                     </button>
                   </div>
-                  <pre className="p-4 text-xs font-mono overflow-x-auto leading-relaxed bg-background/50 ltr text-left">
+                  <pre className="p-4 text-xs font-mono overflow-x-auto leading-relaxed bg-background/50 ltr text-start">
                     <code>{section.codeSnippet.code}</code>
                   </pre>
                   {(section.codeSnippet.captionFa ||

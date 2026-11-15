@@ -412,7 +412,7 @@ export function SitemapClient() {
 
             {/* Grep / Search Input */}
             <div className="relative min-w-[260px] sm:min-w-[320px]" dir="ltr">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <input
                 type="text"
                 value={searchQuery}
@@ -422,13 +422,13 @@ export function SitemapClient() {
                     ? t("searchApiPlaceholder")
                     : t("searchPlaceholder")
                 }
-                className="w-full pl-9 pr-8 py-1.5 text-xs bg-background border border-border/80 rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-mono"
+                className="w-full ps-9 pe-8 py-1.5 text-xs bg-background border border-border/80 rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all font-mono"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                  className="absolute end-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   ✕
                 </button>
@@ -839,7 +839,7 @@ export function SitemapClient() {
                             {/* Path and Title */}
                             <div className="min-w-0 font-sans">
                               <div className="flex items-center gap-2 flex-wrap" dir="ltr">
-                                <span className="font-mono text-xs sm:text-sm font-bold text-foreground break-all text-left">
+                                <span className="font-mono text-xs sm:text-sm font-bold text-foreground break-all text-start">
                                   {api.path}
                                 </span>
                               </div>
@@ -1129,7 +1129,7 @@ export function SitemapClient() {
                     </div>
 
                     {/* Leaf Routes in Category */}
-                    <div className="ms-4 space-y-1.5 border-l border-border/70 pl-3">
+                    <div className="ms-4 space-y-1.5 border-s border-border/70 ps-3">
                       {routesInCat.map((route, idx) => {
                         const isLast = idx === routesInCat.length - 1;
                         const branchChar = isLast ? "└──" : "├──";
@@ -1194,7 +1194,7 @@ export function SitemapClient() {
                TABLE / LS -LA VIEW - THEME ADAPTIVE
                ════════════════════════════════════════════════════════════════ */
             <div className="overflow-x-auto" dir="ltr">
-              <table className="w-full text-left text-xs font-mono border-collapse">
+              <table className="w-full text-start text-xs font-mono border-collapse">
                 <thead>
                   <tr className="border-b border-border text-muted-foreground bg-muted/20">
                     <th className="py-2.5 px-3 font-semibold uppercase">Perms</th>
@@ -1205,7 +1205,7 @@ export function SitemapClient() {
                     <th className="py-2.5 px-3 font-semibold uppercase font-sans">
                       Title & Description
                     </th>
-                    <th className="py-2.5 px-3 font-semibold uppercase text-right">
+                    <th className="py-2.5 px-3 font-semibold uppercase text-end">
                       Action
                     </th>
                   </tr>
@@ -1248,7 +1248,7 @@ export function SitemapClient() {
                           {isRtl ? route.descFa : route.descEn}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-right">
+                      <td className="py-2.5 px-3 text-end">
                         <Link
                           href={route.path}
                           className="inline-flex items-center gap-1 text-[11px] font-sans text-primary hover:underline"

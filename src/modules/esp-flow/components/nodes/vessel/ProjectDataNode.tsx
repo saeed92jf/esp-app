@@ -206,7 +206,7 @@ function FileUploadField({
   return (
     <div className="space-y-1.5 w-full min-w-0">
       {/* trigger row */}
-      <div className="relative flex items-center h-7 w-full min-w-0 rounded-lg border border-input bg-white dark:bg-black pl-2 pr-0.5 gap-1 focus-within:border-focus-ring focus-within:ring-1 focus-within:ring-focus-ring transition-colors">
+      <div className="relative flex items-center h-7 w-full min-w-0 rounded-lg border border-input bg-white dark:bg-black ps-2 pe-0.5 gap-1 focus-within:border-focus-ring focus-within:ring-1 focus-within:ring-focus-ring transition-colors">
         <input
           ref={inputRef}
           type="file"
@@ -471,7 +471,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
 
             <div className="space-y-1 min-w-0">
               <VesselFieldLabel label="Project Title" />
-              <div className="relative flex items-center h-7 w-full min-w-0 rounded-lg border border-input bg-white dark:bg-black pl-2 pr-0.5 gap-1 focus-within:border-focus-ring focus-within:ring-1 focus-within:ring-focus-ring transition-colors">
+              <div className="relative flex items-center h-7 w-full min-w-0 rounded-lg border border-input bg-white dark:bg-black ps-2 pe-0.5 gap-1 focus-within:border-focus-ring focus-within:ring-1 focus-within:ring-focus-ring transition-colors">
                 <input
                   type="text"
                   value={pd.projectTitle || ""}
@@ -690,7 +690,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                 {items.length > 0 && (
                   <div className="space-y-1.5 pt-1 min-w-0">
                     <VesselFieldLabel label="Configured Items" />
-                    <div className="space-y-1.5 max-h-48 overflow-y-auto pr-0.5">
+                    <div className="space-y-1.5 max-h-48 overflow-y-auto pe-0.5">
                       {items.map((item, idx) => (
                         <div
                           key={item.id || idx}

@@ -69,14 +69,14 @@ export function ProjectStrategicOkrsTab({
       case "strategic":
         return (
           <Badge className="bg-purple-500/10 text-purple-500 border border-purple-500/30 text-xs">
-            <Award className="w-3 h-3 ml-1" />
+            <Award className="w-3 h-3 ms-1" />
             {isRtl ? "استراتژیک و حیاتی" : "Strategic & Critical"}
           </Badge>
         );
       case "high":
         return (
           <Badge className="bg-blue-500/10 text-blue-500 border border-blue-500/30 text-xs">
-            <TrendingUp className="w-3 h-3 ml-1" />
+            <TrendingUp className="w-3 h-3 ms-1" />
             {isRtl ? "تاثیرگذاری بالا" : "High Impact"}
           </Badge>
         );
@@ -153,7 +153,7 @@ export function ProjectStrategicOkrsTab({
       {/* Add Strategic Goal Modal */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent className="max-w-md" dir={isRtl ? "rtl" : "ltr"}>
-          <DialogHeader className={isRtl ? "text-right" : "text-left"}>
+          <DialogHeader className={isRtl ? "text-end" : "text-start"}>
             <DialogTitle>
               {isRtl ? "پیوند پروژه با هدف کلان توسعه شرکت" : "Link Project with Corporate Strategic Goal"}
             </DialogTitle>
@@ -165,7 +165,7 @@ export function ProjectStrategicOkrsTab({
           </DialogHeader>
 
           <form onSubmit={handleAddGoal} className="space-y-4 pt-2">
-            <div className={cn("space-y-1.5", isRtl ? "text-right" : "text-left")}>
+            <div className={cn("space-y-1.5", isRtl ? "text-end" : "text-start")}>
               <Label htmlFor="goal-title">
                 {isRtl ? "عنوان هدف استراتژیک *" : "Strategic Objective Title *"}
               </Label>
@@ -183,7 +183,7 @@ export function ProjectStrategicOkrsTab({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className={cn("space-y-1.5", isRtl ? "text-right" : "text-left")}>
+              <div className={cn("space-y-1.5", isRtl ? "text-end" : "text-start")}>
                 <Label htmlFor="goal-category">{isRtl ? "محور توسعه" : "Strategic Area"}</Label>
                 <select
                   id="goal-category"
@@ -206,7 +206,7 @@ export function ProjectStrategicOkrsTab({
                 </select>
               </div>
 
-              <div className={cn("space-y-1.5", isRtl ? "text-right" : "text-left")}>
+              <div className={cn("space-y-1.5", isRtl ? "text-end" : "text-start")}>
                 <Label htmlFor="goal-impact">{isRtl ? "سطح اثرگذاری" : "Impact Level"}</Label>
                 <select
                   id="goal-impact"
@@ -221,7 +221,7 @@ export function ProjectStrategicOkrsTab({
               </div>
             </div>
 
-            <div className={cn("space-y-1.5", isRtl ? "text-right" : "text-left")}>
+            <div className={cn("space-y-1.5", isRtl ? "text-end" : "text-start")}>
               <Label htmlFor="goal-desc">{isRtl ? "نحوه مشارکت این پروژه" : "How this project contributes"}</Label>
               <Input
                 id="goal-desc"

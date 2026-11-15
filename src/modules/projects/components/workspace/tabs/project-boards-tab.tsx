@@ -457,7 +457,7 @@ export function ProjectBoardsTab({
       {/* Add Task Modal */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent className="max-w-md" dir={isRtl ? "rtl" : "ltr"}>
-          <DialogHeader className={isRtl ? "text-right" : "text-left"}>
+          <DialogHeader className={isRtl ? "text-end" : "text-start"}>
             <DialogTitle>{t("boards.addTask")}</DialogTitle>
             <DialogDescription>
               {isRtl ? "تعریف تسک جدید در فضای کار اشتراکی پروژه" : "Create new task in project shared workspace"}
@@ -465,7 +465,7 @@ export function ProjectBoardsTab({
           </DialogHeader>
 
           <form onSubmit={handleCreateTask} className="space-y-4 pt-2">
-            <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
+            <div className={`space-y-1.5 ${isRtl ? "text-end" : "text-start"}`}>
               <Label htmlFor="task-title">{t("boards.taskTitle")} *</Label>
               <Input
                 id="task-title"
@@ -477,7 +477,7 @@ export function ProjectBoardsTab({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
+              <div className={`space-y-1.5 ${isRtl ? "text-end" : "text-start"}`}>
                 <Label htmlFor="task-assignee">{t("boards.assignee")}</Label>
                 <Input
                   id="task-assignee"
@@ -486,7 +486,7 @@ export function ProjectBoardsTab({
                   placeholder={isRtl ? "نام مسئول..." : "Assignee name..."}
                 />
               </div>
-              <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
+              <div className={`space-y-1.5 ${isRtl ? "text-end" : "text-start"}`}>
                 <Label htmlFor="task-points">{t("boards.storyPoints")}</Label>
                 <Input
                   id="task-points"
@@ -500,7 +500,7 @@ export function ProjectBoardsTab({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
+              <div className={`space-y-1.5 ${isRtl ? "text-end" : "text-start"}`}>
                 <Label htmlFor="task-priority">{t("boards.priority")}</Label>
                 <select
                   id="task-priority"
@@ -514,7 +514,7 @@ export function ProjectBoardsTab({
                   <option value="urgent">{isRtl ? "فوری و بحرانی" : "Urgent / Critical"}</option>
                 </select>
               </div>
-              <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
+              <div className={`space-y-1.5 ${isRtl ? "text-end" : "text-start"}`}>
                 <Label htmlFor="task-sprint">{t("boards.sprint")}</Label>
                 <Input
                   id="task-sprint"

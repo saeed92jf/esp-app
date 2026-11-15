@@ -214,7 +214,7 @@ export function UnitConverterWidget() {
                         type="number"
                         value={valueFrom}
                         onChange={(e) => setValueFrom(e.target.value)}
-                        className="flex-1 min-w-0 bg-transparent outline-none text-2xl @[280px]:text-3xl font-bold fa-num text-white p-0 m-0 placeholder:text-white/30 text-left tracking-tight"
+                        className="flex-1 min-w-0 bg-transparent outline-none text-2xl @[280px]:text-3xl font-bold fa-num text-white p-0 m-0 placeholder:text-white/30 text-start tracking-tight"
                         placeholder="0"
                         dir="ltr"
                       />
@@ -256,11 +256,11 @@ export function UnitConverterWidget() {
                           className="flex items-center justify-between py-2 px-3 rounded-xl bg-white dark:bg-card border border-border/40 shadow-2xs hover:border-primary/30 transition-colors gap-2"
                           dir="ltr"
                         >
-                          <span className="text-xs sm:text-sm font-bold fa-num text-foreground/90 tracking-tight text-left truncate">
+                          <span className="text-xs sm:text-sm font-bold fa-num text-foreground/90 tracking-tight text-start truncate">
                             {displayVal || "-"}
                           </span>
                           <span
-                            className="text-[11px] sm:text-xs font-medium text-muted-foreground/90 text-right shrink-0"
+                            className="text-[11px] sm:text-xs font-medium text-muted-foreground/90 text-end shrink-0"
                             dir={isFa ? "rtl" : "ltr"}
                           >
                             {isFa ? u.labelFa : u.labelEn}
