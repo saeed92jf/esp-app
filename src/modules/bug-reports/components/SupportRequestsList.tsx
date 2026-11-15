@@ -515,34 +515,41 @@ export function SupportRequestsList({
               className="text-xs rounded-xl"
             />
 
-            {/* Quick response chips */}
+            {/* Quick response chips (English default for user email) */}
             <div className="flex flex-wrap gap-1.5 pt-1">
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() =>
-                  setAdminReplyText(
-                    isRtl
-                      ? "درخواست شما بررسی شد و اقدامات لازم با موفقیت انجام گردید."
-                      : "Your request has been reviewed and resolved successfully."
-                  )
+                  setAdminReplyText("Your request has been reviewed and resolved successfully by the IT Support team.")
                 }
-                className="text-[10px] px-2.5 py-1 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                className="text-[11px] h-7 px-2.5 rounded-lg border-border/80 text-muted-foreground hover:text-foreground cursor-pointer font-normal"
               >
-                {isRtl ? "بررسی شد و اقدامات لازم انجام گرفت" : "Resolved successfully"}
-              </button>
-              <button
+                Resolved successfully
+              </Button>
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() =>
-                  setAdminReplyText(
-                    isRtl
-                      ? "راهنمایی لازم جهت رفع مشکل انجام شد و تنظیمات مربوطه اصلاح گردید."
-                      : "Instructions provided and configuration updated."
-                  )
+                  setAdminReplyText("Instructions provided and system configuration updated.")
                 }
-                className="text-[10px] px-2.5 py-1 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                className="text-[11px] h-7 px-2.5 rounded-lg border-border/80 text-muted-foreground hover:text-foreground cursor-pointer font-normal"
               >
-                {isRtl ? "راهنمایی و اصلاح تنظیمات" : "Configuration updated"}
-              </button>
+                Config updated
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setAdminReplyText("User access permissions have been granted and tested successfully.")
+                }
+                className="text-[11px] h-7 px-2.5 rounded-lg border-border/80 text-muted-foreground hover:text-foreground cursor-pointer font-normal"
+              >
+                Access granted
+              </Button>
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/60">

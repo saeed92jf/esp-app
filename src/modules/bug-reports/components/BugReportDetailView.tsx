@@ -581,7 +581,7 @@ export function BugReportDetailView({
               className="text-xs rounded-xl"
             />
 
-            {/* Quick response chips */}
+            {/* Quick response chips (English default for user notification email) */}
             <div className="flex flex-wrap gap-1.5 pt-1">
               <Button
                 type="button"
@@ -589,14 +589,12 @@ export function BugReportDetailView({
                 size="sm"
                 onClick={() =>
                   setResolutionExplanation(
-                    isRtl
-                      ? "اشکال گزارش‌شده بررسی و در نگارش جدید سامانه برطرف گردید."
-                      : "The reported issue has been verified and fixed in the latest platform build."
+                    "The reported issue has been investigated, verified, and resolved in the latest platform build."
                   )
                 }
                 className="text-[11px] h-7 px-2.5 rounded-lg border-border/80 text-muted-foreground hover:text-foreground cursor-pointer font-normal"
               >
-                {isRtl ? "برطرف شد در نگارش جدید" : "Fixed in latest build"}
+                Fixed in latest build
               </Button>
               <Button
                 type="button"
@@ -604,14 +602,25 @@ export function BugReportDetailView({
                 size="sm"
                 onClick={() =>
                   setResolutionExplanation(
-                    isRtl
-                      ? "تنظیمات و دسترسی‌های مربوطه اصلاح شد و صحت عملکرد مجدداً تست و تایید گردید."
-                      : "Settings and permissions were updated and tested successfully."
+                    "Configuration settings and user access permissions have been updated and tested successfully."
                   )
                 }
                 className="text-[11px] h-7 px-2.5 rounded-lg border-border/80 text-muted-foreground hover:text-foreground cursor-pointer font-normal"
               >
-                {isRtl ? "اصلاح تنظیمات و دسترسی" : "Permissions/settings fixed"}
+                Permissions/config fixed
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setResolutionExplanation(
+                    "Data validation rules and workflow logic have been corrected and verified."
+                  )
+                }
+                className="text-[11px] h-7 px-2.5 rounded-lg border-border/80 text-muted-foreground hover:text-foreground cursor-pointer font-normal"
+              >
+                Workflow logic corrected
               </Button>
             </div>
 
