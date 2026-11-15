@@ -103,6 +103,19 @@ export function IdeasList({
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (!confirm(isRtl ? `آیا از حذف تمام ${ideasList.length} ایده و پیشنهاد اطمینان دارید؟ این عملیات قابل بازگشت نیست.` : `Are you sure you want to delete all ${ideasList.length} feature ideas?`)) {
+      return;
+    }
+    try {
+      await bugReportsService.deleteAllIdeas();
+      if (selectedIdea) setSelectedIdea(null);
+      onRefresh();
+    } catch (err) {
+      console.error("Failed to delete all ideas", err);
+    }
+  };
+
   return (
     <div className="space-y-4 animate-in fade-in duration-150">
       {/* Search & Filter */}
@@ -134,13 +147,25 @@ export function IdeasList({
         </div>
       </div>
 
-      {/* Counter */}
+      {/* Counter & Bulk Delete */}
       <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
         <span>
           {isRtl
             ? `نمایش ${filteredList.length} مورد از مجموع ${ideasList.length} ایده و پیشنهاد`
             : `Showing ${filteredList.length} of ${ideasList.length} feature ideas`}
         </span>
+
+        {ideasList.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDeleteAll}
+            className="h-8 px-2.5 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer gap-1.5"
+          >
+            <Trash2 className="size-3.5" />
+            <span>{isRtl ? "حذف همه ایده‌ها" : "Delete All Ideas"}</span>
+          </Button>
+        )}
       </div>
 
       {/* Ideas Table */}

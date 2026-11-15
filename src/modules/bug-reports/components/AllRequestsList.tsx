@@ -12,11 +12,13 @@ import {
   ExternalLink,
   Layers,
   Star,
+  Trash2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
+import { bugReportsService } from "../services/bug-reports.service";
 import type {
   BugReport,
   SupportRequest,
@@ -51,6 +53,7 @@ interface AllRequestsListProps {
   onSelectSupport: (support: SupportRequest) => void;
   onSelectFeedback: (fb: FeedbackSubmission) => void;
   onSelectIdea: (idea: IdeaSubmission) => void;
+  onRefresh?: () => void;
 }
 
 export function AllRequestsList({
@@ -62,12 +65,40 @@ export function AllRequestsList({
   onSelectSupport,
   onSelectFeedback,
   onSelectIdea,
+  onRefresh,
 }: AllRequestsListProps) {
   const locale = useLocale();
   const isRtl = locale === "fa";
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+
+  const handleDeleteSingle = async (item: UnifiedRequestItem) => {
+    if (!confirm(isRtl ? "آیا از حذف این مورد اطمینان دارید؟" : "Are you sure you want to delete this item?")) {
+      return;
+    }
+    try {
+      if (item.type === "bug") await bugReportsService.deleteBugReport(item.id);
+      else if (item.type === "support") await bugReportsService.deleteSupportRequest(item.id);
+      else if (item.type === "feedback") await bugReportsService.deleteFeedback(item.id);
+      else if (item.type === "idea") await bugReportsService.deleteIdea(item.id);
+      onRefresh?.();
+    } catch (err) {
+      console.error("Failed to delete item", err);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (!confirm(isRtl ? `آیا از حذف تمام ${unifiedList.length} درخواست اطمینان دارید؟ این عملیات تمام گزارش‌ها، تیکت‌ها و بازخوردها را پاک می‌کند.` : `Are you sure you want to delete all ${unifiedList.length} incoming requests? This will delete all bugs, support requests, feedback, and ideas.`)) {
+      return;
+    }
+    try {
+      await bugReportsService.deleteAllIssues();
+      onRefresh?.();
+    } catch (err) {
+      console.error("Failed to delete all requests", err);
+    }
+  };
 
   const typeOptions = useMemo<ComboboxOption[]>(() => [
     { value: "all", label: isRtl ? "همه انواع درخواست‌ها" : "All Request Types" },
@@ -210,13 +241,25 @@ export function AllRequestsList({
         </div>
       </div>
 
-      {/* Counter */}
+      {/* Counter & Bulk Delete */}
       <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
         <span>
           {isRtl
             ? `نمایش ${filteredList.length} مورد از مجموع ${unifiedList.length} درخواست دریافتی`
             : `Showing ${filteredList.length} of ${unifiedList.length} total incoming requests`}
         </span>
+
+        {unifiedList.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDeleteAll}
+            className="h-8 px-2.5 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer gap-1.5"
+          >
+            <Trash2 className="size-3.5" />
+            <span>{isRtl ? "حذف همه درخواست‌ها" : "Delete All Requests"}</span>
+          </Button>
+        )}
       </div>
 
       {/* Unified Table */}
@@ -292,14 +335,28 @@ export function AllRequestsList({
                     <td className="py-3.5 px-4 text-muted-foreground whitespace-nowrap font-mono text-[11px]">
                       {new Date(item.createdAt).toLocaleDateString(isRtl ? "fa-IR" : "en-US")}
                     </td>
-                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-2.5 text-xs text-primary group-hover:bg-primary/10 rounded-lg cursor-pointer"
-                      >
-                        <ExternalLink className="size-3.5" />
-                      </Button>
+                    <td
+                      className="py-3.5 px-4 text-center whitespace-nowrap"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center justify-center gap-1.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRowClick(item)}
+                          className="h-8 px-2.5 text-xs text-primary group-hover:bg-primary/10 rounded-lg cursor-pointer"
+                        >
+                          <ExternalLink className="size-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteSingle(item)}
+                          className="h-8 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))

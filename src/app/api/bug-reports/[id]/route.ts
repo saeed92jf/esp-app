@@ -1,7 +1,10 @@
 // src/app/api/bug-reports/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { BACKEND_API_URL } from "@/lib/server/backend-config";
-import { getServerBugReportById } from "@/lib/server/bug-reports-store";
+import {
+  getServerBugReportById,
+  deleteServerBugReport,
+} from "@/lib/server/bug-reports-store";
 
 export async function GET(
   req: NextRequest,
@@ -34,6 +37,34 @@ export async function GET(
   } catch (err: any) {
     return NextResponse.json(
       { error: err?.message || "Failed to fetch bug report" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const authHeader = req.headers.get("authorization");
+
+    try {
+      await fetch(`${BACKEND_API_URL}/bug-reports/${id}`, {
+        method: "DELETE",
+        headers: {
+          ...(authHeader ? { Authorization: authHeader } : {}),
+        },
+        signal: AbortSignal.timeout(4000),
+      });
+    } catch {}
+
+    const success = deleteServerBugReport(id);
+    return NextResponse.json({ success });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err?.message || "Failed to delete bug report" },
       { status: 500 }
     );
   }

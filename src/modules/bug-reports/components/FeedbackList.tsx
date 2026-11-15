@@ -95,6 +95,19 @@ export function FeedbackList({
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (!confirm(isRtl ? `آیا از حذف تمام ${feedbackList.length} بازخورد کاربران اطمینان دارید؟ این عملیات قابل بازگشت نیست.` : `Are you sure you want to delete all ${feedbackList.length} feedback entries?`)) {
+      return;
+    }
+    try {
+      await bugReportsService.deleteAllFeedback();
+      if (selectedFeedback) setSelectedFeedback(null);
+      onRefresh();
+    } catch (err) {
+      console.error("Failed to delete all feedback", err);
+    }
+  };
+
   return (
     <div className="space-y-4 animate-in fade-in duration-150">
       {/* Search & Filters */}
@@ -134,13 +147,25 @@ export function FeedbackList({
         </div>
       </div>
 
-      {/* Counter */}
+      {/* Counter & Bulk Delete */}
       <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
         <span>
           {isRtl
             ? `نمایش ${filteredList.length} مورد از مجموع ${feedbackList.length} بازخورد`
             : `Showing ${filteredList.length} of ${feedbackList.length} feedback entries`}
         </span>
+
+        {feedbackList.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDeleteAll}
+            className="h-8 px-2.5 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer gap-1.5"
+          >
+            <Trash2 className="size-3.5" />
+            <span>{isRtl ? "حذف همه بازخوردها" : "Delete All Feedback"}</span>
+          </Button>
+        )}
       </div>
 
       {/* Feedback Table */}

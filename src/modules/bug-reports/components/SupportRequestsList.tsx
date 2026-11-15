@@ -114,6 +114,19 @@ export function SupportRequestsList({
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (!confirm(isRtl ? `آیا از حذف تمام ${requests.length} درخواست پشتیبانی اطمینان دارید؟ این عملیات قابل بازگشت نیست.` : `Are you sure you want to delete all ${requests.length} support requests?`)) {
+      return;
+    }
+    try {
+      await bugReportsService.deleteAllSupportRequests();
+      if (selectedRequest) setSelectedRequest(null);
+      onRefresh();
+    } catch (err) {
+      console.error("Failed to delete all support requests", err);
+    }
+  };
+
   return (
     <div className="space-y-4 animate-in fade-in duration-150">
       {/* Search & Filter Header */}
@@ -153,13 +166,25 @@ export function SupportRequestsList({
         </div>
       </div>
 
-      {/* Counter Info */}
+      {/* Counter Info & Bulk Delete */}
       <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
         <span>
           {isRtl
             ? `نمایش ${filteredRequests.length} مورد از مجموع ${requests.length} درخواست پشتیبانی`
             : `Showing ${filteredRequests.length} of ${requests.length} support requests`}
         </span>
+
+        {requests.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDeleteAll}
+            className="h-8 px-2.5 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer gap-1.5"
+          >
+            <Trash2 className="size-3.5" />
+            <span>{isRtl ? "حذف همه درخواست‌ها" : "Delete All Requests"}</span>
+          </Button>
+        )}
       </div>
 
       {/* Table of Support Requests */}

@@ -308,6 +308,24 @@ export function createServerBugReport(
   return report;
 }
 
+export function deleteServerBugReport(idOrTicket: string): boolean {
+  let list = tryLoadJson<BugReportItem>("bug_reports.json", globalThis.__espServerBugReports || []);
+  const initialLen = list.length;
+  list = list.filter((r) => r.id !== idOrTicket && r.ticketNumber !== idOrTicket);
+  if (list.length === initialLen) return false;
+  globalThis.__espServerBugReports = list;
+  trySaveJson("bug_reports.json", list);
+  return true;
+}
+
+export function deleteAllServerBugReports(): number {
+  const list = tryLoadJson<BugReportItem>("bug_reports.json", globalThis.__espServerBugReports || []);
+  const count = list.length;
+  globalThis.__espServerBugReports = [];
+  trySaveJson("bug_reports.json", []);
+  return count;
+}
+
 export function updateServerBugReportStatus(
   idOrTicket: string,
   newStatus: BugReportItem["status"],
@@ -567,6 +585,14 @@ export function deleteServerSupportRequest(id: string): boolean {
   return true;
 }
 
+export function deleteAllServerSupportRequests(): number {
+  const list = tryLoadJson<SupportRequestItem>("support_requests.json", globalThis.__espServerSupportRequests || []);
+  const count = list.length;
+  globalThis.__espServerSupportRequests = [];
+  trySaveJson("support_requests.json", []);
+  return count;
+}
+
 // ── Feedback Operations ───────────────────────────────────────────────────────
 
 export function getServerFeedback(userId?: string): FeedbackItem[] {
@@ -607,6 +633,14 @@ export function deleteServerFeedback(id: string): boolean {
   globalThis.__espServerFeedback = list;
   trySaveJson("feedback.json", list);
   return true;
+}
+
+export function deleteAllServerFeedback(): number {
+  const list = tryLoadJson<FeedbackItem>("feedback.json", globalThis.__espServerFeedback || []);
+  const count = list.length;
+  globalThis.__espServerFeedback = [];
+  trySaveJson("feedback.json", []);
+  return count;
 }
 
 // ── Ideas Operations ──────────────────────────────────────────────────────────
@@ -666,5 +700,33 @@ export function deleteServerIdea(id: string): boolean {
   globalThis.__espServerIdeas = list;
   trySaveJson("ideas.json", list);
   return true;
+}
+
+export function deleteAllServerIdeas(): number {
+  const list = tryLoadJson<IdeaItem>("ideas.json", globalThis.__espServerIdeas || []);
+  const count = list.length;
+  globalThis.__espServerIdeas = [];
+  trySaveJson("ideas.json", []);
+  return count;
+}
+
+export function deleteAllServerIssues(): {
+  bugs: number;
+  support: number;
+  feedback: number;
+  ideas: number;
+  total: number;
+} {
+  const bugs = deleteAllServerBugReports();
+  const support = deleteAllServerSupportRequests();
+  const feedback = deleteAllServerFeedback();
+  const ideas = deleteAllServerIdeas();
+  return {
+    bugs,
+    support,
+    feedback,
+    ideas,
+    total: bugs + support + feedback + ideas,
+  };
 }
 

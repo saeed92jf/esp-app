@@ -19,6 +19,7 @@ import {
   ShieldAlert,
   Mail,
   Home,
+  Trash2,
 } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
@@ -140,6 +141,51 @@ export function BugReportsModule({
       if (found) setSelectedReport(found);
     }
   }, [searchParams, reports]);
+
+  const handleDeleteAllActive = async () => {
+    let confirmMsg = "";
+    if (activeTab === "all" || activeTab === "dashboard") {
+      confirmMsg = isRtl
+        ? "آیا از حذف تمام درخواست‌ها، باگ‌ها، تیکت‌های پشتیبانی، بازخوردها و ایده‌ها اطمینان دارید؟ تمام داده‌های ایشو سنتر پاک خواهد شد."
+        : "Are you sure you want to delete ALL issues, tickets, feedback, and ideas? This will completely clear all issue center data.";
+    } else if (activeTab === "support") {
+      confirmMsg = isRtl
+        ? `آیا از حذف تمام ${supportRequests.length} درخواست پشتیبانی اطمینان دارید؟`
+        : `Are you sure you want to delete all ${supportRequests.length} support requests?`;
+    } else if (activeTab === "feedback") {
+      confirmMsg = isRtl
+        ? `آیا از حذف تمام ${feedbackList.length} بازخورد کاربران اطمینان دارید؟`
+        : `Are you sure you want to delete all ${feedbackList.length} feedback entries?`;
+    } else if (activeTab === "ideas") {
+      confirmMsg = isRtl
+        ? `آیا از حذف تمام ${ideasList.length} ایده و پیشنهاد اطمینان دارید؟`
+        : `Are you sure you want to delete all ${ideasList.length} feature ideas?`;
+    } else {
+      confirmMsg = isRtl
+        ? `آیا از حذف تمام ${reports.length} گزارش باگ اطمینان دارید؟`
+        : `Are you sure you want to delete all ${reports.length} bug reports?`;
+    }
+
+    if (!confirm(confirmMsg)) return;
+
+    try {
+      if (activeTab === "all" || activeTab === "dashboard") {
+        await bugReportsService.deleteAllIssues();
+      } else if (activeTab === "support") {
+        await bugReportsService.deleteAllSupportRequests();
+      } else if (activeTab === "feedback") {
+        await bugReportsService.deleteAllFeedback();
+      } else if (activeTab === "ideas") {
+        await bugReportsService.deleteAllIdeas();
+      } else {
+        await bugReportsService.deleteAllBugReports();
+      }
+      setSelectedReport(null);
+      fetchReports(false);
+    } catch (err) {
+      console.error("Failed to delete all items", err);
+    }
+  };
 
   const navItems = [
     {
@@ -496,6 +542,20 @@ export function BugReportsModule({
                         />
                         <span>{isRtl ? "بروزرسانی" : "Refresh"}</span>
                       </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDeleteAllActive}
+                        className="rounded-xl h-10 px-3 text-xs font-semibold gap-1.5 cursor-pointer text-destructive hover:bg-destructive/10 hover:text-destructive border-border/80"
+                      >
+                        <Trash2 className="size-3.5" />
+                        <span>
+                          {activeTab === "all" || activeTab === "dashboard"
+                            ? isRtl ? "پاکسازی کامل تیکت‌ها" : "Clear All Tickets"
+                            : isRtl ? "حذف همه موارد" : "Delete All"}
+                        </span>
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -523,7 +583,10 @@ export function BugReportsModule({
                   {selectedReport ? (
                     <BugReportDetailView
                       report={selectedReport}
-                      onBack={() => setSelectedReport(null)}
+                      onBack={() => {
+                        setSelectedReport(null);
+                        fetchReports(true);
+                      }}
                       onUpdated={(updated) => {
                         setSelectedReport(updated);
                         setReports((prev) =>
@@ -553,6 +616,7 @@ export function BugReportsModule({
                       onSelectSupport={() => setActiveTab("support")}
                       onSelectFeedback={() => setActiveTab("feedback")}
                       onSelectIdea={() => setActiveTab("ideas")}
+                      onRefresh={() => fetchReports(true)}
                     />
                   ) : activeTab === "support" ? (
                     <SupportRequestsList
@@ -576,6 +640,7 @@ export function BugReportsModule({
                       activeFilterTab="all"
                       onFilterTabChange={() => {}}
                       onSelectReport={(r) => setSelectedReport(r)}
+                      onRefresh={() => fetchReports(true)}
                     />
                   )}
                 </div>

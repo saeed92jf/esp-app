@@ -14,12 +14,14 @@ import {
   Layers,
   ArrowUpDown,
   ExternalLink,
+  Trash2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { bugReportsService } from "../services/bug-reports.service";
 import type { BugReport, BugStatus, BugSeverity, BugPriority } from "../types";
 
 interface BugReportsListProps {
@@ -28,6 +30,7 @@ interface BugReportsListProps {
   onSelectReport: (report: BugReport) => void;
   activeFilterTab: "all" | "my";
   onFilterTabChange: (tab: "all" | "my") => void;
+  onRefresh?: () => void;
 }
 
 export function BugReportsList({
@@ -36,6 +39,7 @@ export function BugReportsList({
   onSelectReport,
   activeFilterTab,
   onFilterTabChange,
+  onRefresh,
 }: BugReportsListProps) {
   const locale = useLocale();
   const isRtl = locale === "fa";
@@ -44,6 +48,30 @@ export function BugReportsList({
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedSeverity, setSelectedSeverity] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  const handleDeleteSingle = async (id: string) => {
+    if (!confirm(isRtl ? "آیا از حذف این گزارش باگ اطمینان دارید؟" : "Are you sure you want to delete this bug report?")) {
+      return;
+    }
+    try {
+      await bugReportsService.deleteBugReport(id);
+      onRefresh?.();
+    } catch (err) {
+      console.error("Failed to delete bug report", err);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (!confirm(isRtl ? `آیا از حذف تمام ${reports.length} گزارش باگ اطمینان دارید؟ این عملیات قابل بازگشت نیست.` : `Are you sure you want to delete all ${reports.length} bug reports?`)) {
+      return;
+    }
+    try {
+      await bugReportsService.deleteAllBugReports();
+      onRefresh?.();
+    } catch (err) {
+      console.error("Failed to delete all bug reports", err);
+    }
+  };
 
   const statusFilterOptions = useMemo<ComboboxOption[]>(() => [
     { value: "all", label: isRtl ? "همه وضعیت‌ها" : "All Statuses" },
@@ -206,13 +234,25 @@ export function BugReportsList({
         </div>
       </div>
 
-      {/* Reports Count Info */}
+      {/* Reports Count Info & Bulk Delete */}
       <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
         <span>
           {isRtl
             ? `نمایش ${filteredReports.length} مورد از مجموع ${reports.length} تیکت`
             : `Showing ${filteredReports.length} of ${reports.length} tickets`}
         </span>
+
+        {reports.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDeleteAll}
+            className="h-8 px-2.5 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer gap-1.5"
+          >
+            <Trash2 className="size-3.5" />
+            <span>{isRtl ? "حذف همه گزارش‌ها" : "Delete All Reports"}</span>
+          </Button>
+        )}
       </div>
 
       {/* Desktop Table View */}
@@ -230,12 +270,13 @@ export function BugReportsList({
                 <th className="py-3 px-4 text-start font-bold">{isRtl ? "گزارش‌دهنده" : "Reporter"}</th>
                 <th className="py-3 px-4 text-start font-bold">{isRtl ? "مسئول پیگیری" : "Assignee"}</th>
                 <th className="py-3 px-4 text-start font-bold">{isRtl ? "تاریخ ثبت" : "Date"}</th>
+                <th className="py-3 px-4 text-center font-bold">{isRtl ? "عملیات" : "Actions"}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
               {filteredReports.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={10} className="py-12 text-center text-muted-foreground">
                     {isRtl ? "هیچ تیکتی با مشخصات فیلتر شده یافت نشد." : "No matching tickets found."}
                   </td>
                 </tr>
@@ -285,6 +326,29 @@ export function BugReportsList({
                     </td>
                     <td className="py-3.5 px-4 text-muted-foreground whitespace-nowrap font-mono text-[11px]">
                       {new Date(report.createdAt).toLocaleDateString(isRtl ? "fa-IR" : "en-US")}
+                    </td>
+                    <td
+                      className="py-3.5 px-4 text-center whitespace-nowrap"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center justify-center gap-1.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onSelectReport(report)}
+                          className="h-8 px-2.5 text-xs text-primary hover:text-primary hover:bg-primary/10 rounded-lg cursor-pointer"
+                        >
+                          <ExternalLink className="size-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteSingle(report.id)}
+                          className="h-8 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))

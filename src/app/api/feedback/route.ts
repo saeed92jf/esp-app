@@ -4,6 +4,7 @@ import { BACKEND_API_URL } from "@/lib/server/backend-config";
 import {
   getServerFeedback,
   createServerFeedback,
+  deleteAllServerFeedback,
 } from "@/lib/server/bug-reports-store";
 
 export async function GET(req: NextRequest) {
@@ -71,6 +72,30 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     return NextResponse.json(
       { error: err?.message || "Failed to submit feedback" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get("authorization");
+
+    try {
+      await fetch(`${BACKEND_API_URL}/feedback`, {
+        method: "DELETE",
+        headers: {
+          ...(authHeader ? { Authorization: authHeader } : {}),
+        },
+        signal: AbortSignal.timeout(4000),
+      });
+    } catch {}
+
+    const count = deleteAllServerFeedback();
+    return NextResponse.json({ success: true, count });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err?.message || "Failed to delete feedback" },
       { status: 500 }
     );
   }

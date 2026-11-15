@@ -27,6 +27,7 @@ import {
   Copy,
   Check,
   RotateCcw,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
@@ -74,6 +75,22 @@ export function BugReportDetailView({
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isUpdatingPriority, setIsUpdatingPriority] = useState(false);
   const [isUpdatingAssignee, setIsUpdatingAssignee] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteReport = async () => {
+    if (!confirm(isRtl ? "آیا از حذف این گزارش باگ اطمینان دارید؟" : "Are you sure you want to delete this bug report?")) {
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      await bugReportsService.deleteBugReport(report.id);
+      onBack();
+    } catch (err) {
+      console.error("Failed to delete bug report", err);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const [screenshotModalOpen, setScreenshotModalOpen] = useState(false);
   const [copiedSelector, setCopiedSelector] = useState(false);
@@ -281,6 +298,23 @@ export function BugReportDetailView({
                 <span>{isRtl ? "بازگشایی مجدد" : "Reopen Issue"}</span>
               </Button>
             )
+          )}
+
+          {isStaff && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDeleteReport}
+              disabled={isDeleting}
+              className="rounded-xl h-8.5 px-2.5 gap-1.5 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive border-border/80 cursor-pointer ms-1"
+            >
+              {isDeleting ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="size-3.5" />
+              )}
+              <span className="hidden xs:inline">{isRtl ? "حذف" : "Delete"}</span>
+            </Button>
           )}
         </div>
       </div>

@@ -319,5 +319,58 @@ export const bugReportsService = {
     notifyBugReportsUpdated();
     return res.ok;
   },
+
+  // ── Bug Report Deletion ──────────────────────────────────────────────────────
+  async deleteBugReport(idOrTicket: string): Promise<boolean> {
+    const res = await fetch(`/api/bug-reports/${encodeURIComponent(idOrTicket)}`, {
+      method: "DELETE",
+    });
+    bugReportsService.clearCache();
+    notifyBugReportsUpdated();
+    return res.ok;
+  },
+
+  async deleteAllBugReports(): Promise<boolean> {
+    const res = await fetch("/api/bug-reports", {
+      method: "DELETE",
+    });
+    bugReportsService.clearCache();
+    notifyBugReportsUpdated();
+    return res.ok;
+  },
+
+  // ── Bulk Deletion All Categories ─────────────────────────────────────────────
+  async deleteAllSupportRequests(): Promise<boolean> {
+    const res = await fetch("/api/support-requests", {
+      method: "DELETE",
+    });
+    notifyBugReportsUpdated();
+    return res.ok;
+  },
+
+  async deleteAllFeedback(): Promise<boolean> {
+    const res = await fetch("/api/feedback", {
+      method: "DELETE",
+    });
+    notifyBugReportsUpdated();
+    return res.ok;
+  },
+
+  async deleteAllIdeas(): Promise<boolean> {
+    const res = await fetch("/api/ideas", {
+      method: "DELETE",
+    });
+    notifyBugReportsUpdated();
+    return res.ok;
+  },
+
+  async deleteAllIssues(): Promise<boolean> {
+    const res = await fetch("/api/bug-reports?scope=everything", {
+      method: "DELETE",
+    });
+    bugReportsService.clearCache();
+    notifyBugReportsUpdated();
+    return res.ok;
+  },
 };
 
