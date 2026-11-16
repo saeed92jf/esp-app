@@ -405,10 +405,10 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
 
         {/* ── Heat Map Grid: 7 Time Slots (Rows) x 7 Days (Cols) forming a Symmetrical 7x7 Flexible Grid ── */}
         <div className="flex-1 min-h-0 flex flex-col justify-center w-full overflow-hidden">
-          <div className="w-full flex flex-col gap-1">
+          <div className="w-full flex flex-col gap-1 max-w-[500px] mx-auto">
             
             {/* Day Headers (Horizontal Axis - افقی روزهای هفته) */}
-            <div className="grid grid-cols-[38px_repeat(7,1fr)] sm:grid-cols-[44px_repeat(7,1fr)] gap-0.5 sm:gap-1 items-center pb-0.5 text-center w-full">
+            <div className="grid grid-cols-[36px_repeat(7,1fr)] sm:grid-cols-[40px_repeat(7,1fr)] gap-1 sm:gap-1.5 items-center pb-0.5 text-center w-full">
               <div className="text-[10px] font-bold text-muted-foreground text-start ps-0.5">
                 {isRtl ? "ساعت" : "Time"}
               </div>
@@ -435,7 +435,7 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
                 return (
                   <div
                     key={slot.key}
-                    className="grid grid-cols-[38px_repeat(7,1fr)] sm:grid-cols-[44px_repeat(7,1fr)] gap-0.5 sm:gap-1 items-center w-full"
+                    className="grid grid-cols-[36px_repeat(7,1fr)] sm:grid-cols-[40px_repeat(7,1fr)] gap-1 sm:gap-1.5 items-center w-full"
                   >
                     {/* Vertical Time Slot Label (e.g. 6-8, 18-6) */}
                     <span
@@ -456,44 +456,48 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
                       return (
                         <div
                           key={d.key}
-                          onMouseEnter={() => cell && setHoveredCell(cell)}
-                          onMouseLeave={() => setHoveredCell(null)}
-                          className={cn(
-                            "aspect-square w-full rounded sm:rounded-md transition-all duration-150 relative flex items-center justify-center",
-                            // 0. آینده (هنوز فرا نرسیده - بدون رنگ، بوردر خط‌چین ظریف)
-                            isFuture && (
-                              "bg-slate-200/20 dark:bg-slate-900/15 border border-dashed border-slate-300/50 dark:border-slate-700/50 opacity-40 hover:opacity-75 cursor-default"
-                            ),
-                            // 1. هاشور خاکستری (Off-hours / holiday with 0 activity)
-                            !isFuture && isHatched && level === 0 && (
-                              "cursor-pointer bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.32)_0px,rgba(148,163,184,0.32)_1.5px,transparent_1.5px,transparent_6px)] dark:bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.18)_0px,rgba(148,163,184,0.18)_1.5px,transparent_1.5px,transparent_6px)] bg-slate-100/50 dark:bg-slate-900/30 border border-slate-300/60 dark:border-slate-700/60 hover:border-slate-400 dark:hover:border-slate-500"
-                            ),
-                            // 2. خانه خالی (Work hours with 0 activity in past)
-                            !isFuture && !isHatched && level === 0 && (
-                              "cursor-pointer bg-background/40 dark:bg-slate-900/40 border border-slate-200/90 dark:border-slate-800/80 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-700"
-                            ),
-                            // 3. طیف رنگ پرایمری (Activity levels 1 to 4)
-                            !isFuture && level === 1 && "cursor-pointer bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 hover:scale-[1.04]",
-                            !isFuture && level === 2 && "cursor-pointer bg-primary/45 text-primary-foreground border border-primary/55 hover:bg-primary/55 hover:scale-[1.04]",
-                            !isFuture && level === 3 && "cursor-pointer bg-primary/70 text-primary-foreground border border-primary/80 hover:bg-primary/80 hover:scale-[1.04] shadow-2xs",
-                            !isFuture && level === 4 && "cursor-pointer bg-primary text-primary-foreground border border-primary hover:brightness-110 hover:scale-[1.04] shadow-xs",
-                            // Live real-time indicator
-                            isCurrent && "ring-2 ring-primary ring-offset-1.5 ring-offset-background animate-pulse z-10"
-                          )}
-                          title={
-                            cell
-                              ? `${isRtl ? cell.dayNameFa : cell.dayNameEn} (${isRtl ? cell.slotLabelFa : cell.slotLabel}) - ${
-                                  cell.isFuture
-                                    ? isRtl ? "آینده (هنوز فرا نرسیده)" : "Future"
-                                    : cell.level > 0
-                                    ? `${cell.minutes}m (${cell.percentage}%)`
-                                    : cell.isHatched
-                                    ? isRtl ? "خارج از شیفت کاری / تعطیل" : "Off-shift / Holiday"
-                                    : isRtl ? "شیفت کاری بدون فعالیت" : "In-shift idle"
-                                }`
-                              : ""
-                          }
-                        />
+                          className="flex items-center justify-center w-full"
+                        >
+                          <div
+                            onMouseEnter={() => cell && setHoveredCell(cell)}
+                            onMouseLeave={() => setHoveredCell(null)}
+                            className={cn(
+                              "aspect-square w-full max-w-[28px] sm:max-w-[32px] rounded sm:rounded-md transition-all duration-150 relative flex items-center justify-center",
+                              // 0. آینده (هنوز فرا نرسیده - بدون رنگ، بوردر خط‌چین ظریف)
+                              isFuture && (
+                                "bg-slate-200/20 dark:bg-slate-900/15 border border-dashed border-slate-300/50 dark:border-slate-700/50 opacity-40 hover:opacity-75 cursor-default"
+                              ),
+                              // 1. هاشور خاکستری (Off-hours / holiday with 0 activity)
+                              !isFuture && isHatched && level === 0 && (
+                                "cursor-pointer bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.32)_0px,rgba(148,163,184,0.32)_1.5px,transparent_1.5px,transparent_6px)] dark:bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.18)_0px,rgba(148,163,184,0.18)_1.5px,transparent_1.5px,transparent_6px)] bg-slate-100/50 dark:bg-slate-900/30 border border-slate-300/60 dark:border-slate-700/60 hover:border-slate-400 dark:hover:border-slate-500"
+                              ),
+                              // 2. خانه خالی (Work hours with 0 activity in past)
+                              !isFuture && !isHatched && level === 0 && (
+                                "cursor-pointer bg-background/40 dark:bg-slate-900/40 border border-slate-200/90 dark:border-slate-800/80 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-700"
+                              ),
+                              // 3. طیف رنگ پرایمری (Activity levels 1 to 4)
+                              !isFuture && level === 1 && "cursor-pointer bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 hover:scale-[1.04]",
+                              !isFuture && level === 2 && "cursor-pointer bg-primary/45 text-primary-foreground border border-primary/55 hover:bg-primary/55 hover:scale-[1.04]",
+                              !isFuture && level === 3 && "cursor-pointer bg-primary/70 text-primary-foreground border border-primary/80 hover:bg-primary/80 hover:scale-[1.04] shadow-2xs",
+                              !isFuture && level === 4 && "cursor-pointer bg-primary text-primary-foreground border border-primary hover:brightness-110 hover:scale-[1.04] shadow-xs",
+                              // Live real-time indicator
+                              isCurrent && "ring-2 ring-primary ring-offset-1.5 ring-offset-background animate-pulse z-10"
+                            )}
+                            title={
+                              cell
+                                ? `${isRtl ? cell.dayNameFa : cell.dayNameEn} (${isRtl ? cell.slotLabelFa : cell.slotLabel}) - ${
+                                    cell.isFuture
+                                      ? isRtl ? "آینده (هنوز فرا نرسیده)" : "Future"
+                                      : cell.level > 0
+                                      ? `${cell.minutes}m (${cell.percentage}%)`
+                                      : cell.isHatched
+                                      ? isRtl ? "خارج از شیفت کاری / تعطیل" : "Off-shift / Holiday"
+                                      : isRtl ? "شیفت کاری بدون فعالیت" : "In-shift idle"
+                                  }`
+                                : ""
+                            }
+                          />
+                        </div>
                       );
                     })}
                   </div>

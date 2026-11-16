@@ -418,10 +418,10 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
       </div>
 
       {/* ── Boxes Under Avatar: Expanded down to the end of the page ── */}
-      <div className="flex flex-col gap-3 shrink-0 w-full">
+      <div className="flex flex-col gap-2.5 sm:gap-3 shrink-0 w-full">
         
         {/* ── Performance & Career Stats Card ── */}
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 sm:p-3 flex flex-col justify-center shadow-2xs shrink-0 min-h-[140px] h-auto overflow-hidden w-full">
+        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 sm:p-3 flex flex-col justify-center shadow-2xs shrink-0 h-auto overflow-hidden w-full">
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2 sm:gap-2.5 w-full h-full min-h-0">
             {/* Days in Company */}
             <div className="bg-background/70 dark:bg-slate-900/40 rounded-xl sm:rounded-2xl p-2 sm:p-2.5 flex flex-col justify-center items-center text-center shadow-2xs min-w-0 overflow-hidden flex-1 h-full transition-all">
@@ -485,9 +485,9 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
         </div>
 
         {/* ── 4 & 5. Responsive Grid for Demographics and Insurance on Medium Screens ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-3 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-2.5 sm:gap-3 w-full">
           {/* ── 4. Personal Demographics Card ── */}
-          <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 sm:p-3 flex items-center justify-center shadow-2xs shrink-0 min-h-[85px] h-auto overflow-hidden w-full">
+          <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 sm:p-3 flex items-center justify-center shadow-2xs shrink-0 h-auto overflow-hidden w-full">
             <div className="grid grid-cols-3 gap-1 divide-x divide-x-reverse divide-border/30 text-center bg-background/60 dark:bg-slate-900/40 rounded-xl sm:rounded-2xl p-2 sm:p-2.5 lg:p-3 border border-border/30 w-full h-full items-center">
               {/* Age */}
               <div className="flex flex-col items-center justify-center px-1 min-w-0">
@@ -516,7 +516,7 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
           </div>
 
           {/* ── 5. Insurance & Healthcare Card (باکس بیمه تکمیلی) ── */}
-          <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 flex flex-col justify-between shadow-2xs shrink-0 min-h-[115px] h-auto overflow-hidden w-full">
+          <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 flex flex-col justify-between shadow-2xs shrink-0 h-auto overflow-hidden w-full">
             <div className="flex items-center justify-between gap-2 mb-2 px-0.5 shrink-0">
               <div className="flex flex-col min-w-0">
                 <span className="text-xs sm:text-sm lg:text-base font-bold text-foreground truncate">
