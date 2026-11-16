@@ -46,7 +46,8 @@ export class CodingExcelProvider {
     }
 
     console.log(`[CodingExcelProvider] Loading workbook from ${EXCEL_PATH}...`);
-    const wb = xlsx.readFile(EXCEL_PATH, { raw: false });
+    const fileBuffer = fs.readFileSync(EXCEL_PATH);
+    const wb = xlsx.read(fileBuffer, { type: "buffer", raw: false });
 
     // 1. Production Tree
     const prodSheet = wb.Sheets["TBL_M_Production_Tree_Coding"];
