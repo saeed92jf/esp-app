@@ -1,9 +1,16 @@
 // src/lib/server/coding-excel-provider.ts
 import fs from "fs";
+import path from "path";
 import * as xlsx from "xlsx";
 import { ProductionTreeSourceRecord, MaterialMasterRecord, MaterialFormRecord } from "@/modules/esp-coding/types";
 
-const EXCEL_PATH = "C:\\Users\\s.jalili\\Desktop\\Resource\\Coding.xlsx";
+/**
+ * RULE: The authoritative Coding.xlsx is bundled inside the project at:
+ *   src/lib/server/data/Coding.xlsx
+ * This prevents dependency on a local Desktop path that breaks on other machines.
+ * To update the data, replace the file at that path.
+ */
+const EXCEL_PATH = path.join(process.cwd(), "src", "lib", "server", "data", "Coding.xlsx");
 
 interface CachedData {
   productionTree: ProductionTreeSourceRecord[];
