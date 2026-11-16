@@ -1,9 +1,9 @@
 // src/lib/server/coding-excel-provider.ts
 import fs from "fs";
-import xlsx from "xlsx";
+import * as xlsx from "xlsx";
 import { ProductionTreeSourceRecord, MaterialMasterRecord, MaterialFormRecord } from "@/modules/esp-coding/types";
 
-const EXCEL_PATH = "C:\\Users\\s.jalili\\Desktop\Resource\\Coding.xlsx";
+const EXCEL_PATH = "C:\\Users\\s.jalili\\Desktop\\Resource\\Coding.xlsx";
 
 interface CachedData {
   productionTree: ProductionTreeSourceRecord[];
