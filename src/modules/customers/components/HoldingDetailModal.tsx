@@ -20,6 +20,8 @@ import {
   Info,
   Copy,
   Check,
+  Camera,
+  Pencil,
 } from "lucide-react";
 import {
   Dialog,
@@ -52,6 +54,7 @@ interface HoldingDetailModalProps {
   holding: Holding | null;
   isOpen: boolean;
   onClose: () => void;
+  onEditLogo?: (holding: Holding) => void;
 }
 
 // Helper to resolve subsidiary logo from plant catalog or customer data
@@ -74,6 +77,7 @@ export function HoldingDetailModal({
   holding,
   isOpen,
   onClose,
+  onEditLogo,
 }: HoldingDetailModalProps) {
   const locale = useLocale();
   const isRtl = locale === "fa";
@@ -162,6 +166,20 @@ export function HoldingDetailModal({
 
           {/* Header Action Buttons */}
           <div className="flex items-center gap-1.5 self-end sm:self-center shrink-0">
+            {onEditLogo && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onEditLogo(holding)}
+                className="h-8 rounded-xl text-xs gap-1.5 cursor-pointer border-dashed border-primary/40 hover:border-primary hover:bg-primary/[0.04]"
+                title={isRtl ? "ویرایش و تغییر لوگوی هلدینگ" : "Edit Logo"}
+              >
+                <Camera className="size-3.5 text-primary" />
+                <span className="hidden sm:inline">{isRtl ? "تغییر لوگو" : "Edit Logo"}</span>
+              </Button>
+            )}
+
             {holding.logoUrl && (
               <Button
                 type="button"

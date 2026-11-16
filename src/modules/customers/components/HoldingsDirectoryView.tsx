@@ -1,7 +1,7 @@
 // src/modules/customers/components/HoldingsDirectoryView.tsx
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import {
@@ -16,14 +16,29 @@ import {
   X,
   Download,
   Info,
+  Pencil,
+  Trash2,
+  UploadCloud,
+  Check,
+  Camera,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatLocaleNumber } from "@/lib/format-number";
 import { downloadLogo } from "../utils/download-logo";
+import { customersService } from "../services/customers.service";
 import { IRANIAN_HOLDINGS } from "../data/holdings.data";
 import { HoldingDetailModal } from "./HoldingDetailModal";
 import {
@@ -44,6 +59,92 @@ export function HoldingsDirectoryView() {
   const [sortBy, setSortBy] = useState<HoldingSortOption>("default");
   const [detailHolding, setDetailHolding] = useState<Holding | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+  // Logo upload & editing states
+  const [customLogos, setCustomLogos] = useState<Record<string, string>>({});
+  const [editingLogoHolding, setEditingLogoHolding] = useState<Holding | null>(null);
+  const [logoInputValue, setLogoInputValue] = useState("");
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load saved custom logos from localStorage
+  useEffect(() => {
+    try {
+      const storedLogos = localStorage.getItem("esp_holding_logos_override");
+      if (storedLogos) {
+        setCustomLogos(JSON.parse(storedLogos));
+      }
+    } catch {}
+  }, []);
+
+  const getHoldingLogo = (holding: Holding): string => {
+    if (customLogos[holding.id] !== undefined) {
+      return customLogos[holding.id];
+    }
+    return holding.logoUrl || "";
+  };
+
+  const openEditLogo = (holding: Holding) => {
+    setEditingLogoHolding(holding);
+    setLogoInputValue(getHoldingLogo(holding));
+  };
+
+  const saveCustomLogo = (holdingId: string, url: string) => {
+    const updated = { ...customLogos, [holdingId]: url };
+    setCustomLogos(updated);
+    try {
+      localStorage.setItem("esp_holding_logos_override", JSON.stringify(updated));
+    } catch {}
+  };
+
+  const handleLogoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingLogoHolding) return;
+
+    // Immediately convert to data URL for instantaneous client preview & local persistence
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (dataUrl) {
+        setLogoInputValue(dataUrl);
+        saveCustomLogo(editingLogoHolding.id, dataUrl);
+      }
+    };
+    reader.readAsDataURL(file);
+
+    // Also attempt uploading to backend storage if reachable
+    setIsUploadingLogo(true);
+    try {
+      const res = await customersService.uploadLogo(file);
+      if (res?.url) {
+        setLogoInputValue(res.url);
+        saveCustomLogo(editingLogoHolding.id, res.url);
+      }
+      toast.success(isRtl ? "لوگو با موفقیت بارگذاری شد." : "Logo uploaded successfully.");
+    } catch {
+      toast.success(isRtl ? "لوگو به صورت محلی ذخیره شد." : "Logo saved locally.");
+    } finally {
+      setIsUploadingLogo(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleSaveLogo = () => {
+    if (!editingLogoHolding) return;
+    saveCustomLogo(editingLogoHolding.id, logoInputValue.trim());
+    toast.success(isRtl ? "تغییرات لوگو ذخیره شد." : "Logo changes saved.");
+    setEditingLogoHolding(null);
+  };
+
+  const handleClearLogo = () => {
+    if (!editingLogoHolding) return;
+    saveCustomLogo(editingLogoHolding.id, "");
+    setLogoInputValue("");
+    toast.info(isRtl ? "لوگو خالی شد." : "Logo cleared.");
+    setEditingLogoHolding(null);
+  };
 
   // Auto-open modal if URL has ?id=xxx
   useEffect(() => {
@@ -284,10 +385,10 @@ export function HoldingsDirectoryView() {
                   {/* 1. Large Crisp Logo Showcase */}
                   <div className="relative group/logo-thumb w-full">
                     <div className="w-full h-36 sm:h-40 rounded-xl sm:rounded-2xl bg-white dark:bg-zinc-900 border border-border/70 p-4 sm:p-5 flex items-center justify-center overflow-hidden shadow-2xs group-hover:border-primary/40 group-hover:shadow-xs transition-all">
-                      {holding.logoUrl ? (
+                      {getHoldingLogo(holding) ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={holding.logoUrl}
+                          src={getHoldingLogo(holding)}
                           alt={displayName}
                           className="max-h-24 sm:max-h-28 max-w-[85%] object-contain transition-transform duration-200 group-hover:scale-105 select-none"
                           onError={(e) => {
@@ -302,20 +403,35 @@ export function HoldingsDirectoryView() {
                       )}
                     </div>
 
+                    {/* Quick In-Card Edit / Upload Logo Button */}
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="icon-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditLogo(holding);
+                      }}
+                      className="size-7 rounded-lg absolute top-2.5 start-2.5 bg-background/90 backdrop-blur-xs border border-border shadow-xs opacity-0 group-hover:opacity-100 hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer z-10"
+                      title={isRtl ? "ویرایش و آپلود لوگوی هلدینگ" : "Edit / Upload Holding Logo"}
+                    >
+                      <Pencil className="size-3.5" />
+                    </Button>
+
                     {/* Quick Logo Download Button */}
-                    {holding.logoUrl && (
+                    {getHoldingLogo(holding) && (
                       <Button
                         type="button"
                         variant="secondary"
                         size="icon-xs"
                         onClick={async (e) => {
                           e.stopPropagation();
-                          const ok = await downloadLogo(holding.logoUrl || "", holding.nameFa);
+                          const ok = await downloadLogo(getHoldingLogo(holding), holding.nameFa);
                           if (ok) {
                             toast.success(isRtl ? "لوگو با موفقیت دانلود شد." : "Logo downloaded successfully.");
                           }
                         }}
-                        className="size-7 rounded-lg absolute top-2.5 end-2.5 bg-background/90 backdrop-blur-xs border border-border shadow-xs opacity-0 group-hover:opacity-100 hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer"
+                        className="size-7 rounded-lg absolute top-2.5 end-2.5 bg-background/90 backdrop-blur-xs border border-border shadow-xs opacity-0 group-hover:opacity-100 hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer z-10"
                         title={isRtl ? "دانلود فایل باکیفیت لوگو" : "Download Logo"}
                       >
                         <Download className="size-3.5" />
@@ -406,13 +522,148 @@ export function HoldingsDirectoryView() {
 
       {/* ── 4. Luxury Tabbed Holding Detail Popup Modal ── */}
       <HoldingDetailModal
-        holding={detailHolding}
+        holding={
+          detailHolding
+            ? { ...detailHolding, logoUrl: getHoldingLogo(detailHolding) }
+            : null
+        }
         isOpen={isDetailModalOpen}
         onClose={() => {
           setIsDetailModalOpen(false);
           setDetailHolding(null);
         }}
+        onEditLogo={openEditLogo}
       />
+
+      {/* ── 5. Edit / Upload Holding Logo Dialog ── */}
+      {editingLogoHolding && (
+        <Dialog
+          open={!!editingLogoHolding}
+          onOpenChange={(open) => !open && setEditingLogoHolding(null)}
+        >
+          <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden bg-card border-border rounded-2xl shadow-2xl z-[120]">
+            <DialogHeader className="p-4 sm:p-5 border-b border-border/80 bg-muted/20 text-start">
+              <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                <Camera className="size-4.5 text-primary shrink-0" />
+                <span>
+                  {isRtl
+                    ? `تغییر و آپلود لوگوی ${editingLogoHolding.nameFa}`
+                    : `Edit Logo: ${editingLogoHolding.companyAbbrv}`}
+                </span>
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground mt-1">
+                {isRtl
+                  ? "می‌توانید فایل لوگوی اختصاصی را از کامپیوتر آپلود کنید یا آدرس تصویر (URL) را وارد نمایید."
+                  : "Upload a logo image file from your system or enter a direct image URL."}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="p-5 space-y-4">
+              {/* Live Preview Box */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground">
+                  {isRtl ? "پیش‌نمایش لوگو:" : "Logo Preview:"}
+                </Label>
+                <div className="w-full h-32 rounded-xl bg-white dark:bg-zinc-900 border border-border flex items-center justify-center p-3 relative overflow-hidden">
+                  {logoInputValue ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={logoInputValue}
+                      alt="Preview"
+                      className="max-h-24 max-w-[85%] object-contain select-none"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div className="text-center text-xs text-muted-foreground flex flex-col items-center gap-1">
+                      <Camera className="size-6 text-muted-foreground/50" />
+                      <span>{isRtl ? "لوگویی برای نمایش وجود ندارد (خالی)" : "No logo set (Empty)"}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Upload File Button */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground">
+                  {isRtl ? "بارگذاری فایل از سیستم:" : "Upload from Computer:"}
+                </Label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                  className="hidden"
+                  onChange={handleLogoFileSelect}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploadingLogo}
+                  className="w-full h-9 rounded-xl text-xs gap-2 border-dashed border-primary/40 hover:border-primary hover:bg-primary/[0.04] cursor-pointer"
+                >
+                  {isUploadingLogo ? (
+                    <span className="inline-block size-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <UploadCloud className="size-4 text-primary" />
+                  )}
+                  <span>{isRtl ? "انتخاب و آپلود فایل عکس لوگو..." : "Choose & Upload Logo Image..."}</span>
+                </Button>
+              </div>
+
+              {/* URL Input */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground">
+                  {isRtl ? "یا وارد کردن آدرس اینترنتی لوگو (URL):" : "Or Enter Logo URL:"}
+                </Label>
+                <Input
+                  value={logoInputValue}
+                  onChange={(e) => setLogoInputValue(e.target.value)}
+                  placeholder="https://example.com/logo.png"
+                  className="h-9 rounded-xl text-xs"
+                  dir="ltr"
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="p-4 border-t border-border/60 bg-muted/10 flex items-center justify-between sm:justify-between gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleClearLogo}
+                className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl"
+              >
+                <Trash2 className="size-3.5 me-1" />
+                <span>{isRtl ? "خالی کردن لوگو" : "Remove Logo"}</span>
+              </Button>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditingLogoHolding(null)}
+                  className="text-xs rounded-xl"
+                >
+                  {isRtl ? "انصراف" : "Cancel"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  onClick={handleSaveLogo}
+                  className="text-xs rounded-xl"
+                >
+                  <Check className="size-3.5 me-1" />
+                  <span>{isRtl ? "ذخیره تغییرات" : "Save Changes"}</span>
+                </Button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

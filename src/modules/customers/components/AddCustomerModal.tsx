@@ -253,11 +253,11 @@ export function AddCustomerModal({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
       <div
-        className="relative w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden"
+        className="relative w-full max-w-3xl bg-card border border-border/80 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
         dir={isRtl ? "rtl" : "ltr"}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border/80 bg-muted/30">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border/80 bg-muted/30 shrink-0">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
               <Factory className="size-5" />
@@ -284,24 +284,25 @@ export function AddCustomerModal({
         </div>
 
         {/* Tab Selector */}
-        <div className="px-5 pt-3 pb-1 border-b border-border/60 bg-background">
+        <div className="px-5 pt-3 pb-2 border-b border-border/60 bg-background shrink-0">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
-            <TabsList className="grid grid-cols-3 w-full h-9 p-0.5 bg-muted/60 rounded-lg">
-              <TabsTrigger value="general" className="text-xs font-semibold">
+            <TabsList className="grid grid-cols-3 w-full h-9.5 p-1 bg-muted/60 rounded-xl">
+              <TabsTrigger value="general" className="text-xs font-semibold rounded-lg">
                 {isRtl ? "۱. مشخصات شرکت" : "1. Company"}
               </TabsTrigger>
-              <TabsTrigger value="petro" className="text-xs font-semibold">
+              <TabsTrigger value="petro" className="text-xs font-semibold rounded-lg">
                 {isRtl ? "۲. مشخصات فنی پلنت" : "2. Petro Specs"}
               </TabsTrigger>
-              <TabsTrigger value="legal" className="text-xs font-semibold">
+              <TabsTrigger value="legal" className="text-xs font-semibold rounded-lg">
                 {isRtl ? "۳. اطلاعات حقوقی" : "3. Legal"}
               </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
+        {/* Form Form & Action Footer */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5">
           {activeTab === "general" && (
             <div className="space-y-4">
               {/* Logo Preview */}
@@ -610,14 +611,15 @@ export function AddCustomerModal({
               </div>
             </div>
           )}
+          </div>
 
-          {/* Footer Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
+          {/* Sticky Non-Cut Footer Actions */}
+          <div className="flex items-center justify-between p-4 sm:p-5 border-t border-border/80 bg-muted/20 shrink-0">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
-              className="rounded-xl h-9 px-4 text-xs"
+              className="rounded-xl h-9.5 px-5 text-xs font-semibold cursor-pointer"
             >
               {isRtl ? "انصراف" : "Cancel"}
             </Button>
@@ -625,7 +627,7 @@ export function AddCustomerModal({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-xl h-9 px-6 text-xs font-bold gap-2"
+              className="rounded-xl h-9.5 px-6 text-xs font-bold gap-2 cursor-pointer bg-primary text-primary-foreground shadow-xs hover:bg-primary/90"
             >
               {isSubmitting ? (
                 <>
