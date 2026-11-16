@@ -132,8 +132,6 @@ export function HighlightMatch({
   className,
   highlightClassName,
 }: HighlightMatchProps) {
-  if (!text) return null;
-
   const allQueries = useMemo(() => {
     const list: (string | undefined | null)[] = [];
     if (query) list.push(query);
@@ -144,6 +142,8 @@ export function HighlightMatch({
   const regex = useMemo(() => {
     return buildMultiQueryRegex(allQueries);
   }, [allQueries]);
+
+  if (!text) return null;
 
   if (!regex) {
     return <span className={className}>{text}</span>;

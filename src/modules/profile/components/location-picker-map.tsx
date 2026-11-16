@@ -107,7 +107,6 @@ export default function LocationPickerMap({
 
     let L: any;
     const initMap = async () => {
-      // @ts-ignore
       L = await import("leaflet");
 
       if (!isMounted || !mapContainerRef.current) return;
