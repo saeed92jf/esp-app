@@ -7,9 +7,6 @@ import {
   Binary,
   Layers,
   Database,
-  Sliders,
-  ShieldCheck,
-  FileSpreadsheet,
   LayoutDashboard,
 } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
@@ -54,27 +51,6 @@ export default function EspCodingLayout({ children }: LayoutProps) {
       href: "/engineering/esp-coding/classification",
       icon: Layers,
       isActive: pathname.startsWith("/engineering/esp-coding/classification"),
-    },
-    {
-      id: "formula-designer",
-      label: t("formulaDesigner"),
-      href: "/engineering/esp-coding/formula-designer",
-      icon: Sliders,
-      isActive: pathname.startsWith("/engineering/esp-coding/formula-designer"),
-    },
-    {
-      id: "approvals",
-      label: t("approvals"),
-      href: "/engineering/esp-coding/approvals",
-      icon: ShieldCheck,
-      isActive: pathname.startsWith("/engineering/esp-coding/approvals"),
-    },
-    {
-      id: "imports",
-      label: t("imports"),
-      href: "/engineering/esp-coding/imports",
-      icon: FileSpreadsheet,
-      isActive: pathname.startsWith("/engineering/esp-coding/imports"),
     },
   ];
 

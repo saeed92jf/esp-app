@@ -57,3 +57,8 @@ certificates
 # graphify cache
 graphify-out/cache/
 graphify-out/2026-*/
+
+# Heavy local resource files and docs (not tracked in git to keep repo lean)
+/public/coding-docs/
+/public/customers/logos/Thumbs.db
+Thumbs.db

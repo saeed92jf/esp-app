@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Binary,
   Layers,
@@ -295,11 +296,16 @@ export function ProductCodingView() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {/* Category */}
+              {/* 1. Category */}
               <div className="flex flex-col gap-1.5">
-                <Label className="text-xs font-semibold text-foreground">
-                  {t("selectCategory")}
-                </Label>
+                <div className="flex items-center gap-1.5">
+                  <span className="size-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
+                    1
+                  </span>
+                  <Label className="text-xs font-semibold text-foreground">
+                    {t("selectCategory")}
+                  </Label>
+                </div>
                 <Select
                   value={selectedCategory}
                   onValueChange={(val) => {
@@ -321,11 +327,16 @@ export function ProductCodingView() {
                 </Select>
               </div>
 
-              {/* Internal Product */}
+              {/* 2. Internal Product */}
               <div className="flex flex-col gap-1.5">
-                <Label className="text-xs font-semibold text-foreground">
-                  {t("selectInternalProduct")}
-                </Label>
+                <div className="flex items-center gap-1.5">
+                  <span className="size-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
+                    2
+                  </span>
+                  <Label className="text-xs font-semibold text-foreground">
+                    {t("selectInternalProduct")}
+                  </Label>
+                </div>
                 <Select
                   value={selectedInternalProduct}
                   onValueChange={(val) => {
@@ -346,11 +357,16 @@ export function ProductCodingView() {
                 </Select>
               </div>
 
-              {/* Product Type */}
+              {/* 3. Product Type */}
               <div className="flex flex-col gap-1.5">
-                <Label className="text-xs font-semibold text-foreground">
-                  {t("selectProductType")}
-                </Label>
+                <div className="flex items-center gap-1.5">
+                  <span className="size-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
+                    3
+                  </span>
+                  <Label className="text-xs font-semibold text-foreground">
+                    {t("selectProductType")}
+                  </Label>
+                </div>
                 <Select value={selectedProductType} onValueChange={setSelectedProductType}>
                   <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
                     <SelectValue placeholder={t("selectProductType")} />
@@ -365,11 +381,16 @@ export function ProductCodingView() {
                 </Select>
               </div>
 
-              {/* Shape */}
+              {/* 4. Shape */}
               <div className="flex flex-col gap-1.5">
-                <Label className="text-xs font-semibold text-foreground">
-                  {t("selectShape")}
-                </Label>
+                <div className="flex items-center gap-1.5">
+                  <span className="size-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
+                    4
+                  </span>
+                  <Label className="text-xs font-semibold text-foreground">
+                    {t("selectShape")}
+                  </Label>
+                </div>
                 <Select value={selectedShape} onValueChange={setSelectedShape}>
                   <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
                     <SelectValue placeholder={t("selectShape")} />
@@ -384,11 +405,16 @@ export function ProductCodingView() {
                 </Select>
               </div>
 
-              {/* Type */}
+              {/* 5. Type */}
               <div className="flex flex-col gap-1.5">
-                <Label className="text-xs font-semibold text-foreground">
-                  {t("selectType")}
-                </Label>
+                <div className="flex items-center gap-1.5">
+                  <span className="size-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
+                    5
+                  </span>
+                  <Label className="text-xs font-semibold text-foreground">
+                    {t("selectType")}
+                  </Label>
+                </div>
                 <Select value={selectedType} onValueChange={setSelectedType}>
                   <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
                     <SelectValue placeholder={t("selectType")} />
@@ -403,11 +429,16 @@ export function ProductCodingView() {
                 </Select>
               </div>
 
-              {/* Lift / Hole Size */}
+              {/* 6. Lift / Hole Size */}
               <div className="flex flex-col gap-1.5">
-                <Label className="text-xs font-semibold text-foreground">
-                  {t("selectLiftSize")}
-                </Label>
+                <div className="flex items-center gap-1.5">
+                  <span className="size-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
+                    6
+                  </span>
+                  <Label className="text-xs font-semibold text-foreground">
+                    {t("selectLiftSize")}
+                  </Label>
+                </div>
                 <Select value={selectedLiftSize} onValueChange={setSelectedLiftSize}>
                   <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
                     <SelectValue placeholder={t("selectLiftSize")} />
@@ -422,11 +453,16 @@ export function ProductCodingView() {
                 </Select>
               </div>
 
-              {/* Thickness */}
+              {/* 7. Thickness */}
               <div className="flex flex-col gap-1.5 sm:col-span-2">
-                <Label className="text-xs font-semibold text-foreground">
-                  {t("selectThickness")}
-                </Label>
+                <div className="flex items-center gap-1.5">
+                  <span className="size-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
+                    7
+                  </span>
+                  <Label className="text-xs font-semibold text-foreground">
+                    {t("selectThickness")}
+                  </Label>
+                </div>
                 <Select value={selectedThickness} onValueChange={setSelectedThickness}>
                   <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
                     <SelectValue placeholder={t("selectThickness")} />
@@ -524,15 +560,41 @@ export function ProductCodingView() {
               </Badge>
             </div>
 
-            {/* Big Monospace Code Display */}
-            <div className="p-4 rounded-xl bg-background border border-border/60 shadow-2xs flex items-center justify-between gap-3">
+            {/* Big Monospace Code Display with Sliding Number Animations */}
+            <div className="p-4 rounded-xl bg-background border border-border/60 shadow-2xs flex items-center justify-between gap-3 overflow-hidden">
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
                   ProductCode
                 </span>
-                <span className="text-lg sm:text-xl font-mono font-black text-primary tracking-widest truncate">
-                  {generatedResult?.code || "E---------"}
-                </span>
+                <div className="flex items-center gap-0.5 mt-1 overflow-x-auto py-1" dir="ltr">
+                  {(generatedResult?.code || "E---------").split("").map((char, idx) => (
+                    <div
+                      key={idx}
+                      className="relative h-9 w-6 sm:w-7 rounded-md bg-muted/30 border border-border/40 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs"
+                    >
+                      <AnimatePresence mode="popLayout" initial={false}>
+                        <motion.span
+                          key={`${idx}-${char}`}
+                          initial={{ y: 24, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          exit={{ y: -24, opacity: 0 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 450,
+                            damping: 28,
+                            delay: idx * 0.02,
+                          }}
+                          className={cn(
+                            "font-mono font-black text-base sm:text-lg select-none",
+                            char === "-" ? "text-muted-foreground/40" : "text-primary"
+                          )}
+                        >
+                          {char}
+                        </motion.span>
+                      </AnimatePresence>
+                    </div>
+                  ))}
+                </div>
               </div>
               <Button
                 type="button"

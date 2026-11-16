@@ -14,10 +14,6 @@ import {
   Sparkles,
   ArrowRight,
   ArrowLeft,
-  CheckCircle2,
-  FileSpreadsheet,
-  AlertCircle,
-  Settings2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,8 +35,7 @@ export function CodingWorkspace() {
   const [stats, setStats] = useState({
     productsCount: 0,
     materialsCount: 0,
-    activeFormulasCount: 0,
-    pendingApprovalsCount: 0,
+    categoriesCount: 0,
   });
   const [recentProducts, setRecentProducts] = useState<RegisteredProduct[]>([]);
   const [recentLogs, setRecentLogs] = useState<CodingAuditLog[]>([]);
@@ -50,21 +45,19 @@ export function CodingWorkspace() {
     async function loadData() {
       try {
         setLoading(true);
-        const [profData, prodData, matData, logsData] = await Promise.all([
-          EspCodingClientService.getProfilesAndVersions().catch(() => ({ profiles: [], versions: [] })),
+        const [prodData, matData, logsData, hierData] = await Promise.all([
           EspCodingClientService.getProducts({ limit: 5 }).catch(() => ({ registered: [], reservations: [], catalog: { items: [], total: 0 } })),
           EspCodingClientService.getMaterials({ limit: 1 }).catch(() => ({ items: [], total: 0 })),
           EspCodingClientService.getAuditLogs().catch(() => ({ logs: [] })),
+          EspCodingClientService.getHierarchyOptions().catch(() => ({ available: false, options: null })),
         ]);
 
-        const activeFormulas = profData.versions.filter((v: any) => v.status === "active").length;
-        const pendingApprovals = profData.versions.filter((v: any) => v.status === "pending_approval").length;
+        const catCount = hierData?.options?.categories?.length || 0;
 
         setStats({
           productsCount: prodData.registered.length + (prodData.catalog?.total || 0),
           materialsCount: matData.total || 0,
-          activeFormulasCount: activeFormulas,
-          pendingApprovalsCount: pendingApprovals,
+          categoriesCount: catCount,
         });
 
         setRecentProducts(prodData.registered.slice(0, 5));
@@ -90,11 +83,6 @@ export function CodingWorkspace() {
                 <Sparkles className="size-3.5 me-1.5" />
                 <span>{isRtl ? "مستر دیتا و مهندسی استاندارد" : "Master Data & Standard Engineering"}</span>
               </Badge>
-              {stats.pendingApprovalsCount > 0 && (
-                <Badge variant="destructive" className="px-2 py-0.5 text-xs font-mono">
-                  {stats.pendingApprovalsCount} {isRtl ? "در صف تأیید سوپرادمین" : "Pending Super Admin Approval"}
-                </Badge>
-              )}
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
               {t("title")}
@@ -122,7 +110,7 @@ export function CodingWorkspace() {
       </Card>
 
       {/* Quick Statistics Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-4 rounded-xl border-border/50 bg-background/80 shadow-2xs flex flex-col gap-1.5">
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-medium">{t("workspace.totalProducts")}</span>
@@ -151,27 +139,14 @@ export function CodingWorkspace() {
 
         <Card className="p-4 rounded-xl border-border/50 bg-background/80 shadow-2xs flex flex-col gap-1.5">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-medium">{t("workspace.activeFormulas")}</span>
-            <Settings2 className="size-4 text-violet-500" />
+            <span className="text-xs font-medium">{isRtl ? "دسته‌بندی‌های کلان" : "Root Categories"}</span>
+            <Layers className="size-4 text-amber-500" />
           </div>
           <span className="text-2xl font-black text-foreground fa-num">
-            {stats.activeFormulasCount}
+            {stats.categoriesCount.toLocaleString(isRtl ? "fa-IR" : "en-US")}
           </span>
           <span className="text-[11px] text-muted-foreground">
-            {isRtl ? "پروفایل‌های رسمی فعال" : "Officially active profiles"}
-          </span>
-        </Card>
-
-        <Card className="p-4 rounded-xl border-border/50 bg-background/80 shadow-2xs flex flex-col gap-1.5">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-medium">{t("workspace.pendingApprovals")}</span>
-            <ShieldCheck className="size-4 text-amber-500" />
-          </div>
-          <span className="text-2xl font-black text-foreground fa-num">
-            {stats.pendingApprovalsCount}
-          </span>
-          <span className="text-[11px] text-muted-foreground">
-            {isRtl ? "نیازمند تأیید سوپرادمین" : "Super Admin review required"}
+            {isRtl ? "دسته‌های مادر سلسله‌مراتب کالا" : "Master hierarchy categories"}
           </span>
         </Card>
       </div>
@@ -253,36 +228,19 @@ export function CodingWorkspace() {
             </Link>
 
             <Link
-              href="/engineering/esp-coding/formula-designer"
-              className="p-4 rounded-xl bg-card border border-border/50 hover:border-primary/40 hover:bg-primary/5 transition-all flex flex-col gap-2 group cursor-pointer"
+              href="/engineering/esp-coding/classification"
+              className="p-4 rounded-xl bg-card border border-border/50 hover:border-primary/40 hover:bg-primary/5 transition-all flex flex-col gap-2 group cursor-pointer sm:col-span-2"
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">
-                  {t("nav.formulaDesigner")}
+                  {t("nav.classification")}
                 </span>
                 <Arrow className="size-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 transition-transform" />
               </div>
               <p className="text-[11px] text-muted-foreground line-clamp-2">
                 {isRtl
-                  ? "طراحی بصری فرمول‌ها، چینش درگ‌اند‌دراپ و پیش‌نمایش زنده"
-                  : "Visual drag-and-drop formula design, custom separators & live preview"}
-              </p>
-            </Link>
-
-            <Link
-              href="/engineering/esp-coding/approvals"
-              className="p-4 rounded-xl bg-card border border-border/50 hover:border-primary/40 hover:bg-primary/5 transition-all flex flex-col gap-2 group cursor-pointer"
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">
-                  {t("nav.approvals")}
-                </span>
-                <Arrow className="size-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 transition-transform" />
-              </div>
-              <p className="text-[11px] text-muted-foreground line-clamp-2">
-                {isRtl
-                  ? "دروازه تأیید، فعال‌سازی رسمی و بازگردانی تحت نظارت سوپرادمین"
-                  : "Super Admin governance gate, lifecycle approval & rollback"}
+                  ? "مرور کاتالوگ و درخت متریال، مشخصات ابعادی، استانداردها و نقشه‌های پیوست"
+                  : "Browse catalog and material tree, dimensional specs, standards & attached drawings"}
               </p>
             </Link>
           </div>
@@ -295,12 +253,6 @@ export function CodingWorkspace() {
               <Clock className="size-4 text-primary" />
               <span>{t("workspace.recentAuditLogs")}</span>
             </h2>
-            <Link
-              href="/engineering/esp-coding/imports"
-              className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
-            >
-              <span>{isRtl ? "مشاهده تاریخچه کامل" : "Full History"}</span>
-            </Link>
           </div>
 
           <Card className="p-3 rounded-2xl border-border/50 bg-background/60 shadow-xs flex flex-col divide-y divide-border/30">

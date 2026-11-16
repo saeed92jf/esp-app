@@ -9,7 +9,14 @@ import {
   ChevronRight,
   Sparkles,
   Info,
+  ImageIcon,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +39,7 @@ export function MaterialFormClassificationView() {
   const [forms, setForms] = useState<MaterialFormRecord[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -104,6 +112,7 @@ export function MaterialFormClassificationView() {
             <TableHeader className="bg-muted/40">
               <TableRow>
                 <TableHead className="text-xs font-bold w-12 text-center">ID</TableHead>
+                <TableHead className="text-xs font-bold w-16 text-center">{isRtl ? "تصویر" : "Image"}</TableHead>
                 <TableHead className="text-xs font-bold">{isRtl ? "فرم عمومی (General)" : "General Form"}</TableHead>
                 <TableHead className="text-xs font-bold">{isRtl ? "دسته‌بندی (Category)" : "Category Form"}</TableHead>
                 <TableHead className="text-xs font-bold">{isRtl ? "زیرفرم (Sub Form)" : "Sub Form"}</TableHead>
@@ -114,21 +123,45 @@ export function MaterialFormClassificationView() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-xs text-muted-foreground">
+                  <TableCell colSpan={7} className="h-32 text-center text-xs text-muted-foreground">
                     {isRtl ? "در حال بارگذاری فرم‌ها..." : "Loading forms..."}
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-32 text-center text-xs text-muted-foreground">
+                  <TableCell colSpan={7} className="h-32 text-center text-xs text-muted-foreground">
                     {isRtl ? "هیچ رکوردی یافت نشد." : "No records found."}
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.slice(0, 50).map((f) => (
+                filtered.slice(0, 100).map((f) => (
                   <TableRow key={f.id} className="hover:bg-muted/30 transition-colors text-xs">
                     <TableCell className="text-center font-mono text-[11px] text-muted-foreground">
                       {f.id}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {f.refPic ? (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewImage({ url: f.refPic!, title: f.subForm || f.materialFormName || f.generalForm })}
+                          className="size-8 rounded-lg border border-border/70 bg-white dark:bg-zinc-900 p-0.5 inline-flex items-center justify-center overflow-hidden hover:border-primary hover:scale-105 transition-all cursor-pointer shadow-2xs mx-auto"
+                          title={isRtl ? "مشاهده تصویر فرم" : "View form image"}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={f.refPic}
+                            alt={f.subForm}
+                            className="max-h-full max-w-full object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = "none";
+                            }}
+                          />
+                        </button>
+                      ) : (
+                        <span className="text-muted-foreground/30 inline-flex items-center justify-center size-8">
+                          <ImageIcon className="size-3.5" />
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="font-bold text-foreground">
                       {f.generalForm}
@@ -152,6 +185,27 @@ export function MaterialFormClassificationView() {
           </Table>
         </div>
       </Card>
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
+          <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden bg-card border-border rounded-2xl shadow-2xl">
+            <DialogHeader className="p-4 border-b border-border/80 bg-muted/20">
+              <DialogTitle className="text-sm font-bold text-foreground">
+                {previewImage.title}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="p-6 flex items-center justify-center bg-white dark:bg-zinc-950 min-h-[300px]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={previewImage.url}
+                alt={previewImage.title}
+                className="max-h-[70vh] max-w-full object-contain select-none"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

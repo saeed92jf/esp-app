@@ -21,6 +21,18 @@ interface CachedData {
 
 let memoryCache: CachedData | null = null;
 
+function normalizePicUrl(val: any): string {
+  if (!val || typeof val !== "string") return "";
+  const trimmed = val.trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("/coding-docs/")) return trimmed;
+  const m = trimmed.match(/Document[\/\\](.+)$/i);
+  if (m) {
+    return "/coding-docs/" + m[1].replace(/\\/g, "/");
+  }
+  return trimmed;
+}
+
 export class CodingExcelProvider {
   public static getFilePath(): string {
     return EXCEL_PATH;
@@ -90,7 +102,7 @@ export class CodingExcelProvider {
       p3: String(r.P3 || ""),
       p4: String(r.P4 || ""),
       parameter: String(r.Parameter || ""),
-      pic: String(r.Pic || ""),
+      pic: normalizePicUrl(r.Pic),
       geometryForm: String(r.GeometryForm) === "-1",
       arrangementForm: String(r.ArrangmentForm) === "-1",
       technicalForm: String(r.TechnicalForm) === "-1",
@@ -194,7 +206,7 @@ export class CodingExcelProvider {
       materialFormName: String(r.Material_Form_Name || ""),
       subFormIdOtherTbl: String(r.Sub_Form_ID_OtherTbl || ""),
       subAdditional: String(r.Sub_Additional || ""),
-      refPic: String(r.Ref_Pic || ""),
+      refPic: normalizePicUrl(r.Ref_Pic),
       materialForm: String(r.Material_Form || ""),
       materialNonMetal: String(r.MaterialNonMetal || ""),
       reference: String(r.Reference || ""),
