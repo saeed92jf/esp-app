@@ -102,8 +102,8 @@ export function ExcelImportManagementView() {
             </span>
             <span className="text-[11px] text-muted-foreground">
               {isRtl
-                ? "مسیر سرور: C:\\Users\\s.jalili\\Desktop\\Resource\\Coding.xlsx"
-                : "Server Path: C:\\Users\\s.jalili\\Desktop\\Resource\\Coding.xlsx"}
+                ? "فایل داخلی پروژه: src/lib/server/data/Coding.xlsx"
+                : "Internal Project Path: src/lib/server/data/Coding.xlsx"}
             </span>
           </div>
         </div>

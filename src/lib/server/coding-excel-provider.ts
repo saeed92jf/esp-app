@@ -243,15 +243,34 @@ export class CodingExcelProvider {
       filtered = filtered.filter((r) => r.productType === filter.productType);
     }
     if (filter?.search) {
-      const q = filter.search.toLowerCase();
-      filtered = filtered.filter(
-        (r) =>
-          r.productionCategory.toLowerCase().includes(q) ||
-          r.internalProduct.toLowerCase().includes(q) ||
-          r.productType.toLowerCase().includes(q) ||
-          r.shape.toLowerCase().includes(q) ||
-          r.type.toLowerCase().includes(q)
-      );
+      const q = filter.search.trim().toLowerCase();
+      const terms = q.split(/\s+/).filter(Boolean);
+      filtered = filtered.filter((r) => {
+        const target = [
+          r.productionCategory,
+          r.productionCategoryAbb,
+          r.productionCode,
+          r.internalProduct,
+          r.internalProductCode,
+          r.productType,
+          r.productTypeCode,
+          r.shape,
+          r.shapeCode,
+          r.type,
+          r.typeCode,
+          r.liftHoleSize,
+          r.liftSizeCode,
+          r.liftHoleSizeDescription,
+          r.thk,
+          r.thkCode,
+          r.parameter,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return terms.every((t) => target.includes(t));
+      });
     }
 
     const total = filtered.length;
@@ -367,17 +386,31 @@ export class CodingExcelProvider {
       filtered = filtered.filter((r) => r.form === filter.form);
     }
     if (filter?.search) {
-      const q = filter.search.toLowerCase();
-      filtered = filtered.filter(
-        (r) =>
-          r.spec.toLowerCase().includes(q) ||
-          r.grade.toLowerCase().includes(q) ||
-          r.uns.toLowerCase().includes(q) ||
-          r.groupMat.toLowerCase().includes(q) ||
-          r.form.toLowerCase().includes(q) ||
-          r.dinName?.toLowerCase().includes(q) ||
-          r.nominalComposition?.toLowerCase().includes(q)
-      );
+      const q = filter.search.trim().toLowerCase();
+      const terms = q.split(/\s+/).filter(Boolean);
+      filtered = filtered.filter((r) => {
+        const target = [
+          r.spec,
+          r.grade,
+          r.uns,
+          r.groupMat,
+          r.form,
+          r.standardGroup,
+          r.classVal,
+          r.dinName,
+          r.dinNumber,
+          r.dinEnNumber,
+          r.nominalComposition,
+          r.iso15608,
+          r.pNoRef,
+          r.aNo,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return terms.every((t) => target.includes(t));
+      });
     }
 
     const total = filtered.length;
@@ -392,7 +425,26 @@ export class CodingExcelProvider {
     return this.loadWorkbook().materials.find((m) => m.matId === matId);
   }
 
-  public static getMaterialForms(): MaterialFormRecord[] {
-    return this.loadWorkbook().materialForms;
+  public static getMaterialForms(filter?: { search?: string }): MaterialFormRecord[] {
+    const list = this.loadWorkbook().materialForms;
+    if (!filter?.search) return list;
+    const q = filter.search.trim().toLowerCase();
+    const terms = q.split(/\s+/).filter(Boolean);
+    return list.filter((r) => {
+      const target = [
+        r.generalForm,
+        r.categoryForm,
+        r.subForm,
+        r.materialFormName,
+        r.titleDetailsForm,
+        r.mtoDoc,
+        r.reference,
+        r.referenceName,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return terms.every((t) => target.includes(t));
+    });
   }
 }

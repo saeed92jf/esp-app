@@ -161,8 +161,10 @@ export class EspCodingClientService {
     return res.json();
   }
 
-  public static async getMaterialForms(): Promise<{ forms: MaterialFormRecord[] }> {
-    const res = await fetch(`${this.BASE_URL}/material-forms`);
+  public static async getMaterialForms(params?: { search?: string }): Promise<{ forms: MaterialFormRecord[] }> {
+    const url = new URL(`${window.location.origin}${this.BASE_URL}/material-forms`);
+    if (params?.search) url.searchParams.set("search", params.search);
+    const res = await fetch(url.toString());
     if (!res.ok) throw new Error("Failed to fetch material forms");
     return res.json();
   }

@@ -17,6 +17,7 @@ import {
   Code2,
   AlertCircle,
   Copy,
+  GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +58,8 @@ export function FormulaDesignerStudio() {
   const [customSeparator, setCustomSeparator] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   // Live sample attributes for instant preview
   const [sampleAttributes, setSampleAttributes] = useState<Record<string, string>>({
@@ -147,6 +150,40 @@ export function FormulaDesignerStudio() {
     const copy = [...segments];
     copy[idx] = { ...copy[idx], enabled: !copy[idx].enabled };
     setSegments(copy);
+  };
+
+  // Drag and Drop reordering handlers
+  const handleDragStart = (idx: number) => {
+    setDraggedIdx(idx);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === idx) return;
+    setDragOverIdx(idx);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIdx(null);
+  };
+
+  const handleDrop = (targetIdx: number) => {
+    if (draggedIdx === null || draggedIdx === targetIdx) {
+      setDraggedIdx(null);
+      setDragOverIdx(null);
+      return;
+    }
+
+    const copy = [...segments];
+    const [movedItem] = copy.splice(draggedIdx, 1);
+    copy.splice(targetIdx, 0, movedItem);
+
+    // update position property
+    copy.forEach((s, i) => (s.position = i));
+    setSegments(copy);
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+    toast.success(isRtl ? "ترتیب سگمنت‌ها به‌روزرسانی شد" : "Segment order updated");
   };
 
   // Calculate Live Preview using centralized CodingEngine
@@ -252,79 +289,98 @@ export function FormulaDesignerStudio() {
               </span>
             </div>
 
-            {/* Segment Items List with Up/Down buttons */}
+            {/* Segment Items List with Drag & Drop + Up/Down buttons */}
             <div className="flex flex-col gap-2">
-              {segments.map((seg, idx) => (
-                <div
-                  key={seg.segmentId}
-                  className={cn(
-                    "p-3 rounded-xl border flex items-center justify-between gap-3 transition-colors",
-                    seg.enabled
-                      ? "bg-background border-border/60 shadow-2xs"
-                      : "bg-muted/40 border-dashed border-border/40 opacity-60"
-                  )}
-                >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <span className="size-6 rounded-md bg-muted text-muted-foreground font-mono text-xs flex items-center justify-center font-bold shrink-0">
-                      {idx + 1}
-                    </span>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-xs text-foreground truncate">
-                          {isRtl ? seg.labelFa : seg.labelEn}
-                        </span>
-                        <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">
-                          {seg.fieldKey}
-                        </Badge>
+              {segments.map((seg, idx) => {
+                const isDragging = draggedIdx === idx;
+                const isDragOver = dragOverIdx === idx;
+
+                return (
+                  <div
+                    key={seg.segmentId}
+                    draggable
+                    onDragStart={() => handleDragStart(idx)}
+                    onDragOver={(e) => handleDragOver(e, idx)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={() => handleDrop(idx)}
+                    className={cn(
+                      "p-3 rounded-xl border flex items-center justify-between gap-3 transition-all select-none",
+                      seg.enabled
+                        ? "bg-background border-border/60 shadow-2xs"
+                        : "bg-muted/40 border-dashed border-border/40 opacity-60",
+                      isDragging && "opacity-40 border-primary scale-[0.99]",
+                      isDragOver && "border-primary bg-primary/5 ring-2 ring-primary/20",
+                      "hover:border-primary/50"
+                    )}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div
+                        className="cursor-grab active:cursor-grabbing p-1 -ms-1 text-muted-foreground/60 hover:text-foreground rounded transition-colors"
+                        title={isRtl ? "برای تغییر ترتیب درگ کنید" : "Drag to reorder"}
+                      >
+                        <GripVertical className="size-4" />
                       </div>
-                      <span className="text-[10px] text-muted-foreground mt-0.5">
-                        {seg.minLen ? `Length: ${seg.minLen}` : "Variable length"}
-                        {seg.paddingChar && ` • Pad: '${seg.paddingChar}' (${seg.paddingDirection})`}
-                        {seg.required ? " • Required" : " • Optional"}
+                      <span className="size-6 rounded-md bg-muted text-muted-foreground font-mono text-xs flex items-center justify-center font-bold shrink-0">
+                        {idx + 1}
                       </span>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs text-foreground truncate">
+                            {isRtl ? seg.labelFa : seg.labelEn}
+                          </span>
+                          <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">
+                            {seg.fieldKey}
+                          </Badge>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground mt-0.5">
+                          {seg.minLen ? `Length: ${seg.minLen}` : "Variable length"}
+                          {seg.paddingChar && ` • Pad: '${seg.paddingChar}' (${seg.paddingDirection})`}
+                          {seg.required ? " • Required" : " • Optional"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={idx === 0}
+                        onClick={() => moveSegmentUp(idx)}
+                        className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                        title="Move Up"
+                      >
+                        <ArrowUp className="size-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={idx === segments.length - 1}
+                        onClick={() => moveSegmentDown(idx)}
+                        className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
+                        title="Move Down"
+                      >
+                        <ArrowDown className="size-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={seg.enabled ? "outline" : "ghost"}
+                        size="sm"
+                        onClick={() => toggleSegment(idx)}
+                        className={cn(
+                          "h-7 px-2 text-[10px] font-semibold rounded-lg ms-1 cursor-pointer",
+                          seg.enabled
+                            ? "text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                            : "text-muted-foreground"
+                        )}
+                      >
+                        {seg.enabled ? (isRtl ? "فعال" : "Enabled") : (isRtl ? "غیرفعال" : "Disabled")}
+                      </Button>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      disabled={idx === 0}
-                      onClick={() => moveSegmentUp(idx)}
-                      className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
-                      title="Move Up"
-                    >
-                      <ArrowUp className="size-3.5" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      disabled={idx === segments.length - 1}
-                      onClick={() => moveSegmentDown(idx)}
-                      className="size-7 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
-                      title="Move Down"
-                    >
-                      <ArrowDown className="size-3.5" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={seg.enabled ? "outline" : "ghost"}
-                      size="sm"
-                      onClick={() => toggleSegment(idx)}
-                      className={cn(
-                        "h-7 px-2 text-[10px] font-semibold rounded-lg ms-1 cursor-pointer",
-                        seg.enabled
-                          ? "text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                          : "text-muted-foreground"
-                      )}
-                    >
-                      {seg.enabled ? (isRtl ? "فعال" : "Enabled") : (isRtl ? "غیرفعال" : "Disabled")}
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </Card>
         </div>

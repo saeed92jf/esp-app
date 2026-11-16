@@ -4,7 +4,9 @@ import { CodingExcelProvider } from "@/lib/server/coding-excel-provider";
 
 export async function GET(req: NextRequest) {
   try {
-    const forms = CodingExcelProvider.getMaterialForms();
+    const { searchParams } = new URL(req.url);
+    const search = searchParams.get("search") || undefined;
+    const forms = CodingExcelProvider.getMaterialForms({ search });
     return NextResponse.json({ forms });
   } catch (err: any) {
     console.error("GET /api/esp-coding/material-forms error:", err);

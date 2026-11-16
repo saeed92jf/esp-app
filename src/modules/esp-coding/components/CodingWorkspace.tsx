@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import {
   Binary,
   Layers,
@@ -28,6 +28,8 @@ import { EspCodingClientService } from "../services/esp-coding.service";
 import { CodingAuditLog, RegisteredProduct } from "../types";
 
 export function CodingWorkspace() {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const t = useTranslations("espCoding");
   const locale = useLocale();
   const isRtl = locale === "fa";
@@ -175,16 +177,36 @@ export function CodingWorkspace() {
       </div>
 
       {/* Unified Fast Search Input */}
-      <div className="relative w-full">
-        <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-        <Input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={t("workspace.searchPlaceholder")}
-          className="ps-10 pe-4 h-11 bg-background border-border/60 rounded-xl text-xs sm:text-sm font-medium shadow-2xs"
-        />
-      </div>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const q = searchQuery.trim();
+          if (q) {
+            startTransition(() => {
+              router.push(`/engineering/esp-coding/materials?q=${encodeURIComponent(q)}`);
+            });
+          }
+        }}
+        className="flex items-center gap-2 w-full"
+      >
+        <div className="relative flex-1">
+          <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+          <Input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t("workspace.searchPlaceholder")}
+            className="ps-10 pe-4 h-11 bg-background border-border/60 rounded-xl text-xs sm:text-sm font-medium shadow-2xs"
+          />
+        </div>
+        <Button
+          type="submit"
+          className="h-11 px-5 rounded-xl text-xs font-bold gap-2 cursor-pointer bg-primary text-primary-foreground shadow-xs shrink-0"
+        >
+          <Search className="size-3.5" />
+          <span>{isRtl ? "جستجو در مستر دیتا" : "Search Master Data"}</span>
+        </Button>
+      </form>
 
       {/* Two Column Section: Quick Access Hubs & Recent Audit Trail */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
