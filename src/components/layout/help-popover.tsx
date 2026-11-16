@@ -136,14 +136,16 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
           </div>
 
           {/* Concentric Close Button (nested fillet: R_inner = R_outer - d = 22-6=16, 26-6=20) */}
-          <button 
+          <Button 
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => setOpen(false)} 
-            className="absolute top-[6px] end-[6px] size-8.5 sm:size-9 rounded-[16px] sm:rounded-[20px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-[#98c1d9]/30 transition-colors z-20"
+            className="absolute top-[6px] end-[6px] size-8.5 sm:size-9 rounded-[16px] sm:rounded-[20px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors z-20 cursor-pointer"
             aria-label="Close"
           >
             <X className="size-4.5" />
-          </button>
+          </Button>
         </div>
 
         <ScrollArea 

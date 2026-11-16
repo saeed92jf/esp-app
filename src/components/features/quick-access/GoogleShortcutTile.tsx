@@ -69,7 +69,7 @@ export function GoogleShortcutTile({
     >
       {/* GPU-accelerated instant hover layer (matching .segmented-item color & speed) */}
       <span 
-        className="absolute inset-0 rounded-[inherit] bg-[#98c1d9]/30 opacity-0 transition-opacity duration-100 ease-out group-hover:opacity-100 group-hover:duration-0 pointer-events-none" 
+        className="absolute inset-0 rounded-[inherit] bg-accent opacity-0 transition-opacity duration-100 ease-out group-hover:opacity-100 group-hover:duration-0 pointer-events-none" 
         aria-hidden="true" 
       />
 

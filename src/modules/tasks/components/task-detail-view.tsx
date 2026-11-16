@@ -1509,7 +1509,7 @@ export function TaskDetailView({
                 className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-6 relative outline-none cursor-pointer group h-[64px]"
                 onClick={() => setEditingField("scope")}
               >
-                <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+                <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
                 <div className="flex items-center gap-3.5 w-1/3 min-w-0">
                   <FolderGit2 className="size-4 text-zinc-900 dark:text-zinc-100 shrink-0" />
                   <span className="text-xs sm:text-sm font-medium text-foreground truncate">
@@ -1529,7 +1529,7 @@ export function TaskDetailView({
                 className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-6 relative outline-none cursor-pointer group h-[64px]"
                 onClick={() => setEditingField("company")}
               >
-                <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+                <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
                 <div className="flex items-center gap-3.5 w-1/3 min-w-0">
                   <Building2 className="size-4 text-zinc-900 dark:text-zinc-100 shrink-0" />
                   <span className="text-xs sm:text-sm font-medium text-foreground truncate">
@@ -1549,7 +1549,7 @@ export function TaskDetailView({
                 className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-6 relative outline-none cursor-pointer group h-[64px]"
                 onClick={() => setEditingField("category")}
               >
-                <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+                <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
                 <div className="flex items-center gap-3.5 w-1/3 min-w-0">
                   <Tag className="size-4 text-zinc-900 dark:text-zinc-100 shrink-0" />
                   <span className="text-xs sm:text-sm font-medium text-foreground truncate">
@@ -1569,7 +1569,7 @@ export function TaskDetailView({
                 className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-6 relative outline-none cursor-pointer group h-[64px]"
                 onClick={() => setEditingField("hours")}
               >
-                <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+                <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
                 <div className="flex items-center gap-3.5 w-1/3 min-w-0">
                   <Clock className="size-4 text-zinc-900 dark:text-zinc-100 shrink-0" />
                   <span className="text-xs sm:text-sm font-medium text-foreground truncate">
@@ -1590,7 +1590,7 @@ export function TaskDetailView({
                 className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-6 relative outline-none cursor-pointer group h-[64px] rounded-b-[32px]"
                 onClick={() => setEditingField("activity")}
               >
-                <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+                <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
                 <div className="flex items-center gap-3.5 w-1/3 min-w-0">
                   <Activity className="size-4 text-zinc-900 dark:text-zinc-100 shrink-0" />
                   <span className="text-xs sm:text-sm font-medium text-foreground truncate">

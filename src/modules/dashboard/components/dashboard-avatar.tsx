@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useAuth } from '@/modules/auth/hooks/use-auth';
 import { useLocale, useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -328,14 +329,16 @@ export function DashboardAvatar() {
           </div>
 
           {/* Concentric Close Button (nested fillet: R_inner = R_outer - d = 22-6=16, 26-6=20) */}
-          <button 
+          <Button 
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => setOpen(false)} 
-            className="absolute top-[6px] end-[6px] size-8.5 sm:size-9 rounded-[16px] sm:rounded-[20px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-[#98c1d9]/30 transition-colors z-20"
+            className="absolute top-[6px] end-[6px] size-8.5 sm:size-9 rounded-[16px] sm:rounded-[20px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors z-20 cursor-pointer"
             aria-label="Close"
           >
             <X className="size-4.5" />
-          </button>
+          </Button>
         </div>
 
         <ScrollArea 
@@ -362,7 +365,7 @@ export function DashboardAvatar() {
                    className="relative shrink-0 flex items-center justify-center p-4 outline-none group/avatar bg-transparent"
                  >
                    {/* GPU-accelerated instant hover layer */}
-                   <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 transition-opacity duration-100 ease-out group-hover/avatar:opacity-100 group-hover/avatar:duration-0 pointer-events-none" aria-hidden="true" />
+                   <span className="absolute inset-0 bg-accent opacity-0 transition-opacity duration-100 ease-out group-hover/avatar:opacity-100 group-hover/avatar:duration-0 pointer-events-none" aria-hidden="true" />
                    
                    <div className="relative z-10 shrink-0 flex items-center justify-center p-1 rounded-full">
                      <div 
@@ -404,7 +407,7 @@ export function DashboardAvatar() {
                    className="group/btn relative flex flex-1 items-center justify-between text-start overflow-hidden w-full p-4 ps-2 outline-none bg-transparent"
                  >
                    {/* GPU-accelerated instant hover layer */}
-                   <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 transition-opacity duration-100 ease-out group-hover/btn:opacity-100 group-hover/btn:duration-0 pointer-events-none" aria-hidden="true" />
+                   <span className="absolute inset-0 bg-accent opacity-0 transition-opacity duration-100 ease-out group-hover/btn:opacity-100 group-hover/btn:duration-0 pointer-events-none" aria-hidden="true" />
                    
                    <div className="relative z-10 flex flex-col items-start overflow-hidden w-full gap-1">
                      <h2 className="text-base sm:text-lg font-semibold truncate leading-tight w-full text-start">{nameToUse}</h2>
@@ -453,7 +456,7 @@ export function DashboardAvatar() {
                         >
                           {/* GPU-accelerated hover layer */}
                           {status !== key && (
-                            <span className="absolute inset-0 rounded-xl bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 pointer-events-none" aria-hidden="true" />
+                            <span className="absolute inset-0 rounded-xl bg-accent opacity-0 group-hover:opacity-100 pointer-events-none" aria-hidden="true" />
                           )}
                           <span className={cn("relative z-10 size-2 sm:size-2.5 rounded-full shadow-sm", meta.color)} />
                           <span className={cn("relative z-10 truncate transition-colors text-[10.5px] sm:text-xs", status !== key && meta.hoverText)}>{t(`avatar.${key}`)}</span>

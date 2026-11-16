@@ -189,14 +189,16 @@ export function DashboardSettingsPopover({
               : "bg-popover border-b border-transparent"
           )}
         >
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => setOpen(false)}
-            className="absolute top-[6px] end-[6px] size-8.5 sm:size-9 rounded-[16px] sm:rounded-[20px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-[#98c1d9]/30 transition-colors z-20 cursor-pointer"
+            className="absolute top-[6px] end-[6px] size-8.5 sm:size-9 rounded-[16px] sm:rounded-[20px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors z-20 cursor-pointer"
             aria-label={t("notifications.close")}
           >
             <X className="size-4.5" />
-          </button>
+          </Button>
         </div>
 
         {/* ── Scrollable Body Matching Notifications/Help Segmented List ── */}

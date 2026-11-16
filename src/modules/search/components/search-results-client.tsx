@@ -222,13 +222,13 @@ export function SearchResultsClient() {
   }, [category, displayedResults, response.query]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background dark:bg-[#121212] text-foreground transition-colors selection:bg-primary/20">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors selection:bg-primary/20">
       {/* ──────────────────────────────────────────────────────────── */}
       {/* 1. HEADER (Borderless at top, line attaches upon scrolling)  */}
       {/* ──────────────────────────────────────────────────────────── */}
       <header
         className={cn(
-          "sticky top-0 z-40 w-full h-[var(--header-height)] min-h-[var(--header-height)] max-h-[var(--header-height)] bg-background/95 dark:bg-[#121212]/95 backdrop-blur-md border-none box-border transition-colors duration-150"
+          "sticky top-0 z-40 w-full h-[var(--header-height)] min-h-[var(--header-height)] max-h-[var(--header-height)] bg-background/95 backdrop-blur-md border-none box-border transition-colors duration-150"
         )}
       >
         <div className="w-full h-full px-2.5 sm:px-6 flex items-center justify-between gap-2.5 sm:gap-6">
@@ -313,7 +313,7 @@ export function SearchResultsClient() {
       {/* ──────────────────────────────────────────────────────────── */}
       {/* 2. CATEGORY TABS (Scrolls naturally with page content)       */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <div className="w-full bg-background dark:bg-[#121212] pt-1 sm:pt-1.5 transition-colors">
+      <div className="w-full bg-background pt-1 sm:pt-1.5 transition-colors">
         <div className="w-full px-2.5 sm:px-6">
           <div className="flex items-center">
             {/* Spacer to align categories vertically with search box */}
@@ -335,7 +335,7 @@ export function SearchResultsClient() {
                     className={cn(
                       "group relative flex shrink-0 items-center gap-1.5 py-2.5 px-3 text-[13px] sm:text-[13.5px] font-medium transition-colors cursor-pointer select-none",
                       isActive
-                        ? "text-[#1a73e8] dark:text-[#8ab4f8]"
+                        ? "text-primary"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -345,7 +345,7 @@ export function SearchResultsClient() {
                         className={cn(
                           "ms-0.5 rounded-full px-1.5 py-0.2 text-[11px] tabular-nums font-semibold fa-num transition-colors",
                           isActive
-                            ? "bg-primary/10 text-primary dark:text-[#8ab4f8]"
+                            ? "bg-primary/10 text-primary"
                             : "bg-muted text-muted-foreground group-hover:bg-muted/80"
                         )}
                       >
@@ -353,9 +353,9 @@ export function SearchResultsClient() {
                       </span>
                     )}
 
-                    {/* Google Blue Underline Indicator */}
+                    {/* Underline Indicator */}
                     {isActive && (
-                      <span className="absolute inset-x-0 bottom-0 h-[2.5px] rounded-t-full bg-[#1a73e8] dark:bg-[#8ab4f8]" />
+                      <span className="absolute inset-x-0 bottom-0 h-[2.5px] rounded-t-full bg-primary" />
                     )}
                   </button>
                 );
@@ -470,7 +470,7 @@ export function SearchResultsClient() {
 
           <div className="w-full max-w-3xl min-w-0">
             {/* Search Stats Line (Google Style) */}
-            <div className="mb-4 text-[13px] text-[#70757a] dark:text-[#9aa0a6] select-none fa-num">
+            <div className="mb-4 text-[13px] text-muted-foreground select-none fa-num">
               {isSearching ? (
                 <span className="inline-flex items-center gap-2">
                   <span className="size-2 rounded-full bg-primary animate-ping" />
@@ -642,7 +642,7 @@ function SearchResultCard({
       )}
     >
       {/* 1. Breadcrumbs / URL Source Line */}
-      <div className="flex items-center gap-1.5 text-[12.5px] text-[#70757a] dark:text-[#9aa0a6] mb-1">
+      <div className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground mb-1">
         <span className="size-2 rounded-full bg-primary/70 shrink-0" aria-hidden="true" />
         <span className="font-medium text-foreground/80">esp.app</span>
         {displayBreadcrumbs.map((crumb, idx) => (
@@ -653,22 +653,22 @@ function SearchResultCard({
         ))}
       </div>
 
-      {/* 2. Google Blue Link Title */}
+      {/* 2. Link Title */}
       <h3 className="text-[17px] sm:text-[19px] font-medium leading-snug">
         <Link
           href={item.href}
-          className="text-[#1a0dab] dark:text-[#8ab4f8] hover:underline focus:outline-none focus:underline"
+          className="text-primary hover:underline focus:outline-none focus:underline"
         >
           <HighlightMatch
             text={displayTitle}
             query={query}
-            highlightClassName="bg-primary/10 dark:bg-primary/20 text-[#1a0dab] dark:text-[#8ab4f8] font-bold px-0.5 rounded-xs"
+            highlightClassName="bg-primary/10 dark:bg-primary/20 text-primary font-bold px-0.5 rounded-xs"
           />
         </Link>
       </h3>
 
       {/* 3. Snippet / Excerpt */}
-      <p className="mt-1 text-[13.5px] sm:text-[14px] leading-relaxed text-[#4d5156] dark:text-[#bdc1c6] max-w-4xl">
+      <p className="mt-1 text-[13.5px] sm:text-[14px] leading-relaxed text-muted-foreground max-w-4xl">
         <HighlightMatch
           text={displaySnippet}
           query={query}
@@ -679,7 +679,7 @@ function SearchResultCard({
       {/* 4. Badges & Meta Chips */}
       <div className="mt-2.5 flex flex-wrap items-center gap-2">
         {displayBadge && (
-          <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary dark:text-[#8ab4f8]">
+          <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
             {displayBadge}
           </span>
         )}

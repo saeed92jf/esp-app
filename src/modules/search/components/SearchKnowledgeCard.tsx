@@ -372,7 +372,7 @@ export function SearchKnowledgeCard({
       </div>
 
       {/* Description Snippet */}
-      <p className="mt-3 text-xs sm:text-[13.5px] text-[#4d5156] dark:text-[#bdc1c6] leading-relaxed max-w-4xl">
+      <p className="mt-3 text-xs sm:text-[13.5px] text-muted-foreground leading-relaxed max-w-4xl">
         <HighlightMatch
           text={displaySnippet}
           query={query}

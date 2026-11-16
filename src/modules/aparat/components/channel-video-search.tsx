@@ -43,12 +43,12 @@ export function ChannelVideoSearch({
           "group/result relative me-2.5 flex cursor-pointer select-none items-center justify-between p-2 px-3.5 transition-colors",
           "rounded-s-none rounded-e-full",
           isSelected
-            ? "bg-[#e8eaed] dark:bg-[#303134]"
-            : "hover:bg-[#e8eaed]/80 dark:hover:bg-[#303134]/80",
+            ? "bg-accent"
+            : "hover:bg-accent",
         )}
       >
         {isSelected && (
-          <span className="absolute inset-y-0 start-0 w-[4px] bg-[#1a73e8]" />
+          <span className="absolute inset-y-0 start-0 w-[4px] bg-primary" />
         )}
         <div className="flex w-full min-w-0 items-center gap-3">
           <VideoSearchResult video={video} query={query} />

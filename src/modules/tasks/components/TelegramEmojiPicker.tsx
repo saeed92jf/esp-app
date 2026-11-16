@@ -122,8 +122,8 @@ export const TelegramEmojiPicker = React.memo(function TelegramEmojiPicker({
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          "size-9 rounded-full bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 hover:text-[#2481cc] dark:hover:text-[#67b5ff] flex items-center justify-center shrink-0 cursor-pointer transition-colors group",
-          isOpen && "text-[#2481cc] bg-black/5 dark:bg-white/10"
+          "size-9 rounded-full bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 hover:text-primary flex items-center justify-center shrink-0 cursor-pointer transition-colors group",
+          isOpen && "text-primary bg-accent"
         )}
         title={isRtl ? "انتخاب شکلک (اموجی)" : "Pick Emoji"}
       >
@@ -177,7 +177,7 @@ export const TelegramEmojiPicker = React.memo(function TelegramEmojiPicker({
             {/* Virtualized Viewport */}
             <EmojiPicker.Viewport className="h-[280px] overflow-y-auto overflow-x-hidden scrollbar-thin outline-none relative select-none">
               <EmojiPicker.Loading className="absolute inset-0 flex items-center justify-center text-muted-foreground text-xs gap-2">
-                <div className="size-5 border-2 border-[#2481cc] border-t-transparent rounded-full animate-spin" />
+                <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 <span>{isRtl ? "در حال بارگذاری..." : "Loading emojis..."}</span>
               </EmojiPicker.Loading>
               <EmojiPicker.Empty className="absolute inset-0 flex items-center justify-center text-muted-foreground text-xs">

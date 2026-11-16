@@ -1223,7 +1223,7 @@ export function TaskCreateView({
               className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
               onClick={() => setEditingField("title")}
             >
-              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+              <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
               <div className="flex items-center gap-4 w-1/3 min-w-0">
                 <FileText className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground truncate">{t("createModal.fields.title")}</span>
@@ -1241,7 +1241,7 @@ export function TaskCreateView({
               className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
               onClick={() => setEditingField("projectScope")}
             >
-              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+              <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
               <div className="flex items-center gap-4 w-1/3 min-w-0">
                 <Briefcase className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground truncate">{t("createModal.fields.projectScope")}</span>
@@ -1257,7 +1257,7 @@ export function TaskCreateView({
               className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
               onClick={() => setEditingField("description")}
             >
-              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+              <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
               <div className="flex items-center gap-4 w-1/3 min-w-0">
                 <Layers className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground truncate">{t("createModal.fields.description")}</span>
@@ -1275,7 +1275,7 @@ export function TaskCreateView({
               className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
               onClick={() => setEditingField("subtasks")}
             >
-              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+              <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
               <div className="flex items-center gap-4 w-1/3 min-w-0">
                 <ListChecks className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground truncate">{t("createModal.fields.subtasks")}</span>
@@ -1299,7 +1299,7 @@ export function TaskCreateView({
               className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
               onClick={() => setEditingField("dueDate")}
             >
-              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+              <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
               <div className="flex items-center gap-4 w-1/3 min-w-0">
                 <CalendarIcon className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground truncate">{t("createModal.fields.dueDate")}</span>
@@ -1317,7 +1317,7 @@ export function TaskCreateView({
               className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
               onClick={() => setEditingField("priority")}
             >
-              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+              <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
               <div className="flex items-center gap-4 w-1/3 min-w-0">
                 <AlertCircle className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground truncate">{t("createModal.fields.priority")}</span>
@@ -1345,7 +1345,7 @@ export function TaskCreateView({
               className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
               onClick={() => setEditingField("estimatedHours")}
             >
-              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+              <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
               <div className="flex items-center gap-4 w-1/3 min-w-0">
                 <Clock className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground truncate">{t("createModal.fields.estimatedHours")}</span>
@@ -1375,7 +1375,7 @@ export function TaskCreateView({
               className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
               onClick={() => setEditingField("company")}
             >
-              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+              <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
               <div className="flex items-center gap-4 w-1/3 min-w-0">
                 <Building2 className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground truncate">{t("createModal.fields.company")}</span>
@@ -1391,7 +1391,7 @@ export function TaskCreateView({
               className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
               onClick={() => setEditingField("category")}
             >
-              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+              <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
               <div className="flex items-center gap-4 w-1/3 min-w-0">
                 <Tag className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground truncate">{t("createModal.fields.category")}</span>
@@ -1418,7 +1418,7 @@ export function TaskCreateView({
                 className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
                 onClick={() => setEditingField("collaborators")}
               >
-                <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+                <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
                 <div className="flex items-center gap-4 w-1/3 min-w-0">
                   <Users className="size-5 text-muted-foreground shrink-0" />
                   <span className="text-sm font-medium text-foreground truncate">{t("createModal.fields.assignees")}</span>
@@ -1436,7 +1436,7 @@ export function TaskCreateView({
                 className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
                 onClick={() => setEditingField("managerDirective")}
               >
-                <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+                <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
                 <div className="flex items-center gap-4 w-1/3 min-w-0">
                   <ShieldAlert className="size-5 text-muted-foreground shrink-0" />
                   <span className="text-sm font-medium text-foreground truncate">{t("createModal.fields.managerDirective")}</span>

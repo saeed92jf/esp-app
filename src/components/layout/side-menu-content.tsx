@@ -10,6 +10,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { NAVIGATION } from "@/config/navigation";
 import { AppIcon } from "@/components/ui/app-icon";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { segmentedAccordionMotion } from "@/lib/animations/segmented-accordion";
@@ -114,14 +115,16 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
 
         {/* Concentric Close Button (nested fillet: R_inner = R_outer - d) */}
         {showCloseButton && (
-          <button 
+          <Button 
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose} 
-            className="absolute top-[6px] end-[6px] size-8.5 sm:size-9 rounded-[16px] sm:rounded-[20px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-[#98c1d9]/30 transition-colors z-20 cursor-pointer outline-none"
+            className="absolute top-[6px] end-[6px] size-8.5 sm:size-9 rounded-[16px] sm:rounded-[20px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors z-20 cursor-pointer outline-none"
             aria-label={tMenu("close") || (locale === "fa" ? "بستن" : "Close")}
           >
             <X className="size-4.5" />
-          </button>
+          </Button>
         )}
       </div>
 

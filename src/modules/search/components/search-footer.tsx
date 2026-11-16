@@ -25,12 +25,12 @@ export function SearchFooter({ startOffsetClass, className }: SearchFooterProps)
     <footer
       aria-label="Search Results Footer"
       className={cn(
-        "mt-auto w-full select-none bg-[#f2f2f2] dark:bg-[#161616] text-[#70757a] dark:text-[#9aa0a6] border-t border-[#dadce0] dark:border-[#27272a] text-[13px] transition-colors",
+        "mt-auto w-full select-none bg-muted/40 text-muted-foreground border-t border-border text-[13px] transition-colors",
         className
       )}
     >
       {/* ── ROW 1: Location & Copyright (Aligned with Search Results) ── */}
-      <div className="w-full px-2.5 sm:px-6 border-b border-[#dadce0]/70 dark:border-[#27272a]">
+      <div className="w-full px-2.5 sm:px-6 border-b border-border/70">
         <div className="flex items-center py-3">
           {/* Spacer aligning with Search Box and Results Column */}
           {startOffsetClass && (

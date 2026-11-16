@@ -606,7 +606,7 @@ export function DocumentUploadSection({
                   className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
                 >
                   <span
-                    className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none"
+                    className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none"
                     aria-hidden="true"
                   />
 

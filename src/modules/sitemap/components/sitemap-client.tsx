@@ -289,9 +289,9 @@ export function SitemapClient() {
       </div>
 
       {/* ── Main Terminal Shell (Theme Adaptive: Light in Light Mode, Sleek Dark in Dark Mode) ── */}
-      <div className="w-full rounded-2xl border border-border/70 bg-card text-card-foreground dark:bg-[#0c0f17] dark:border-border/40 shadow-xl overflow-hidden font-mono transition-colors">
+      <div className="w-full rounded-2xl border border-border/70 bg-card text-card-foreground dark:border-border/40 shadow-xl overflow-hidden font-mono transition-colors">
         {/* Terminal Title Bar / Window Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5 px-4 py-3 bg-muted/60 dark:bg-[#090c13] border-b border-border/70 dark:border-border/50">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 px-4 py-3 bg-muted/60 dark:bg-muted/40 border-b border-border/70 dark:border-border/50">
           {/* Mac-style Window Controls */}
           <div className="flex items-center gap-2">
             <span className="size-3 rounded-full bg-rose-500/80 inline-block" />

@@ -651,7 +651,7 @@ export function ProfileRequestsSection({ user, isRtl }: ProfileRequestsSectionPr
                 onClick={() => setExpandedId(isExpanded ? null : req.id)}
                 className="segmented-item no-hover-bg shadow-none flex flex-col justify-center px-4 sm:px-6 relative outline-none cursor-pointer group min-h-[72px] py-3.5 transition-all"
               >
-                <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+                <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
 
                 {/* Primary Row Header */}
                 <div className="flex items-center justify-between w-full gap-3 relative z-10">
@@ -773,7 +773,7 @@ export function ProfileRequestsSection({ user, isRtl }: ProfileRequestsSectionPr
           onClick={() => setIsCreating(true)}
           className="relative outline-none segmented-item no-hover-bg shadow-none flex items-center justify-center px-4 sm:px-6 cursor-pointer group h-[72px] border-t border-border/40 hover:bg-muted/20 transition-colors"
         >
-          <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+          <span className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
           <div className="flex items-center gap-2 text-primary font-medium">
             <Plus className="size-5 shrink-0" />
             <span>{isRtl ? "ثبت درخواست جدید" : "New Request"}</span>

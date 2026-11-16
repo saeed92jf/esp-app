@@ -153,7 +153,7 @@ export function ProjectOverviewTab({
   return (
     <div className="space-y-4 sm:space-y-5 fa-num">
       {/* ── Top Segment Accordion Toolbar ── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 sm:p-4 rounded-[28px] border border-border/50 bg-white dark:bg-[#121212] shadow-2xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 sm:p-4 rounded-[28px] border border-border/50 bg-card shadow-2xs">
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
             <ChevronsUpDown className="size-4" />
@@ -192,7 +192,7 @@ export function ProjectOverviewTab({
           type="button"
           onClick={() => toggleSegment("overview")}
           className={cn(
-            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-white dark:bg-[#121212]",
+            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-card",
             getSegmentedAccordionHeaderClass(openSegments.overview, {
               isTopRounded: true,
               fullCapsuleWhenClosed: true,
@@ -238,11 +238,11 @@ export function ProjectOverviewTab({
               exit={segmentedAccordionMotion.exit}
               className="overflow-hidden flex flex-col gap-[2px] rounded-b-[32px]"
             >
-              <div className="segmented-item no-hover-bg p-4 sm:p-6 space-y-6 w-full bg-white dark:bg-[#121212]">
+              <div className="segmented-item no-hover-bg p-4 sm:p-6 space-y-6 w-full bg-card">
                 {/* 1.1 Specification Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Client & Organization */}
-                  <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-4 space-y-2">
+                  <div className="rounded-2xl border border-border/50 bg-card shadow-2xs p-4 space-y-2">
                     <div className="flex items-center justify-between text-muted-foreground text-xs">
                       <span className="flex items-center gap-1.5 font-medium">
                         <Building2 className="size-3.5 text-primary" />
@@ -264,7 +264,7 @@ export function ProjectOverviewTab({
                   </div>
 
                   {/* Quotation & Contract */}
-                  <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-4 space-y-2">
+                  <div className="rounded-2xl border border-border/50 bg-card shadow-2xs p-4 space-y-2">
                     <div className="flex items-center justify-between text-muted-foreground text-xs">
                       <span className="flex items-center gap-1.5 font-medium">
                         <FileText className="size-3.5 text-amber-500" />
@@ -287,7 +287,7 @@ export function ProjectOverviewTab({
                   </div>
 
                   {/* Budget & Currency */}
-                  <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-4 space-y-2">
+                  <div className="rounded-2xl border border-border/50 bg-card shadow-2xs p-4 space-y-2">
                     <div className="flex items-center justify-between text-muted-foreground text-xs">
                       <span className="flex items-center gap-1.5 font-medium">
                         <DollarSign className="size-3.5 text-emerald-500" />
@@ -309,7 +309,7 @@ export function ProjectOverviewTab({
                   </div>
 
                   {/* Schedule & Duration */}
-                  <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-4 space-y-2">
+                  <div className="rounded-2xl border border-border/50 bg-card shadow-2xs p-4 space-y-2">
                     <div className="flex items-center justify-between text-muted-foreground text-xs">
                       <span className="flex items-center gap-1.5 font-medium">
                         <Calendar className="size-3.5 text-blue-500" />
@@ -329,7 +329,7 @@ export function ProjectOverviewTab({
                 </div>
 
                 {/* 1.2 DMS Storage & Network Path Banner */}
-                <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                <div className="rounded-2xl border border-border/50 bg-card shadow-2xs p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-lg bg-primary/10 text-primary shrink-0">
                       <Server className="size-5" />
@@ -381,7 +381,7 @@ export function ProjectOverviewTab({
 
                 {/* 1.3 Description & Technical Scope */}
                 {project.description && (
-                  <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-5 space-y-2">
+                  <div className="rounded-2xl border border-border/50 bg-card shadow-2xs p-5 space-y-2">
                     <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <Briefcase className="size-3.5 text-primary" />
                       <span>{t("accordion.scopeSubtitle")}</span>
@@ -393,7 +393,7 @@ export function ProjectOverviewTab({
                 )}
 
                 {/* 1.4 Multi-tier Hierarchy (Sub-packages / Modules) */}
-                <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-5 space-y-4">
+                <div className="rounded-2xl border border-border/50 bg-card shadow-2xs p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -415,7 +415,7 @@ export function ProjectOverviewTab({
                     {project.subPackages?.map((pkg) => (
                       <div
                         key={pkg.id}
-                        className="rounded-xl border border-border/50 bg-white dark:bg-[#1a1a1a] p-4 space-y-3 shadow-2xs hover:border-primary/40 transition-colors"
+                        className="rounded-xl border border-border/50 bg-card p-4 space-y-3 shadow-2xs hover:border-primary/40 transition-colors"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
@@ -463,7 +463,7 @@ export function ProjectOverviewTab({
                 </div>
 
                 {/* 1.5 Team RACI Matrix */}
-                <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-5 space-y-4">
+                <div className="rounded-2xl border border-border/50 bg-card shadow-2xs p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -481,7 +481,7 @@ export function ProjectOverviewTab({
                     </Badge>
                   </div>
 
-                  <div className="overflow-x-auto rounded-xl border border-border/50 bg-white dark:bg-[#1a1a1a]">
+                  <div className="overflow-x-auto rounded-xl border border-border/50 bg-card">
                     <table className="w-full text-xs text-end">
                       <thead className="bg-muted/50 text-muted-foreground border-b border-border/60 font-medium">
                         <tr>
@@ -568,7 +568,7 @@ export function ProjectOverviewTab({
           type="button"
           onClick={() => toggleSegment("phases")}
           className={cn(
-            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-white dark:bg-[#121212]",
+            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-card",
             getSegmentedAccordionHeaderClass(openSegments.phases, {
               isTopRounded: true,
               fullCapsuleWhenClosed: true,
@@ -611,7 +611,7 @@ export function ProjectOverviewTab({
               exit={segmentedAccordionMotion.exit}
               className="overflow-hidden flex flex-col gap-[2px] rounded-b-[32px]"
             >
-              <div className="segmented-item no-hover-bg p-4 sm:p-6 w-full bg-white dark:bg-[#121212]">
+              <div className="segmented-item no-hover-bg p-4 sm:p-6 w-full bg-card">
                 <ProjectPhasesWbsTab
                   project={project}
                   onAddPhase={onAddPhase}
@@ -629,7 +629,7 @@ export function ProjectOverviewTab({
           type="button"
           onClick={() => toggleSegment("boards")}
           className={cn(
-            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-white dark:bg-[#121212]",
+            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-card",
             getSegmentedAccordionHeaderClass(openSegments.boards, {
               isTopRounded: true,
               fullCapsuleWhenClosed: true,
@@ -672,7 +672,7 @@ export function ProjectOverviewTab({
               exit={segmentedAccordionMotion.exit}
               className="overflow-hidden flex flex-col gap-[2px] rounded-b-[32px]"
             >
-              <div className="segmented-item no-hover-bg p-4 sm:p-6 w-full bg-white dark:bg-[#121212]">
+              <div className="segmented-item no-hover-bg p-4 sm:p-6 w-full bg-card">
                 <ProjectBoardsTab
                   project={project}
                   roleMode={roleMode}
@@ -693,7 +693,7 @@ export function ProjectOverviewTab({
           type="button"
           onClick={() => toggleSegment("vdis")}
           className={cn(
-            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-white dark:bg-[#121212]",
+            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-card",
             getSegmentedAccordionHeaderClass(openSegments.vdis, {
               isTopRounded: true,
               fullCapsuleWhenClosed: true,
@@ -736,7 +736,7 @@ export function ProjectOverviewTab({
               exit={segmentedAccordionMotion.exit}
               className="overflow-hidden flex flex-col gap-[2px] rounded-b-[32px]"
             >
-              <div className="segmented-item no-hover-bg p-4 sm:p-6 w-full bg-white dark:bg-[#121212]">
+              <div className="segmented-item no-hover-bg p-4 sm:p-6 w-full bg-card">
                 <ProjectVdisTransmittalTab
                   project={project}
                   roleMode={roleMode}
@@ -759,7 +759,7 @@ export function ProjectOverviewTab({
           type="button"
           onClick={() => toggleSegment("risks")}
           className={cn(
-            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-white dark:bg-[#121212]",
+            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-card",
             getSegmentedAccordionHeaderClass(openSegments.risks, {
               isTopRounded: true,
               fullCapsuleWhenClosed: true,
@@ -802,7 +802,7 @@ export function ProjectOverviewTab({
               exit={segmentedAccordionMotion.exit}
               className="overflow-hidden flex flex-col gap-[2px] rounded-b-[32px]"
             >
-              <div className="segmented-item no-hover-bg p-4 sm:p-6 w-full bg-white dark:bg-[#121212]">
+              <div className="segmented-item no-hover-bg p-4 sm:p-6 w-full bg-card">
                 <ProjectRisksTab
                   project={project}
                   onAddRisk={onAddRisk || defaultAsync}
@@ -820,7 +820,7 @@ export function ProjectOverviewTab({
           type="button"
           onClick={() => toggleSegment("strategic")}
           className={cn(
-            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-white dark:bg-[#121212]",
+            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-card",
             getSegmentedAccordionHeaderClass(openSegments.strategic, {
               isTopRounded: true,
               fullCapsuleWhenClosed: true,
@@ -863,7 +863,7 @@ export function ProjectOverviewTab({
               exit={segmentedAccordionMotion.exit}
               className="overflow-hidden flex flex-col gap-[2px] rounded-b-[32px]"
             >
-              <div className="segmented-item no-hover-bg p-4 sm:p-6 w-full bg-white dark:bg-[#121212]">
+              <div className="segmented-item no-hover-bg p-4 sm:p-6 w-full bg-card">
                 <ProjectStrategicOkrsTab project={project} />
               </div>
             </motion.div>
@@ -877,7 +877,7 @@ export function ProjectOverviewTab({
           type="button"
           onClick={() => toggleSegment("reports")}
           className={cn(
-            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-white dark:bg-[#121212]",
+            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-card",
             getSegmentedAccordionHeaderClass(openSegments.reports, {
               isTopRounded: true,
               fullCapsuleWhenClosed: true,
@@ -920,7 +920,7 @@ export function ProjectOverviewTab({
               exit={segmentedAccordionMotion.exit}
               className="overflow-hidden flex flex-col gap-[2px] rounded-b-[32px]"
             >
-              <div className="segmented-item no-hover-bg p-4 sm:p-6 w-full bg-white dark:bg-[#121212]">
+              <div className="segmented-item no-hover-bg p-4 sm:p-6 w-full bg-card">
                 <ProjectReportsAnalyticsTab project={project} />
               </div>
             </motion.div>

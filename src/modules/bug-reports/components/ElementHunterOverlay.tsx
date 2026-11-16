@@ -223,18 +223,18 @@ export function ElementHunterOverlay({
             "fixed transition-all duration-75 pointer-events-none",
             isLocked
               ? "border-2 border-emerald-500 bg-emerald-500/20 scale-[0.99] shadow-lg shadow-emerald-500/30"
-              : "border-2 border-[#EC2527] bg-[#EC2527]/10 shadow-lg shadow-red-500/20"
+              : "border-2 border-destructive bg-destructive/10 shadow-lg shadow-destructive/20"
           )}
         >
           {/* Reticle Corner Crosshair Marks */}
-          <div className="absolute -top-1 -start-1 size-2 border-t-2 border-s-2 border-[#EC2527]" />
-          <div className="absolute -top-1 -end-1 size-2 border-t-2 border-e-2 border-[#EC2527]" />
-          <div className="absolute -bottom-1 -start-1 size-2 border-b-2 border-s-2 border-[#EC2527]" />
-          <div className="absolute -bottom-1 -end-1 size-2 border-b-2 border-e-2 border-[#EC2527]" />
+          <div className="absolute -top-1 -start-1 size-2 border-t-2 border-s-2 border-destructive" />
+          <div className="absolute -top-1 -end-1 size-2 border-t-2 border-e-2 border-destructive" />
+          <div className="absolute -bottom-1 -start-1 size-2 border-b-2 border-s-2 border-destructive" />
+          <div className="absolute -bottom-1 -end-1 size-2 border-b-2 border-e-2 border-destructive" />
 
           {/* Center Target Indicator */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
-            <Crosshair className="size-5 text-[#EC2527]" />
+            <Crosshair className="size-5 text-destructive" />
           </div>
 
           {/* Floating Element Details Tooltip */}
