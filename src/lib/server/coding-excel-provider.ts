@@ -113,6 +113,21 @@ export class CodingExcelProvider {
       hydraulic: String(r.Hydraulic) === "-1",
     }));
 
+    // Build form pictures lookup for materials
+    const formSheet = wb.Sheets["TBL_Material_Coding_New"];
+    const formRaw = formSheet
+      ? xlsx.utils.sheet_to_json<any>(formSheet, { defval: "", raw: false })
+      : [];
+    const formPicsMap = new Map<string, string>();
+    formRaw.forEach((f) => {
+      const p = normalizePicUrl(f.Ref_Pic);
+      if (p) {
+        if (f.Sub_Form) formPicsMap.set(String(f.Sub_Form).trim().toLowerCase(), p);
+        if (f.Category_Form) formPicsMap.set(String(f.Category_Form).trim().toLowerCase(), p);
+        if (f.Material_Form) formPicsMap.set(String(f.Material_Form).trim().toLowerCase(), p);
+      }
+    });
+
     // 2. Material Master (165 columns!)
     const matSheet = wb.Sheets["TBL_Material_New"];
     const matRaw = matSheet
@@ -123,6 +138,17 @@ export class CodingExcelProvider {
       Object.keys(r).forEach((k) => {
         rawProperties[k] = String(r[k] || "");
       });
+
+      const formVal = String(r.FORM || "").trim().toLowerCase();
+      let matchedPic = formPicsMap.get(formVal) || "";
+      if (!matchedPic && formVal) {
+        for (const [key, pic] of formPicsMap.entries()) {
+          if (formVal.includes(key) || key.includes(formVal)) {
+            matchedPic = pic;
+            break;
+          }
+        }
+      }
 
       return {
         matId: String(r.MAT_ID || ""),
@@ -184,15 +210,12 @@ export class CodingExcelProvider {
         dinEnNumber: String(r.DIN_EN_Number || ""),
         refMaterial: String(r.Ref_Material || ""),
         refHeatTreatment: String(r.Ref_Heat_Treatment || ""),
+        pic: matchedPic,
         rawProperties,
       };
     });
 
     // 3. Material Forms
-    const formSheet = wb.Sheets["TBL_Material_Coding_New"];
-    const formRaw = formSheet
-      ? xlsx.utils.sheet_to_json<any>(formSheet, { defval: "", raw: false })
-      : [];
     const materialForms: MaterialFormRecord[] = formRaw.map((r) => ({
       id: String(r.ID || ""),
       generalFormId: String(r.General_Form_ID || ""),
@@ -301,6 +324,7 @@ export class CodingExcelProvider {
     types: Array<{ id: string; name: string; code: string }>;
     liftSizes: Array<{ id: string; name: string; code: string }>;
     thicknesses: Array<{ id: string; name: string; code: string }>;
+    picLookup: Record<string, string>;
   } {
     const data = this.loadWorkbook().productionTree;
 
@@ -366,6 +390,21 @@ export class CodingExcelProvider {
       }
     });
 
+    const picLookup: Record<string, string> = {};
+    data.forEach((r) => {
+      if (r.pic && String(r.pic).trim()) {
+        const p = r.pic;
+        const k1 = r.productionCategory;
+        const k2 = k1 + "||" + r.internalProduct;
+        const k3 = k2 + "||" + r.productType;
+        const k4 = k3 + "||" + r.shape;
+        if (!picLookup[k4]) picLookup[k4] = p;
+        if (!picLookup[k3]) picLookup[k3] = p;
+        if (!picLookup[k2]) picLookup[k2] = p;
+        if (!picLookup[k1]) picLookup[k1] = p;
+      }
+    });
+
     return {
       categories: Array.from(catMap.values()),
       internalProducts: Array.from(intProdMap.values()),
@@ -374,6 +413,7 @@ export class CodingExcelProvider {
       types: Array.from(subTypeMap.values()),
       liftSizes: Array.from(liftMap.values()),
       thicknesses: Array.from(thkMap.values()),
+      picLookup,
     };
   }
 
@@ -382,12 +422,16 @@ export class CodingExcelProvider {
     spec?: string;
     grade?: string;
     form?: string;
+    groupMat?: string;
     limit?: number;
     offset?: number;
   }): { items: MaterialMasterRecord[]; total: number } {
     const data = this.loadWorkbook().materials;
     let filtered = data;
 
+    if (filter?.groupMat) {
+      filtered = filtered.filter((r) => r.groupMat === filter.groupMat);
+    }
     if (filter?.spec) {
       filtered = filtered.filter((r) => r.spec === filter.spec);
     }

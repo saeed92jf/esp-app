@@ -15,12 +15,20 @@ import {
   PlusCircle,
   BookmarkCheck,
   Info,
+  ImageIcon,
+  Maximize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -46,6 +54,7 @@ export function ProductCodingView() {
     types: Array<{ id: string; name: string; code: string }>;
     liftSizes: Array<{ id: string; name: string; code: string }>;
     thicknesses: Array<{ id: string; name: string; code: string }>;
+    picLookup?: Record<string, string>;
   }>({
     categories: [],
     internalProducts: [],
@@ -54,6 +63,7 @@ export function ProductCodingView() {
     types: [],
     liftSizes: [],
     thicknesses: [],
+    picLookup: {},
   });
 
   // Selected State
@@ -64,6 +74,9 @@ export function ProductCodingView() {
   const [selectedType, setSelectedType] = useState<string>("");
   const [selectedLiftSize, setSelectedLiftSize] = useState<string>("");
   const [selectedThickness, setSelectedThickness] = useState<string>("");
+
+  // Preview Modal for Document / Drawing
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Dynamic Parameters (P1-P4)
   const [p1Value, setP1Value] = useState("");
@@ -110,6 +123,26 @@ export function ProductCodingView() {
     if (!ipObj) return options.productTypes;
     return options.productTypes.filter((pt) => pt.internalProductId === ipObj.id);
   }, [selectedInternalProduct, options]);
+
+  // Active matching drawing / image from production tree
+  const activeProductPic = useMemo(() => {
+    const lookup = options.picLookup;
+    if (!lookup) return "";
+
+    const k4 = `${selectedCategory}||${selectedInternalProduct}||${selectedProductType}||${selectedShape}`;
+    if (selectedShape && lookup[k4]) return lookup[k4];
+
+    const k3 = `${selectedCategory}||${selectedInternalProduct}||${selectedProductType}`;
+    if (selectedProductType && lookup[k3]) return lookup[k3];
+
+    const k2 = `${selectedCategory}||${selectedInternalProduct}`;
+    if (selectedInternalProduct && lookup[k2]) return lookup[k2];
+
+    const k1 = selectedCategory;
+    if (selectedCategory && lookup[k1]) return lookup[k1];
+
+    return "";
+  }, [selectedCategory, selectedInternalProduct, selectedProductType, selectedShape, options.picLookup]);
 
   // Recalculate code whenever selections change
   useEffect(() => {
@@ -665,8 +698,88 @@ export function ProductCodingView() {
               </Button>
             </div>
           </Card>
+
+          {/* Technical Drawing & Inspection Document Card */}
+          <Card className="p-4 rounded-2xl border-border/50 bg-card shadow-xs flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <ImageIcon className="size-4 text-emerald-500" />
+                <span>{isRtl ? "نقشه و داکیومنت فنی قطعه" : "Technical Drawing & Spec"}</span>
+              </span>
+              {activeProductPic && (
+                <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                  {isRtl ? "نقشه موجود است" : "Drawing Attached"}
+                </Badge>
+              )}
+            </div>
+
+            {activeProductPic ? (
+              <div
+                onClick={() => setPreviewImage(activeProductPic)}
+                className="relative group rounded-xl overflow-hidden border border-border/60 bg-muted/20 aspect-video flex items-center justify-center cursor-pointer transition-all hover:border-primary/50 shadow-2xs"
+              >
+                {activeProductPic.toLowerCase().endsWith(".pdf") ? (
+                  <div className="flex flex-col items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors p-4 text-center">
+                    <Info className="size-8" />
+                    <span className="text-xs font-semibold">{isRtl ? "فایل مستندات فنی (PDF)" : "Technical Document (PDF)"}</span>
+                    <span className="text-[10px] underline">{isRtl ? "جهت مشاهده و مطالعه کلیک کنید" : "Click to view document"}</span>
+                  </div>
+                ) : (
+                  <>
+                    <img
+                      src={activeProductPic}
+                      alt="Technical Drawing"
+                      className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-200"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white">
+                      <Maximize2 className="size-5" />
+                      <span className="text-xs font-bold">{isRtl ? "بزرگ‌نمایی نقشه" : "Full View"}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-border/60 p-6 flex flex-col items-center justify-center text-center text-muted-foreground gap-1.5 bg-muted/10">
+                <ImageIcon className="size-7 opacity-40" />
+                <span className="text-xs font-medium">
+                  {isRtl ? "نقشه‌ای برای ترکیب فیلترهای جاری ثبت نشده است" : "No technical drawing for current selection"}
+                </span>
+                <span className="text-[10px] text-muted-foreground/70">
+                  {isRtl ? "با تغییر نوع یا شکل قطعه نقشه‌های مرتبط بارگذاری می‌شوند" : "Selecting specific shapes or types reveals attached drawings"}
+                </span>
+              </div>
+            )}
+          </Card>
         </div>
       </div>
+
+      {/* Fullscreen Drawing Preview Modal */}
+      <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
+        <DialogContent className="max-w-4xl w-full p-4 sm:p-6 rounded-2xl">
+          <DialogHeader className="border-b border-border/30 pb-3">
+            <DialogTitle className="text-sm font-bold flex items-center gap-2">
+              <ImageIcon className="size-4 text-primary" />
+              <span>{isRtl ? "پیش‌نمایش نقشه فنی مهندسی" : "Technical Engineering Drawing"}</span>
+              <span className="text-xs font-mono text-muted-foreground">
+                ({selectedCategory} {selectedInternalProduct ? `• ${selectedInternalProduct}` : ""} {selectedProductType ? `• ${selectedProductType}` : ""})
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="mt-2 rounded-xl overflow-hidden bg-slate-950/5 flex items-center justify-center min-h-[400px] max-h-[75vh]">
+            {previewImage?.toLowerCase().endsWith(".pdf") ? (
+              <iframe src={previewImage} className="w-full h-[70vh] border-0 rounded-lg" title="Document Preview" />
+            ) : (
+              <img
+                src={previewImage || ""}
+                alt="Product Drawing Preview"
+                className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-sm"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -139,6 +139,7 @@ export class EspCodingClientService {
     spec?: string;
     grade?: string;
     form?: string;
+    groupMat?: string;
     limit?: number;
     offset?: number;
   }): Promise<{ items: MaterialMasterRecord[]; total: number; offset: number; limit: number }> {
@@ -147,6 +148,7 @@ export class EspCodingClientService {
     if (params?.spec) url.searchParams.set("spec", params.spec);
     if (params?.grade) url.searchParams.set("grade", params.grade);
     if (params?.form) url.searchParams.set("form", params.form);
+    if (params?.groupMat) url.searchParams.set("groupMat", params.groupMat);
     if (params?.limit) url.searchParams.set("limit", String(params.limit));
     if (params?.offset) url.searchParams.set("offset", String(params.offset));
 

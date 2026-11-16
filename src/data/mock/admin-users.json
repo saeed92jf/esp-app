@@ -29,9 +29,9 @@
     "maxOvertimeHours": 40,
     "workLocation": "دفتر تهران / Tehran Office",
     "contractType": "full_time",
-    "employeeId": "ESP-205",
+    "employeeId": "205",
     "extensionNumber": "187",
-    "manager": "M.Shafiee (مدیر مهندسی)",
+    "manager": "مدیر مهندسی",
     "workingFormat": {
       "office": 60,
       "factory": 20,
@@ -375,7 +375,7 @@
     "maxOvertimeHours": 0,
     "workLocation": "دفتر تهران / Tehran Office",
     "contractType": "full_time",
-    "employeeId": "ESP-003",
+    "employeeId": "3",
     "extensionNumber": "125",
     "workingFormat": {
       "office": 70,
@@ -601,8 +601,8 @@
     "maritalStatus": "متاهل",
     "childrenCount": 2,
     "insuranceType": "طلایی",
-    "educationDegree": "master",
-    "educationField": "mechanical_design",
+    "educationDegree": "لیسانس",
+    "educationField": "مهندسی مکانیک",
     "skills": [
       {
         "id": "sk-1793698913591",
@@ -654,7 +654,7 @@
     "supplementaryPlan": "silver",
     "supplementaryProvider": "SOS",
     "dependents": [],
-    "graduationYear": "",
+    "graduationYear": "1378/06/31",
     "educationRecords": [],
     "manager": "M.Taheripour (مدیر عامل)",
     "personnelCode": "3",
@@ -688,7 +688,10 @@
     "managerNpc": "داریوش مولایی (مدیر عامل)",
     "avatar": null,
     "espJobTitleEn": "Head of Engineering",
-    "npcJobTitleEn": "Head of Market Development"
+    "npcJobTitleEn": "Head of Market Development",
+    "address": "تهران، دفتر مرکزی شرکت یورواسلات پارس",
+    "insuranceCode": "18066298",
+    "profileEditCount": 0
   },
   {
     "id": "u-mcharmchi",
@@ -1006,7 +1009,7 @@
     "daysInCompany": 365,
     "workLocation": "دفتر تهران / Tehran Office",
     "contractType": "full_time",
-    "employeeId": "ESP-118",
+    "employeeId": "118",
     "extensionNumber": "128",
     "manager": "M.Shafiee (مدیر مهندسی)",
     "password": "Esp@496226!",
@@ -1254,7 +1257,26 @@
     "managerNpc": "",
     "avatar": null,
     "espJobTitleEn": "Expert",
-    "npcJobTitleEn": ""
+    "npcJobTitleEn": "",
+    "address": "تهران، دفتر مرکزی شرکت یورواسلات پارس",
+    "subordinates": [],
+    "insuranceProvider": "تأمین اجتماعی",
+    "insuranceCode": "53184718",
+    "supplementaryPlan": "طرح ویژه / Special Plan",
+    "dependents": [],
+    "educationDegree": "لیسانس",
+    "educationField": "مهندسی مکانیک",
+    "graduationYear": "1397/09/19",
+    "educationRecords": [],
+    "skills": [
+      {
+        "id": "sk-1",
+        "name": "کارشناس",
+        "rate": 90
+      }
+    ],
+    "documents": [],
+    "profileEditCount": 0
   },
   {
     "id": "u-rsharifi",
@@ -4797,7 +4819,7 @@
     "fullName": "Dr. Kourosh Shafiei",
     "fullNameFa": "دکتر کورش شفیعی",
     "firstName": "Dr. Kourosh",
-    "lastName": "Shafiei",
+    "lastName": "Shafiee",
     "firstNameFa": "دکتر کورش",
     "lastNameFa": "شفیعی",
     "email": "k.shafiei@npceram.com",
@@ -5582,5 +5604,2141 @@
     ],
     "espJobTitleEn": "",
     "npcJobTitleEn": "Technical Specialist"
+  },
+  {
+    "id": "u-mtaheripour",
+    "name": "مهرداد طاهری‌پور",
+    "fullName": "Mehrdad Taheripour",
+    "fullNameFa": "مهرداد طاهری‌پور",
+    "firstName": "Mehrdad",
+    "lastName": "Taheripour",
+    "firstNameFa": "مهرداد",
+    "lastNameFa": "طاهری‌پور",
+    "email": "m.taheripour@euroslotpars.com",
+    "phone": "09391455681",
+    "nationalId": "2297539691",
+    "role": "admin",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "Euroslot Pars / یورواسلات پارس",
+    "companyId": "esp",
+    "department": "Management / مدیریت",
+    "jobTitle": "مدیر عامل",
+    "avatarColor": "#d97706",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1386/10/01",
+    "daysInCompany": 1500,
+    "doneProjects": 12,
+    "salary": 750000000,
+    "hasOvertime": true,
+    "maxOvertimeHours": 40,
+    "workLocation": "دفتر تهران",
+    "contractType": "full_time",
+    "employeeId": "103",
+    "extensionNumber": "103",
+    "manager": "--",
+    "workingFormat": {
+      "office": 70,
+      "factory": 20,
+      "mission": 5,
+      "leave": 5
+    },
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "tasks",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "projectManagement",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "customers",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/customers",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "dictionary",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "did-you-know",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "aparat",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "community",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/community",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "inventory",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "finance",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      }
+    ],
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "password": "Esp@674026!",
+    "maritalStatus": "married",
+    "childrenCount": 1,
+    "insuranceType": "complementary",
+    "supplementaryPlan": "special",
+    "personnelCode": "103",
+    "mobile": "09391455681",
+    "jobPosition": "مدیر عامل",
+    "jobPositionEn": "CEO",
+    "directManager": "--",
+    "floor": "First Floor",
+    "unit": "واحد 2",
+    "subUnit": "مدیریت",
+    "employmentDate": "1386/10/01",
+    "education": "bachelor",
+    "fieldOfStudy": "مهندسی عمران",
+    "university": "دانشگاه صنعتی خواجه ‏نصیرالدین طوسی",
+    "graduationDate": "1372/07/30",
+    "fatherName": "عبدالرحمن",
+    "birthDate": "1349/05/05",
+    "birthPlace": "شیراز",
+    "militaryDuty": "کارت پایان خدمت",
+    "insuranceNumber": "20710483",
+    "bankAccount": "883-800-1578060-1",
+    "duties": [],
+    "address": "تهران، دفتر مرکزی یورواسلات پارس",
+    "subordinates": [],
+    "insuranceProvider": "تأمین اجتماعی",
+    "insuranceCode": "20710483",
+    "insuranceValidUntil": "1405/12/29",
+    "shebaNumber": "",
+    "skills": [],
+    "projects": [],
+    "experiences": []
+  },
+  {
+    "id": "u-anarimanzadeh",
+    "name": "امین نریمان‌زاده",
+    "fullName": "Amin Narimanzadeh",
+    "fullNameFa": "امین نریمان‌زاده",
+    "firstName": "Amin",
+    "lastName": "Narimanzadeh",
+    "firstNameFa": "امین",
+    "lastNameFa": "نریمان‌زاده",
+    "email": "a.narimanzadeh@euroslotpars.com",
+    "phone": "09125365517",
+    "nationalId": "0080142801",
+    "role": "admin",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "Euroslot Pars / یورواسلات پارس",
+    "companyId": "esp",
+    "department": "Coordinator / برنامه ریزی کنترل پروژه",
+    "jobTitle": "معاونت اجرایی پروژه ها - سرپرست برنامه ریزی و کنترل پروژه",
+    "avatarColor": "#8b5cf6",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1390/01/01",
+    "daysInCompany": 1500,
+    "doneProjects": 12,
+    "salary": 550000000,
+    "hasOvertime": true,
+    "maxOvertimeHours": 40,
+    "workLocation": "دفتر تهران",
+    "contractType": "full_time",
+    "employeeId": "127",
+    "extensionNumber": "127",
+    "manager": "مدیر عامل",
+    "workingFormat": {
+      "office": 70,
+      "factory": 20,
+      "mission": 5,
+      "leave": 5
+    },
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "tasks",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "projectManagement",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "customers",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/customers",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "dictionary",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "did-you-know",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "aparat",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "community",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/community",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "inventory",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "finance",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      }
+    ],
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "password": "Esp@593626!",
+    "maritalStatus": "married",
+    "childrenCount": 1,
+    "insuranceType": "complementary",
+    "supplementaryPlan": "special",
+    "personnelCode": "127",
+    "mobile": "09125365517",
+    "jobPosition": "معاونت اجرایی پروژه ها - سرپرست برنامه ریزی و کنترل پروژه",
+    "jobPositionEn": "Deputy of Projects",
+    "directManager": "M.Taheripour (مدیر عامل)",
+    "floor": "Third Floor",
+    "unit": "واحد 4",
+    "subUnit": "برنامه ریزی کنترل پروژه",
+    "employmentDate": "1390/01/01",
+    "education": "bachelor",
+    "fieldOfStudy": "مهندسی صنایع",
+    "university": "دانشگاه آزاداسلامی واحد تهران جنوب",
+    "graduationDate": "1389/05/01",
+    "fatherName": "فرهاد",
+    "birthDate": "1365/06/30",
+    "birthPlace": "تهران",
+    "militaryDuty": "معافیت کفالت",
+    "insuranceNumber": "21886649",
+    "bankAccount": "883-800-2040714-1",
+    "duties": [
+      "تهيه برنامه زمانبندي كليه پروژه‌ها و برنامه ريزي جهت رعايت موارد قراردادي-ارائه گزارش پيشرفت پروژه‌ها به كارفرمايان",
+      "ارائه گزارش و كنترل پيشرفت پروژه‌ها به مدير عامل و كليه واحدهاي ذيربط طراحي و توليد",
+      "مسئول هماهنگي مابين بخش‌هاي طراحي و توليد-هماهنگي جهت تامين مواد پروژه‌ها به درخواست بخش توليد",
+      "تدوين گردش كار شركت و همكاري با بخش طراحي جهت توليد مدارك پروژه‌ها-ثبت کلیه پروژه های از طریق بخش توسعه بازار و کنترل و تطبیق قرارداد با پیشنهادهای ارائه شده",
+      "پیگیری و هماهنگی کلیه امور مربوط به پروژه ها از ابتدای مراحل طراحی تا ساخت و تولید تا صدور فاکتور فروش",
+      "پیگیری اخذ مطالبات از کارفرمایان و ارتباط موثر جهت پیشبرد هرچه سریعتر پروژه",
+      "هماهنگی با کارفرمایان و بخش های مختلف شرکت جهت به سرانجام رسیدن پروژه در زمان تعیین شده"
+    ],
+    "address": "تهران، دفتر مرکزی یورواسلات پارس",
+    "subordinates": [],
+    "insuranceProvider": "تأمین اجتماعی",
+    "insuranceCode": "21886649",
+    "insuranceValidUntil": "1405/12/29",
+    "shebaNumber": "",
+    "skills": [
+      {
+        "id": "sk-1",
+        "name": "تهيه برنامه زمانبندي كليه پروژه‌ها ",
+        "level": 5
+      },
+      {
+        "id": "sk-2",
+        "name": "ارائه گزارش و كنترل پيشرفت پروژه‌ها",
+        "level": 5
+      },
+      {
+        "id": "sk-3",
+        "name": "مسئول هماهنگي مابين بخش‌هاي طراحي و",
+        "level": 5
+      },
+      {
+        "id": "sk-4",
+        "name": "تدوين گردش كار شركت و همكاري با بخش",
+        "level": 5
+      },
+      {
+        "id": "sk-5",
+        "name": "پیگیری و هماهنگی کلیه امور مربوط به",
+        "level": 5
+      },
+      {
+        "id": "sk-6",
+        "name": "پیگیری اخذ مطالبات از کارفرمایان و ",
+        "level": 5
+      },
+      {
+        "id": "sk-7",
+        "name": "هماهنگی با کارفرمایان و بخش های مخت",
+        "level": 5
+      }
+    ],
+    "projects": [],
+    "experiences": []
+  },
+  {
+    "id": "u-hhamraei",
+    "name": "حسن حمرایی",
+    "fullName": "Hasan Hamraei",
+    "fullNameFa": "حسن حمرایی",
+    "firstName": "Hasan",
+    "lastName": "Hamraei",
+    "firstNameFa": "حسن",
+    "lastNameFa": "حمرایی",
+    "email": "h.hamraei@euroslotpars.com",
+    "phone": "09125980308",
+    "nationalId": "0015959805",
+    "role": "admin",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "Euroslot Pars / یورواسلات پارس",
+    "companyId": "esp",
+    "department": "Purchasing / خرید داخل",
+    "jobTitle": "کارشناس بازرگانی داخلی",
+    "avatarColor": "#8b5cf6",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1394/09/04",
+    "daysInCompany": 1500,
+    "doneProjects": 12,
+    "salary": 550000000,
+    "hasOvertime": true,
+    "maxOvertimeHours": 40,
+    "workLocation": "دفتر تهران",
+    "contractType": "full_time",
+    "employeeId": "113",
+    "extensionNumber": "113",
+    "manager": "مدیر عامل",
+    "workingFormat": {
+      "office": 70,
+      "factory": 20,
+      "mission": 5,
+      "leave": 5
+    },
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "tasks",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "projectManagement",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "customers",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/customers",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "dictionary",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "did-you-know",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "aparat",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "community",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/community",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "inventory",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "finance",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      }
+    ],
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "password": "Esp@542926!",
+    "maritalStatus": "married",
+    "childrenCount": 1,
+    "insuranceType": "complementary",
+    "supplementaryPlan": "special",
+    "personnelCode": "113",
+    "mobile": "09125980308",
+    "jobPosition": "کارشناس بازرگانی داخلی",
+    "jobPositionEn": "Local Purchasing",
+    "directManager": "M.Taheripour (مدیر عامل)",
+    "floor": "Third Floor",
+    "unit": "واحد 4",
+    "subUnit": "خرید داخل",
+    "employmentDate": "1394/09/04",
+    "education": "bachelor",
+    "fieldOfStudy": "مهندسی مکانیک",
+    "university": "--",
+    "graduationDate": "1396/09/22",
+    "fatherName": "علی",
+    "birthDate": "1372/04/06",
+    "birthPlace": "تهران",
+    "militaryDuty": "معافیت تحصیلی",
+    "insuranceNumber": "53120220",
+    "bankAccount": "807-888-2324243-1",
+    "duties": [
+      "راه اندازی و استفاده نرم افزار اتوماسیون خرید",
+      "مذاکره با فروشندگان و تامین کنندگان کالا و نهایی سازی سفارشات",
+      "ارائه گزارش و آمار عملکرد تامین کنندگان و سفارشات",
+      "رسیدگی به درخواست های خرید مهندسی و تولید",
+      "پیگیری خرید کالاها از سفارش گزاری تا ارسال به کارخانه",
+      "پیگیری ثبت سفارش کالای های ورودی",
+      "ارائه گزارشات آنلاین از قیمت کالای خریداری شده قبلی و قیمت کالای روز مورد استفاده"
+    ],
+    "address": "تهران، دفتر مرکزی یورواسلات پارس",
+    "subordinates": [],
+    "insuranceProvider": "تأمین اجتماعی",
+    "insuranceCode": "53120220",
+    "insuranceValidUntil": "1405/12/29",
+    "shebaNumber": "",
+    "skills": [
+      {
+        "id": "sk-1",
+        "name": "راه اندازی و استفاده نرم افزار اتوم",
+        "level": 5
+      },
+      {
+        "id": "sk-2",
+        "name": "مذاکره با فروشندگان و تامین کنندگان",
+        "level": 5
+      },
+      {
+        "id": "sk-3",
+        "name": "ارائه گزارش و آمار عملکرد تامین کنن",
+        "level": 5
+      },
+      {
+        "id": "sk-4",
+        "name": "رسیدگی به درخواست های خرید مهندسی و",
+        "level": 5
+      },
+      {
+        "id": "sk-5",
+        "name": "پیگیری خرید کالاها از سفارش گزاری ت",
+        "level": 5
+      },
+      {
+        "id": "sk-6",
+        "name": "پیگیری ثبت سفارش کالای های ورودی",
+        "level": 5
+      },
+      {
+        "id": "sk-7",
+        "name": "ارائه گزارشات آنلاین از قیمت کالای ",
+        "level": 5
+      }
+    ],
+    "projects": [],
+    "experiences": []
+  },
+  {
+    "id": "u-msarami",
+    "name": "مهدی صارمی",
+    "fullName": "Mahdi Sarami",
+    "fullNameFa": "مهدی صارمی",
+    "firstName": "Mahdi",
+    "lastName": "Sarami",
+    "firstNameFa": "مهدی",
+    "lastNameFa": "صارمی",
+    "email": "m.sarami@euroslotpars.com",
+    "phone": "09126618196",
+    "nationalId": "2851349074",
+    "role": "admin",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "Euroslot Pars / یورواسلات پارس",
+    "companyId": "esp",
+    "department": "IT / انفورماتیک",
+    "jobTitle": "سرپرست فناوری و اطلاعات",
+    "avatarColor": "#8b5cf6",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1398/09/01",
+    "daysInCompany": 1500,
+    "doneProjects": 12,
+    "salary": 550000000,
+    "hasOvertime": true,
+    "maxOvertimeHours": 40,
+    "workLocation": "دفتر تهران",
+    "contractType": "full_time",
+    "employeeId": "143",
+    "extensionNumber": "143",
+    "manager": "مدیر عامل",
+    "workingFormat": {
+      "office": 70,
+      "factory": 20,
+      "mission": 5,
+      "leave": 5
+    },
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "tasks",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "projectManagement",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "customers",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/customers",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "dictionary",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "did-you-know",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "aparat",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "community",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/community",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "inventory",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "finance",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      }
+    ],
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "password": "Esp@249526!",
+    "maritalStatus": "married",
+    "childrenCount": 1,
+    "insuranceType": "complementary",
+    "supplementaryPlan": "special",
+    "personnelCode": "143",
+    "mobile": "09126618196",
+    "jobPosition": "سرپرست فناوری و اطلاعات",
+    "jobPositionEn": "Head of Information Technology (IT)",
+    "directManager": "M.Taheripour (مدیر عامل)",
+    "floor": "Third Floor",
+    "unit": "واحد 4",
+    "subUnit": "انفورماتیک",
+    "employmentDate": "1398/09/01",
+    "education": "bachelor",
+    "fieldOfStudy": "مهندسی کامپیوتر",
+    "university": "دانشگاه صنعتی مالک اشتر",
+    "graduationDate": "1390/01/01",
+    "fatherName": "محمد",
+    "birthDate": "1358/01/24",
+    "birthPlace": "سلماس",
+    "militaryDuty": "معافیت موارد خاص",
+    "insuranceNumber": "21142373",
+    "bankAccount": "883-800-3143865-1",
+    "duties": [
+      "برنامه نویسی ، رفع عیوب نرم افزاری و سخت افزاری تجهیزات آی تی ( کامپیوتر ، پرینتر ، کلیه لوازم و متعلقات).",
+      "back up گیری از کلیه سیستم ها",
+      "نصب برنامه ها و نرم افزار های مورد نیاز",
+      "نگهداری کلیه نرم افزار های مورد استفاده در سازمان طراحی ساختار شبکه و مدیریت امنیت شبکه طراحی ساختار نرم افزار یکپارچه سازمانی"
+    ],
+    "address": "تهران، دفتر مرکزی یورواسلات پارس",
+    "subordinates": [],
+    "insuranceProvider": "تأمین اجتماعی",
+    "insuranceCode": "21142373",
+    "insuranceValidUntil": "1405/12/29",
+    "shebaNumber": "",
+    "skills": [
+      {
+        "id": "sk-1",
+        "name": "برنامه نویسی ، رفع عیوب نرم افزاری ",
+        "level": 5
+      },
+      {
+        "id": "sk-2",
+        "name": "back up گیری از کلیه سیستم ها",
+        "level": 5
+      },
+      {
+        "id": "sk-3",
+        "name": "نصب برنامه ها و نرم افزار های مورد ",
+        "level": 5
+      },
+      {
+        "id": "sk-4",
+        "name": "نگهداری کلیه نرم افزار های مورد است",
+        "level": 5
+      }
+    ],
+    "projects": [],
+    "experiences": []
+  },
+  {
+    "id": "u-msaeedi",
+    "name": "مرتضی سعیدی",
+    "fullName": "Morteza Saeedi",
+    "fullNameFa": "مرتضی سعیدی",
+    "firstName": "Morteza",
+    "lastName": "Saeedi",
+    "firstNameFa": "مرتضی",
+    "lastNameFa": "سعیدی",
+    "email": "m.saeedi@euroslotpars.com",
+    "phone": "09120502814",
+    "nationalId": "0082677077",
+    "role": "admin",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "Euroslot Pars / یورواسلات پارس",
+    "companyId": "esp",
+    "department": "Administrative / اداری و منابع انسانی",
+    "jobTitle": "سرپرست امور اداری",
+    "avatarColor": "#8b5cf6",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1390/09/01",
+    "daysInCompany": 1500,
+    "doneProjects": 12,
+    "salary": 550000000,
+    "hasOvertime": true,
+    "maxOvertimeHours": 40,
+    "workLocation": "دفتر تهران",
+    "contractType": "full_time",
+    "employeeId": "110",
+    "extensionNumber": "110",
+    "manager": "مدیر عامل",
+    "workingFormat": {
+      "office": 70,
+      "factory": 20,
+      "mission": 5,
+      "leave": 5
+    },
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "tasks",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "projectManagement",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "customers",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/customers",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "dictionary",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "did-you-know",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "aparat",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "community",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/community",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "inventory",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "finance",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      }
+    ],
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "password": "Esp@457126!",
+    "maritalStatus": "married",
+    "childrenCount": 1,
+    "insuranceType": "complementary",
+    "supplementaryPlan": "silver",
+    "personnelCode": "110",
+    "mobile": "09120502814",
+    "jobPosition": "سرپرست امور اداری",
+    "jobPositionEn": "Head of Administrative",
+    "directManager": "M.Taheripour (مدیر عامل)",
+    "floor": "Grourd Floor",
+    "unit": "واحد 1",
+    "subUnit": "اداری و منابع انسانی",
+    "employmentDate": "1390/09/01",
+    "education": "associate",
+    "fieldOfStudy": "حسابداری‌",
+    "university": "دانشگاه علمی کاربردی",
+    "graduationDate": "1398/10/30",
+    "fatherName": "قاسم",
+    "birthDate": "1364/09/23",
+    "birthPlace": "تهران",
+    "militaryDuty": "کارت پایان خدمت",
+    "insuranceNumber": "50164701",
+    "bankAccount": "883-800-1488196-1",
+    "duties": [
+      "کلیه امور اداری دفتر مرکزی",
+      "امور مربوط به صندوق داری( تنخواهگردان و بایگانی و نگهداری اوراق بهادار مالی)",
+      "نظارت بر سیستم حضور و غیاب",
+      "محاسبه حقوق، کارکردها، بیمه و مالیات حقوق"
+    ],
+    "address": "تهران، دفتر مرکزی یورواسلات پارس",
+    "subordinates": [],
+    "insuranceProvider": "تأمین اجتماعی",
+    "insuranceCode": "50164701",
+    "insuranceValidUntil": "1405/12/29",
+    "shebaNumber": "",
+    "skills": [
+      {
+        "id": "sk-1",
+        "name": "کلیه امور اداری دفتر مرکزی",
+        "level": 5
+      },
+      {
+        "id": "sk-2",
+        "name": "امور مربوط به صندوق داری( تنخواهگرد",
+        "level": 5
+      },
+      {
+        "id": "sk-3",
+        "name": "نظارت بر سیستم حضور و غیاب",
+        "level": 5
+      },
+      {
+        "id": "sk-4",
+        "name": "محاسبه حقوق، کارکردها، بیمه و مالیا",
+        "level": 5
+      }
+    ],
+    "projects": [],
+    "experiences": []
+  },
+  {
+    "id": "u-mtamadi",
+    "name": "مهدی تمادی",
+    "fullName": "Mahdi Tamadi",
+    "fullNameFa": "مهدی تمادی",
+    "firstName": "Mahdi",
+    "lastName": "Tamadi",
+    "firstNameFa": "مهدی",
+    "lastNameFa": "تمادی",
+    "email": "m.tamadi@euroslotpars.com",
+    "phone": "09122867694",
+    "nationalId": "0010013202",
+    "role": "admin",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "Euroslot Pars / یورواسلات پارس",
+    "companyId": "esp",
+    "department": "Manufacture / مدیریت کارخانه",
+    "jobTitle": "سرپرست تولید",
+    "avatarColor": "#8b5cf6",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1390/06/01",
+    "daysInCompany": 1500,
+    "doneProjects": 12,
+    "salary": 550000000,
+    "hasOvertime": true,
+    "maxOvertimeHours": 40,
+    "workLocation": "کارخانه پرند",
+    "contractType": "full_time",
+    "employeeId": "624",
+    "extensionNumber": "624",
+    "manager": "مدیر عامل",
+    "workingFormat": {
+      "office": 70,
+      "factory": 20,
+      "mission": 5,
+      "leave": 5
+    },
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "tasks",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "projectManagement",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "customers",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/customers",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "dictionary",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "did-you-know",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "aparat",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "community",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/community",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "inventory",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "finance",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      }
+    ],
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "password": "Esp@416426!",
+    "maritalStatus": "married",
+    "childrenCount": 1,
+    "insuranceType": "complementary",
+    "supplementaryPlan": "special",
+    "personnelCode": "624",
+    "mobile": "09122867694",
+    "jobPosition": "سرپرست تولید",
+    "jobPositionEn": "Head of Production",
+    "directManager": "M.Taheripour (مدیر عامل)",
+    "floor": "Factory",
+    "unit": "",
+    "subUnit": "مدیریت کارخانه",
+    "employmentDate": "1390/06/01",
+    "education": "diploma",
+    "fieldOfStudy": "--",
+    "university": "--",
+    "graduationDate": "1385/03/30",
+    "fatherName": "حسن",
+    "birthDate": "1368/01/04",
+    "birthPlace": "تهران",
+    "militaryDuty": "معافیت کفالت",
+    "insuranceNumber": "10715666",
+    "bankAccount": "883-800-2040720-1",
+    "duties": [
+      "شرکت در جلسات برنامه ریزی و تولید کارخانه و انعکاس تمامی موارد مربوطه به مسئولین ذیربط",
+      "بررسی ابتدایی Punch list های اعلام شده از طرف واحد های کنترل کیفیت و اطمینان از کیفیت ودر صورت تائید موارد، ارجاع این مدارک به واحد های ذیربط بجهت برطرف نمودن نواقص",
+      "هماهنگی بجهت حضور پرسنل در مقاطع زمانی مختلف براساس نیاز پروژه های جاری شرکت",
+      "اعلام نیاز با مدیریت کارخانه بجهت جذب پرسنل جدید حسب پروژه های جدید و آتی",
+      "هماهنگی با واحد کنترل کیفیت و برنامه ریزی تولید در خصوص اعلام زمان بازرسی پروژه ها",
+      "نظارت و مدیریت بر کلیه مسائل مربوط به ساخت پروژه ها"
+    ],
+    "address": "تهران، دفتر مرکزی یورواسلات پارس",
+    "subordinates": [],
+    "insuranceProvider": "تأمین اجتماعی",
+    "insuranceCode": "10715666",
+    "insuranceValidUntil": "1405/12/29",
+    "shebaNumber": "",
+    "skills": [
+      {
+        "id": "sk-1",
+        "name": "شرکت در جلسات برنامه ریزی و تولید ک",
+        "level": 5
+      },
+      {
+        "id": "sk-2",
+        "name": "بررسی ابتدایی Punch list های اعلام ",
+        "level": 5
+      },
+      {
+        "id": "sk-3",
+        "name": "هماهنگی بجهت حضور پرسنل در مقاطع زم",
+        "level": 5
+      },
+      {
+        "id": "sk-4",
+        "name": "اعلام نیاز با مدیریت کارخانه بجهت ج",
+        "level": 5
+      },
+      {
+        "id": "sk-5",
+        "name": "هماهنگی با واحد کنترل کیفیت و برنام",
+        "level": 5
+      },
+      {
+        "id": "sk-6",
+        "name": "نظارت و مدیریت بر کلیه مسائل مربوط ",
+        "level": 5
+      }
+    ],
+    "projects": [],
+    "experiences": []
+  },
+  {
+    "id": "u-hgholamshahi",
+    "name": "حسین غلام‌شاهی",
+    "fullName": "Hossein Gholamshahi",
+    "fullNameFa": "حسین غلام‌شاهی",
+    "firstName": "Hossein",
+    "lastName": "Gholamshahi",
+    "firstNameFa": "حسین",
+    "lastNameFa": "غلام‌شاهی",
+    "email": "h.gholamshahi@euroslotpars.com",
+    "phone": "09355445687",
+    "nationalId": "0082904235",
+    "role": "admin",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "Euroslot Pars / یورواسلات پارس",
+    "companyId": "esp",
+    "department": "Quality Control Factory / کنترل کیفیت کارخانه",
+    "jobTitle": "سرپرست کنترل کیفیت",
+    "avatarColor": "#8b5cf6",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1390/04/01",
+    "daysInCompany": 1500,
+    "doneProjects": 12,
+    "salary": 550000000,
+    "hasOvertime": true,
+    "maxOvertimeHours": 40,
+    "workLocation": "کارخانه پرند",
+    "contractType": "full_time",
+    "employeeId": "637",
+    "extensionNumber": "637",
+    "manager": "مدیر عامل",
+    "workingFormat": {
+      "office": 70,
+      "factory": 20,
+      "mission": 5,
+      "leave": 5
+    },
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "tasks",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "projectManagement",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "customers",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/customers",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "dictionary",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "did-you-know",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "aparat",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "community",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/community",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "inventory",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "finance",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "/admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "10:00:00",
+        "usagePercentage": 80
+      }
+    ],
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "password": "Esp@966326!",
+    "maritalStatus": "single",
+    "childrenCount": 1,
+    "insuranceType": "complementary",
+    "supplementaryPlan": "special",
+    "personnelCode": "637",
+    "mobile": "09355445687",
+    "jobPosition": "سرپرست کنترل کیفیت",
+    "jobPositionEn": "QC Manager",
+    "directManager": "M.Taheripour (مدیر عامل)",
+    "floor": "Factory",
+    "unit": "",
+    "subUnit": "کنترل کیفیت کارخانه",
+    "employmentDate": "1390/04/01",
+    "education": "diploma",
+    "fieldOfStudy": "--",
+    "university": "دبیرستان",
+    "graduationDate": "1382/06/31",
+    "fatherName": "ابراهیم",
+    "birthDate": "1364/05/03",
+    "birthPlace": "تهران",
+    "militaryDuty": "کارت پایان خدمت",
+    "insuranceNumber": "21893278",
+    "bankAccount": "883-800-2040713-1",
+    "duties": [
+      "اندازه گیری از مواد اولیه و محصول نهایی در قسمت CNC",
+      "چک کردن نقشه های شاپ با پارت لیست",
+      "اجرای فرایند آمار",
+      "پیدا کردن عدم انطباق در محصولات و کلیه مسئولیت های محوله از طرف مدیر مربوطه"
+    ],
+    "address": "تهران، دفتر مرکزی یورواسلات پارس",
+    "subordinates": [],
+    "insuranceProvider": "تأمین اجتماعی",
+    "insuranceCode": "21893278",
+    "insuranceValidUntil": "1405/12/29",
+    "shebaNumber": "",
+    "skills": [
+      {
+        "id": "sk-1",
+        "name": "اندازه گیری از مواد اولیه و محصول ن",
+        "level": 5
+      },
+      {
+        "id": "sk-2",
+        "name": "چک کردن نقشه های شاپ با پارت لیست",
+        "level": 5
+      },
+      {
+        "id": "sk-3",
+        "name": "اجرای فرایند آمار",
+        "level": 5
+      },
+      {
+        "id": "sk-4",
+        "name": "پیدا کردن عدم انطباق در محصولات و ک",
+        "level": 5
+      }
+    ],
+    "projects": [],
+    "experiences": []
   }
 ]

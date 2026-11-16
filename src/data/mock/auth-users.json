@@ -544,5 +544,152 @@
       "avatarColor": "#0ea5e9",
       "avatar": null
     }
+  },
+  {
+    "email": "m.taheripour@euroslotpars.com",
+    "mobile": "",
+    "password": "Esp@674026!",
+    "user": {
+      "id": "u-mtaheripour",
+      "fullName": "Mehrdad Taheripour",
+      "fullNameFa": "مهرداد طاهری‌پور",
+      "email": "m.taheripour@euroslotpars.com",
+      "mobile": "",
+      "avatarMode": "initials",
+      "role": "admin",
+      "primaryColor": "blue",
+      "accountStatus": "active",
+      "isProfileCompleted": true,
+      "hrApproved": true,
+      "managerApproved": true,
+      "avatarColor": "#d97706",
+      "avatar": null
+    }
+  },
+  {
+    "email": "a.narimanzadeh@euroslotpars.com",
+    "mobile": "",
+    "password": "Esp@593626!",
+    "user": {
+      "id": "u-anarimanzadeh",
+      "fullName": "Amin Narimanzadeh",
+      "fullNameFa": "امین نریمان‌زاده",
+      "email": "a.narimanzadeh@euroslotpars.com",
+      "mobile": "",
+      "avatarMode": "initials",
+      "role": "admin",
+      "primaryColor": "blue",
+      "accountStatus": "active",
+      "isProfileCompleted": true,
+      "hrApproved": true,
+      "managerApproved": true,
+      "avatarColor": "#8b5cf6",
+      "avatar": null
+    }
+  },
+  {
+    "email": "h.hamraei@euroslotpars.com",
+    "mobile": "",
+    "password": "Esp@542926!",
+    "user": {
+      "id": "u-hhamraei",
+      "fullName": "Hasan Hamraei",
+      "fullNameFa": "حسن حمرایی",
+      "email": "h.hamraei@euroslotpars.com",
+      "mobile": "",
+      "avatarMode": "initials",
+      "role": "admin",
+      "primaryColor": "blue",
+      "accountStatus": "active",
+      "isProfileCompleted": true,
+      "hrApproved": true,
+      "managerApproved": true,
+      "avatarColor": "#8b5cf6",
+      "avatar": null
+    }
+  },
+  {
+    "email": "m.sarami@euroslotpars.com",
+    "mobile": "",
+    "password": "Esp@249526!",
+    "user": {
+      "id": "u-msarami",
+      "fullName": "Mahdi Sarami",
+      "fullNameFa": "مهدی صارمی",
+      "email": "m.sarami@euroslotpars.com",
+      "mobile": "",
+      "avatarMode": "initials",
+      "role": "admin",
+      "primaryColor": "blue",
+      "accountStatus": "active",
+      "isProfileCompleted": true,
+      "hrApproved": true,
+      "managerApproved": true,
+      "avatarColor": "#8b5cf6",
+      "avatar": null
+    }
+  },
+  {
+    "email": "m.saeedi@euroslotpars.com",
+    "mobile": "",
+    "password": "Esp@457126!",
+    "user": {
+      "id": "u-msaeedi",
+      "fullName": "Morteza Saeedi",
+      "fullNameFa": "مرتضی سعیدی",
+      "email": "m.saeedi@euroslotpars.com",
+      "mobile": "",
+      "avatarMode": "initials",
+      "role": "admin",
+      "primaryColor": "blue",
+      "accountStatus": "active",
+      "isProfileCompleted": true,
+      "hrApproved": true,
+      "managerApproved": true,
+      "avatarColor": "#8b5cf6",
+      "avatar": null
+    }
+  },
+  {
+    "email": "m.tamadi@euroslotpars.com",
+    "mobile": "",
+    "password": "Esp@416426!",
+    "user": {
+      "id": "u-mtamadi",
+      "fullName": "Mahdi Tamadi",
+      "fullNameFa": "مهدی تمادی",
+      "email": "m.tamadi@euroslotpars.com",
+      "mobile": "",
+      "avatarMode": "initials",
+      "role": "admin",
+      "primaryColor": "blue",
+      "accountStatus": "active",
+      "isProfileCompleted": true,
+      "hrApproved": true,
+      "managerApproved": true,
+      "avatarColor": "#8b5cf6",
+      "avatar": null
+    }
+  },
+  {
+    "email": "h.gholamshahi@euroslotpars.com",
+    "mobile": "",
+    "password": "Esp@966326!",
+    "user": {
+      "id": "u-hgholamshahi",
+      "fullName": "Hossein Gholamshahi",
+      "fullNameFa": "حسین غلام‌شاهی",
+      "email": "h.gholamshahi@euroslotpars.com",
+      "mobile": "",
+      "avatarMode": "initials",
+      "role": "admin",
+      "primaryColor": "blue",
+      "accountStatus": "active",
+      "isProfileCompleted": true,
+      "hrApproved": true,
+      "managerApproved": true,
+      "avatarColor": "#8b5cf6",
+      "avatar": null
+    }
   }
 ]

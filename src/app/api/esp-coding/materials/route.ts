@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
     const spec = searchParams.get("spec") || undefined;
     const grade = searchParams.get("grade") || undefined;
     const form = searchParams.get("form") || undefined;
+    const groupMat = searchParams.get("groupMat") || undefined;
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest) {
       spec,
       grade,
       form,
+      groupMat,
       limit,
       offset,
     });

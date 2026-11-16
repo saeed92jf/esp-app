@@ -60,6 +60,7 @@ export interface MaterialMasterRecord {
   dinEnNumber?: string;
   refMaterial?: string;
   refHeatTreatment?: string;
+  pic?: string;
   // All 165 source fields can be preserved in rawProperties for full fidelity
   rawProperties: Record<string, string>;
 }
