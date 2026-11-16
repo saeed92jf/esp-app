@@ -409,8 +409,7 @@ function FunSearchingRobot({ isRtl }: { isRtl?: boolean }) {
               x="252"
               y="108"
               textAnchor="middle"
-              fill="#0284c7"
-              className="dark:fill-[#38bdf8] font-bold text-[16px] select-none"
+              className="fill-primary font-bold text-[16px] select-none"
               animate={{
                 opacity: [0.75, 1, 0.75],
                 scale: [0.95, 1.05, 0.95],

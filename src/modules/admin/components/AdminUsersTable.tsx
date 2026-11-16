@@ -1223,10 +1223,12 @@ export function AdminUsersTable({
           align === "start" ? "justify-start" : "justify-center"
         )}>
           {/* Column Title + Quick Sort Toggle */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="xs"
             onClick={() => handleSort(field)}
-            className="flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer outline-none"
+            className="h-auto p-0 flex items-center gap-1 hover:text-foreground hover:bg-transparent transition-colors cursor-pointer outline-none font-medium text-xs text-muted-foreground"
             title={`${title} - ${t("sortAsc")} / ${t("sortDesc")}`}
           >
             <span>{title}</span>
@@ -1239,24 +1241,26 @@ export function AdminUsersTable({
             ) : (
               <ArrowUpDown className="size-3 opacity-0 group-hover:opacity-40 transition-opacity" />
             )}
-          </button>
+          </Button>
 
           {/* Excel Filter Funnel Button with Popover */}
           {children ? (
             <Popover>
               <PopoverTrigger asChild>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon-xs"
                   className={cn(
-                    "size-5.5 rounded-md flex items-center justify-center transition-all cursor-pointer outline-none",
+                    "size-5.5 rounded-md p-0 flex items-center justify-center transition-all cursor-pointer outline-none",
                     isFiltered 
-                      ? "bg-primary text-primary-foreground shadow-2xs" 
+                      ? "bg-primary text-primary-foreground shadow-2xs hover:bg-primary/90" 
                       : "text-muted-foreground/50 hover:text-foreground hover:bg-background/80"
                   )}
                   title={t("filterTooltip")}
                 >
                   <Filter className="size-3" />
-                </button>
+                </Button>
               </PopoverTrigger>
 
               <PopoverContent
@@ -1272,11 +1276,13 @@ export function AdminUsersTable({
                   </span>
 
                   <div className="flex flex-col gap-0.5 mt-1">
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleSort(field, 'asc')}
                       className={cn(
-                        "flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium hover:bg-muted transition-colors cursor-pointer",
+                        "w-full flex items-center justify-between px-2 py-1.5 h-auto rounded-lg text-xs font-medium hover:bg-muted transition-colors cursor-pointer",
                         isSorted && sortDir === 'asc' && "text-primary font-bold bg-primary/10"
                       )}
                     >
@@ -1285,13 +1291,15 @@ export function AdminUsersTable({
                         {t("sortAsc")}
                       </span>
                       {isSorted && sortDir === 'asc' && <Check className="size-3.5" />}
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleSort(field, 'desc')}
                       className={cn(
-                        "flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium hover:bg-muted transition-colors cursor-pointer",
+                        "w-full flex items-center justify-between px-2 py-1.5 h-auto rounded-lg text-xs font-medium hover:bg-muted transition-colors cursor-pointer",
                         isSorted && sortDir === 'desc' && "text-primary font-bold bg-primary/10"
                       )}
                     >
@@ -1300,7 +1308,7 @@ export function AdminUsersTable({
                         {t("sortDesc")}
                       </span>
                       {isSorted && sortDir === 'desc' && <Check className="size-3.5" />}
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -1312,14 +1320,16 @@ export function AdminUsersTable({
                 {/* Popover Footer: Clear column filter */}
                 {isFiltered && (
                   <div className="pt-2 border-t border-border/40 flex justify-end">
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="xs"
                       onClick={onClear}
-                      className="text-[11px] font-semibold text-destructive hover:underline flex items-center gap-1 cursor-pointer"
+                      className="h-auto p-0 text-[11px] font-semibold text-destructive hover:underline hover:bg-transparent flex items-center gap-1 cursor-pointer"
                     >
                       <RotateCcw className="size-3" />
                       <span>{t("clearColumnFilter")}</span>
-                    </button>
+                    </Button>
                   </div>
                 )}
               </PopoverContent>
@@ -1368,12 +1378,15 @@ export function AdminUsersTable({
               className="h-9 text-xs ps-8.5 pe-8 rounded-xl bg-background/90 dark:bg-card/90 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/40 shadow-none transition-all"
             />
             {globalSearch && (
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
                 onClick={() => setGlobalSearch("")}
-                className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded-full cursor-pointer"
+                className="size-6 absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded-full cursor-pointer"
               >
                 <X className="size-3.5" />
-              </button>
+              </Button>
             )}
           </div>
 
@@ -2137,8 +2150,10 @@ export function AdminUsersTable({
                                         </div>
 
                                         <div className="flex items-center gap-1.5 self-end sm:self-center">
-                                          <button
+                                          <Button
                                             type="button"
+                                            variant="outline"
+                                            size="sm"
                                             onClick={() => handleCreateEditRequest(user)}
                                             disabled={creatingReqUserId === user.id}
                                             className={cn(
@@ -2155,24 +2170,29 @@ export function AdminUsersTable({
                                               <Edit2 className="size-3.5" />
                                             )}
                                             <span className="hidden sm:inline">{isRtl ? "ویرایش" : "Edit"}</span>
-                                          </button>
-                                          <button
+                                          </Button>
+                                          <Button
                                             type="button"
+                                            variant="ghost"
+                                            size="icon-sm"
                                             onClick={() => handleSelectAndGoHome(user)}
                                             className="size-8 rounded-xl flex items-center justify-center text-primary bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer"
                                             title={t("viewInDashboard")}
                                             aria-label={t("viewInDashboard")}
                                           >
                                             <LayoutDashboard size={14} className="shrink-0" />
-                                          </button>
-                                          <button 
+                                          </Button>
+                                          <Button 
                                             type="button"
+                                            variant="ghost"
+                                            size="icon-xs"
                                             onClick={() => setActiveAccordion(null)}
-                                            className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
+                                            className="size-7 text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
                                             title={t("cancel")}
+                                            aria-label={t("cancel")}
                                           >
                                             <X size={15} />
-                                          </button>
+                                          </Button>
                                         </div>
                                       </div>
 
@@ -2333,14 +2353,17 @@ export function AdminUsersTable({
                                           </p>
                                         </div>
                                       </div>
-                                      <button 
+                                      <Button 
                                         type="button"
+                                        variant="ghost"
+                                        size="icon-xs"
                                         onClick={() => setActiveAccordion(null)}
-                                        className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
+                                        className="size-7 text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
                                         title={t("cancel")}
+                                        aria-label={t("cancel")}
                                       >
                                         <X size={15} />
-                                      </button>
+                                      </Button>
                                     </div>
 
                                     {/* Section 1: Current Password & Direct Email Dispatch Option */}
@@ -2361,25 +2384,31 @@ export function AdminUsersTable({
                                             </span>
                                             {user.password && (
                                               <>
-                                                <button
+                                                <Button
                                                   type="button"
+                                                  variant="ghost"
+                                                  size="icon-xs"
                                                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                                  className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors cursor-pointer"
+                                                  className="size-6 p-1 text-muted-foreground hover:text-foreground rounded transition-colors cursor-pointer"
                                                   title={showCurrentPassword ? (isRtl ? "مخفی کردن" : "Hide") : (isRtl ? "نمایش رمز" : "Show")}
+                                                  aria-label={showCurrentPassword ? (isRtl ? "مخفی کردن" : "Hide") : (isRtl ? "نمایش رمز" : "Show")}
                                                 >
                                                   {showCurrentPassword ? <EyeOff size={13} /> : <Eye size={13} />}
-                                                </button>
-                                                <button
+                                                </Button>
+                                                <Button
                                                   type="button"
+                                                  variant="ghost"
+                                                  size="icon-xs"
                                                   onClick={() => {
                                                     navigator.clipboard.writeText(user.password || "");
                                                     toast.success(isRtl ? "رمز عبور کپی شد." : "Password copied.");
                                                   }}
-                                                  className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors cursor-pointer"
+                                                  className="size-6 p-1 text-muted-foreground hover:text-foreground rounded transition-colors cursor-pointer"
                                                   title={isRtl ? "کپی رمز" : "Copy"}
+                                                  aria-label={isRtl ? "کپی رمز" : "Copy"}
                                                 >
                                                   <Copy size={13} />
-                                                </button>
+                                                </Button>
                                               </>
                                             )}
                                           </div>
@@ -2418,18 +2447,20 @@ export function AdminUsersTable({
                                       className="flex flex-col gap-3 pt-1"
                                     >
                                       {/* Hidden dummy inputs to safely absorb browser password manager autofill heuristics */}
-                                      <input 
+                                      <Input 
                                         type="text" 
                                         name="fake_username_prevention" 
                                         tabIndex={-1} 
-                                        style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} 
+                                        className="sr-only"
+                                        aria-hidden="true"
                                         autoComplete="username" 
                                       />
-                                      <input 
+                                      <Input 
                                         type="password" 
                                         name="fake_password_prevention" 
                                         tabIndex={-1} 
-                                        style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} 
+                                        className="sr-only"
+                                        aria-hidden="true"
                                         autoComplete="current-password" 
                                       />
 
@@ -2536,14 +2567,17 @@ export function AdminUsersTable({
                                           </p>
                                         </div>
                                       </div>
-                                      <button 
+                                      <Button 
                                         type="button"
+                                        variant="ghost"
+                                        size="icon-xs"
                                         onClick={() => setActiveAccordion(null)}
-                                        className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
+                                        className="size-7 text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
                                         title={t("cancel")}
+                                        aria-label={t("cancel")}
                                       >
                                         <X size={15} />
-                                      </button>
+                                      </Button>
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
@@ -2742,14 +2776,17 @@ export function AdminUsersTable({
                                             {isRtl ? currentRoleObj.labelFa : currentRoleObj.labelEn}
                                           </Badge>
 
-                                          <button
+                                          <Button
                                             type="button"
+                                            variant="ghost"
+                                            size="icon-xs"
                                             onClick={() => setActiveAccordion(null)}
                                             className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-pointer transition-colors"
                                             title={t("cancel")}
+                                            aria-label={t("cancel")}
                                           >
                                             <X size={14} />
-                                          </button>
+                                          </Button>
                                         </div>
                                       </div>
 
@@ -2775,14 +2812,15 @@ export function AdminUsersTable({
                                               const isSelected = selectedRoleForUser === roleItem.value;
                                               const RoleIcon = roleItem.icon;
                                               return (
-                                                <button
+                                                <Button
                                                   key={roleItem.value}
                                                   type="button"
+                                                  variant="ghost"
                                                   onClick={() => setSelectedRoleForUser(roleItem.value)}
                                                   className={cn(
-                                                    "flex flex-col text-right p-3 rounded-xl border transition-all cursor-pointer relative",
+                                                    "h-auto w-full flex flex-col text-right items-stretch p-3 rounded-xl border transition-all cursor-pointer relative",
                                                     isSelected
-                                                      ? "bg-purple-500/10 border-purple-500 ring-1 ring-purple-500/30 shadow-xs"
+                                                      ? "bg-purple-500/10 border-purple-500 ring-1 ring-purple-500/30 shadow-xs hover:bg-purple-500/15"
                                                       : "bg-background/80 hover:bg-muted/50 border-border/60"
                                                   )}
                                                 >
@@ -2801,10 +2839,10 @@ export function AdminUsersTable({
                                                       </Badge>
                                                     )}
                                                   </div>
-                                                  <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">
+                                                  <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed text-start">
                                                     {isRtl ? roleItem.descFa : roleItem.descEn}
                                                   </p>
-                                                </button>
+                                                </Button>
                                               );
                                             })}
                                           </div>
@@ -2885,14 +2923,17 @@ export function AdminUsersTable({
                                             </Badge>
                                           )}
 
-                                          <button
+                                          <Button
                                             type="button"
+                                            variant="ghost"
+                                            size="icon-xs"
                                             onClick={() => setActiveAccordion(null)}
                                             className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-pointer transition-colors"
                                             title={t("cancel")}
+                                            aria-label={t("cancel")}
                                           >
                                             <X size={14} />
-                                          </button>
+                                          </Button>
                                         </div>
                                       </div>
 
@@ -3143,14 +3184,17 @@ export function AdminUsersTable({
                                             <span>{t("verifyAllDocs")}</span>
                                           </Button>
 
-                                          <button
+                                          <Button
                                             type="button"
+                                            variant="ghost"
+                                            size="icon-xs"
                                             onClick={() => setActiveAccordion(null)}
                                             className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-pointer transition-colors"
                                             title={t("cancel")}
+                                            aria-label={t("cancel")}
                                           >
                                             <X size={15} />
-                                          </button>
+                                          </Button>
                                         </div>
                                       </div>
 
@@ -3304,106 +3348,119 @@ export function AdminUsersTable({
                             >
                               <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                                 {/* 1. View User Details (مشاهده مشخصات) */}
-                                <button
+                                <Button
                                   type="button"
+                                  variant="ghost"
+                                  size="xs"
                                   onClick={() => toggleAccordion(user.id, 'view')}
                                   className={cn(
-                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer h-auto",
                                     isAccordionOpen && activeAccordion?.type === 'view'
-                                      ? "bg-primary text-primary-foreground shadow-2xs font-semibold"
+                                      ? "bg-primary text-primary-foreground shadow-2xs font-semibold hover:bg-primary/90"
                                       : "text-muted-foreground hover:text-foreground hover:bg-background/80 dark:hover:bg-card"
                                   )}
                                   title={t("viewDetailsBtn")}
                                 >
                                   <Eye size={13} className="shrink-0" />
                                   <span className="hidden sm:inline">{t("viewDetailsBtn")}</span>
-                                </button>
+                                </Button>
 
                                 {/* 2. Change Password (تغییر رمز عبور) */}
-                                <button
+                                <Button
                                   type="button"
+                                  variant="ghost"
+                                  size="xs"
                                   onClick={() => toggleAccordion(user.id, 'password')}
                                   className={cn(
-                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer h-auto",
                                     isAccordionOpen && activeAccordion?.type === 'password'
-                                      ? "bg-amber-500 text-white shadow-2xs font-semibold"
+                                      ? "bg-amber-500 text-white shadow-2xs font-semibold hover:bg-amber-600"
                                       : "text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 hover:bg-background/80 dark:hover:bg-card"
                                   )}
                                   title={isRtl ? "رمز عبور" : "Password"}
                                 >
                                   <KeyRound size={13} className="shrink-0" />
                                   <span className="hidden sm:inline">{isRtl ? "رمز عبور" : "Password"}</span>
-                                </button>
-
+                                </Button>
 
                                 {/* 3. Role Assignment (تعیین رول - منحصراً سوپر ادمین) */}
                                 {isSuperAdmin && (
-                                  <button
+                                  <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="xs"
                                     onClick={() => toggleAccordion(user.id, 'role')}
                                     className={cn(
-                                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer h-auto",
                                       isAccordionOpen && activeAccordion?.type === 'role'
-                                        ? "bg-purple-600 text-white shadow-2xs font-semibold"
+                                        ? "bg-purple-600 text-white shadow-2xs font-semibold hover:bg-purple-700"
                                         : "text-muted-foreground hover:text-purple-600 dark:hover:text-purple-400 hover:bg-background/80 dark:hover:bg-card"
                                     )}
                                     title={isRtl ? "تعیین رول (سوپر ادمین)" : "Role Assignment (Super Admin)"}
                                   >
                                     <UserCog size={13} className="shrink-0" />
                                     <span className="hidden sm:inline">{isRtl ? "تعیین رول" : "Role"}</span>
-                                  </button>
+                                  </Button>
                                 )}
 
                                 {/* 4. Module Access (دسترسی ماژول‌ها - کشویی، مدیر سیستم و سوپر ادمین) */}
                                 {canEditModuleAccess && (
-                                  <button
+                                  <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="xs"
                                     onClick={() => toggleAccordion(user.id, 'access')}
                                     className={cn(
-                                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer h-auto",
                                       isAccordionOpen && activeAccordion?.type === 'access'
-                                        ? "bg-emerald-600 text-white shadow-2xs font-semibold"
+                                        ? "bg-emerald-600 text-white shadow-2xs font-semibold hover:bg-emerald-700"
                                         : "text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-background/80 dark:hover:bg-card"
                                     )}
                                     title={t("moduleAccess")}
                                   >
                                     <ShieldCheck size={13} className="shrink-0" />
                                     <span className="hidden sm:inline">{t("moduleAccess")}</span>
-                                  </button>
+                                  </Button>
                                 )}
 
                                 {/* 5. Delete User (حذف کامل کاربر با پیام هشدار حذف اطلاعات، فقط ادمین‌ها) */}
                                 {canEditModuleAccess && (
-                                  <button
+                                  <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="xs"
                                     onClick={() => handleDeleteUser(user)}
-                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10"
+                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 h-auto"
                                     title={isRtl ? "حذف کاربر" : "Delete User"}
                                   >
                                     <Trash2 size={13} className="shrink-0" />
                                     <span className="hidden sm:inline">{isRtl ? "حذف کاربر" : "Delete User"}</span>
-                                  </button>
+                                  </Button>
                                 )}
 
                                 <div className="h-3.5 w-px bg-border/40 mx-0.5 shrink-0" />
 
                                 {/* 5. Open in Dashboard (مشاهده در داشبورد - بدون اسم، آیکون آخر) */}
-                                <button
+                                <Button
                                   type="button"
+                                  variant="ghost"
+                                  size="icon-xs"
                                   onClick={() => handleSelectAndGoHome(user)}
                                   className="size-7 rounded-lg flex items-center justify-center text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                                   title={t("viewInDashboard")}
                                   aria-label={t("viewInDashboard")}
                                 >
                                   <LayoutDashboard size={14} className="shrink-0" />
-                                </button>
+                                </Button>
                               </div>
 
                               {/* ── Fixed 28px slot for Close (X) so the tab width NEVER shifts when X appears ── */}
                               <div className="size-7 flex items-center justify-center shrink-0 ms-1">
                                 {(isAccordionOpen || isTrayOpen) && (
-                                  <button
+                                  <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="icon-xs"
                                     onClick={() => {
                                       setActiveAccordion(null);
                                       setOpenTrayUserId(null);
@@ -3413,7 +3470,7 @@ export function AdminUsersTable({
                                     aria-label={t("cancel")}
                                   >
                                     <X size={13} className="shrink-0" />
-                                  </button>
+                                  </Button>
                                 )}
                               </div>
                             </div>

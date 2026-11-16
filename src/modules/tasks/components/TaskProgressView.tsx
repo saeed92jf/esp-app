@@ -2478,8 +2478,8 @@ export function TaskProgressView({
                           aria-label={isRtl ? "برو به آخرین پیام" : "Scroll to bottom"}
                           className={cn(
                             "absolute z-30 size-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-150",
-                            "bg-white/95 dark:bg-[#182533]/95 text-slate-700 dark:text-zinc-200 hover:text-[#2481cc] dark:hover:text-[#2481cc]",
-                            "border border-slate-200/90 dark:border-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.24)]",
+                            "bg-card/95 text-foreground hover:text-primary",
+                            "border border-border/80 shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.24)]",
                             "backdrop-blur-md active:scale-90",
                             "bottom-24 sm:bottom-28",
                             isRtl ? "left-4" : "right-4"
@@ -2494,9 +2494,9 @@ export function TaskProgressView({
                     <div className="relative z-10 p-2.5 sm:p-3.5 space-y-2 bg-transparent">
                       {/* Active Reply Banner */}
                       {replyingTo && (
-                        <div className="flex items-center justify-between gap-3 px-3.5 py-2 bg-white/70 dark:bg-black/60 backdrop-blur-md border-s-4 border-[#2481cc] rounded-e-xl text-xs animate-in fade-in-50 duration-150">
+                        <div className="flex items-center justify-between gap-3 px-3.5 py-2 bg-card/80 backdrop-blur-md border-s-4 border-primary rounded-e-xl text-xs animate-in fade-in-50 duration-150">
                           <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 font-bold text-[#2481cc]">
+                            <div className="flex items-center gap-1.5 font-bold text-primary">
                               <CornerUpLeft className="size-3" />
                               <span>{isRtl ? `پاسخ به ${formatPersonName(replyingTo.author_name, locale)}` : `Reply to ${formatPersonName(replyingTo.author_name, locale)}`}</span>
                             </div>
@@ -2575,7 +2575,7 @@ export function TaskProgressView({
                                   className="relative flex items-center gap-2.5 p-2 pe-8 rounded-xl bg-background/90 dark:bg-card/90 border border-border/70 shrink-0 max-w-[210px] shadow-xs group"
                                   dir={isRtl ? "rtl" : "ltr"}
                                 >
-                                  <div className="size-9 rounded-lg bg-[#2481cc] text-white flex flex-col items-center justify-center relative overflow-hidden shrink-0 shadow-2xs">
+                                  <div className="size-9 rounded-lg bg-primary text-primary-foreground flex flex-col items-center justify-center relative overflow-hidden shrink-0 shadow-2xs">
                                     <div className="absolute top-0 end-0 w-2.5 h-2.5 bg-white/40 rounded-bl-[2px]" />
                                     <span className="font-bold text-[9px] lowercase tracking-tight leading-none mt-0.5">
                                       {ext.slice(0, 4)}
@@ -3145,14 +3145,14 @@ function SystemEventPill({
       className={cn(
         "relative flex items-center justify-center my-1 py-1.5 select-none transition-colors duration-150 cursor-context-menu gap-2.5 -mx-3.5 sm:-mx-4 px-3.5 sm:px-4 rounded-none",
         isSelectionMode && "cursor-pointer",
-        isSelected && "bg-[#2481cc]/25 dark:bg-[#2481cc]/35"
+        isSelected && "bg-primary/20"
       )}
       dir={isRtl ? "rtl" : "ltr"}
     >
       {isSelectionMode && (
         <div className="shrink-0">
           {isSelected ? (
-            <div className="size-5 rounded-full bg-[#2481cc] text-white flex items-center justify-center shadow-xs">
+            <div className="size-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs">
               <Check className="size-3.5 stroke-[3]" />
             </div>
           ) : (
@@ -3239,17 +3239,17 @@ function TelegramDocumentCard({
       dir={isRtl ? "rtl" : "ltr"}
       title={isRtl ? `دانلود فایل ${att.name}` : `Download ${att.name}`}
     >
-      {/* Telegram Blue Document Badge with folded top-right corner */}
-      <div className="size-11 rounded-xl bg-[#2481cc] text-white flex flex-col items-center justify-center relative overflow-hidden shrink-0 shadow-2xs group-hover/doc:scale-105 transition-transform">
+      {/* Document Badge with folded top-right corner */}
+      <div className="size-11 rounded-xl bg-primary text-primary-foreground flex flex-col items-center justify-center relative overflow-hidden shrink-0 shadow-2xs group-hover/doc:scale-105 transition-transform">
         <div className="absolute top-0 end-0 w-3.5 h-3.5 bg-white/35 rounded-bl-[4px]" />
         <span className="font-bold text-[10px] lowercase tracking-tight leading-none mt-1">
           {ext.slice(0, 4)}
         </span>
-        <Download className="size-3.5 opacity-0 group-hover/doc:opacity-100 transition-opacity absolute inset-0 m-auto text-white" />
+        <Download className="size-3.5 opacity-0 group-hover/doc:opacity-100 transition-opacity absolute inset-0 m-auto text-primary-foreground" />
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="font-semibold text-[13px] sm:text-sm text-slate-900 dark:text-slate-100 group-hover/doc:text-[#2481cc] transition-colors truncate leading-snug">
+        <p className="font-semibold text-[13px] sm:text-sm text-foreground group-hover/doc:text-primary transition-colors truncate leading-snug">
           {att.name}
         </p>
         {att.size && (
@@ -3367,7 +3367,7 @@ function ProgressItem({
         "relative flex my-0.5 py-1.5 group items-end gap-2.5 sm:gap-3 transition-colors duration-150 -mx-3.5 sm:-mx-4 px-3.5 sm:px-4 rounded-none",
         isMe ? "justify-end" : "justify-start",
         isSelectionMode && "cursor-pointer select-none",
-        isSelected && "bg-[#2481cc]/25 dark:bg-[#2481cc]/35"
+        isSelected && "bg-primary/20"
       )}
     >
       {/* Telegram Selection Check Indicator */}
@@ -3383,11 +3383,11 @@ function ProgressItem({
           )}
         >
           {isSelected ? (
-            <div className="size-5 rounded-full bg-[#2481cc] text-white flex items-center justify-center shadow-xs animate-in zoom-in-75 duration-100">
+            <div className="size-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs animate-in zoom-in-75 duration-100">
               <Check className="size-3.5 stroke-[3]" />
             </div>
           ) : (
-            <div className="size-5 rounded-full border-2 border-slate-400/80 dark:border-white/50 bg-black/10 dark:bg-black/20 hover:border-[#2481cc] transition-colors" />
+            <div className="size-5 rounded-full border-2 border-slate-400/80 dark:border-white/50 bg-black/10 dark:bg-black/20 hover:border-primary transition-colors" />
           )}
         </div>
       )}
@@ -3423,16 +3423,16 @@ function ProgressItem({
             : cn(
                 "px-3.5 py-2 border-0 outline-none ring-0",
                 isMe
-                  ? "rounded-[18px] rounded-br-none bg-[#effdde] text-slate-900 filter drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.08)] dark:bg-[#2b5278] dark:text-slate-100 dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]"
-                  : "rounded-[18px] rounded-bl-none bg-white text-slate-900 filter drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.08)] dark:bg-[#182533] dark:text-slate-100 dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]"
+                  ? "rounded-[18px] rounded-br-none bg-emerald-100 text-slate-900 filter drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.08)] dark:bg-emerald-950/70 dark:text-slate-100 dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]"
+                  : "rounded-[18px] rounded-bl-none bg-card text-foreground filter drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.08)] dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]"
               )
         )}
       >
-        {/* Seamless Unified Telegram Speech Bubble Tail (دم کاملاً یکپارچه و متصل به کادر بدون بوردر) */}
+        {/* Seamless Unified Speech Bubble Tail */}
         {!isPureEmojiMessage && (
           isMe ? (
             <svg
-              className="absolute bottom-0 -end-[8px] w-[9px] h-[16px] text-[#effdde] dark:text-[#2b5278] fill-current pointer-events-none"
+              className="absolute bottom-0 -end-[8px] w-[9px] h-[16px] text-emerald-100 dark:text-emerald-950/70 fill-current pointer-events-none"
               viewBox="0 0 9 16"
               preserveAspectRatio="none"
             >
@@ -3440,7 +3440,7 @@ function ProgressItem({
             </svg>
           ) : (
             <svg
-              className="absolute bottom-0 -start-[8px] w-[9px] h-[16px] text-white dark:text-[#182533] fill-current pointer-events-none"
+              className="absolute bottom-0 -start-[8px] w-[9px] h-[16px] text-card fill-current pointer-events-none"
               viewBox="0 0 9 16"
               preserveAspectRatio="none"
             >
@@ -3464,10 +3464,10 @@ function ProgressItem({
         {progress.reply_to && (
           <div
             className={cn(
-              "border-s-[3px] border-[#2481cc] rounded-e-lg px-2.5 py-1 text-xs mb-1.5 leading-snug select-none",
+              "border-s-[3px] border-primary rounded-e-lg px-2.5 py-1 text-xs mb-1.5 leading-snug select-none",
               isPureEmojiMessage
                 ? "bg-black/35 text-white backdrop-blur-xs"
-                : "bg-[#2481cc]/8 dark:bg-white/10"
+                : "bg-primary/10 dark:bg-white/10"
             )}
           >
             <span
@@ -3549,12 +3549,12 @@ function ProgressItem({
           <div
             className={cn(
               "flex items-center justify-end gap-1 mt-1 text-[10px] font-mono select-none float-end ms-2 -mb-0.5",
-              isMe ? "text-[#55804e] dark:text-[#9bc2e6]" : "text-slate-400 dark:text-slate-400"
+              isMe ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
             )}
             dir="ltr"
           >
             <span className="fa-num">{timeStr}</span>
-            {isMe && <CheckCheck className="size-3.5 text-[#4fae60] dark:text-[#6ec97f]" />}
+            {isMe && <CheckCheck className="size-3.5 text-emerald-500" />}
           </div>
         )}
       </div>

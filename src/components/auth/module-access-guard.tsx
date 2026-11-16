@@ -68,6 +68,12 @@ const PROTECTED_MODULES: ProtectedModuleDef[] = [
     nameEn: "Datasheet AI",
   },
   {
+    id: "esp-coding",
+    href: "/engineering/esp-coding",
+    nameFa: "سامانه کدگذاری قطعات و متریال (ESP Coding)",
+    nameEn: "ESP Coding",
+  },
+  {
     id: "dashboard",
     href: "/dashboard",
     nameFa: "داشبورد سازمانی",

@@ -6,6 +6,13 @@ import { User, UserModuleAccess, MonthlyBonusItem } from "../types/admin.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -1202,17 +1209,19 @@ export function AdminUserConfig({
               const Icon = seg.icon;
 
               return (
-                <button
+                <Button
                   key={seg.id}
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     setActiveSegment(seg.id);
                     setOpenSegment(seg.id);
                   }}
                   className={cn(
-                    "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer select-none",
+                    "h-auto flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer select-none",
                     isActive
-                      ? "bg-primary text-primary-foreground shadow-sm"
+                      ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:text-primary-foreground"
                       : isCompleted
                         ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/15"
                         : "text-muted-foreground hover:text-foreground hover:bg-background/80"
@@ -1237,7 +1246,7 @@ export function AdminUserConfig({
                     )}
                   </div>
                   <span className="truncate">{t(seg.titleKey)}</span>
-                </button>
+                </Button>
               );
             })}
           </div>

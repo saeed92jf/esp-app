@@ -705,7 +705,8 @@
       "standards": "Standards",
       "Claud-Flow": "Claude Flow",
       "customers": "Industries & Clients",
-      "directory": "Personnel Directory"
+      "directory": "Personnel Directory",
+      "espCoding": "ESP Coding"
     },
     "descriptions": {
       "dashboard": "A clear overview of your key metrics and activity.",
@@ -736,7 +737,8 @@
       "audio": "Access and manage your audio files.",
       "mediaLibrary": "A unified library for all your media files.",
       "standards": "API Standards",
-      "Claud-Flow": "Claude Flow"
+      "Claud-Flow": "Claude Flow",
+      "espCoding": "Enterprise product and material coding management system"
     }
   },
   "NotFound": {
@@ -3152,6 +3154,114 @@
       "noHistory": "No historical scan records yet.",
       "violationsFound": "violations detected",
       "resolved": "resolved"
+    }
+  },
+  "espCoding": {
+    "title": "ESP Coding",
+    "subtitle": "Centralized Enterprise Product & Material Coding Management System",
+    "nav": {
+      "workspace": "Workspace",
+      "products": "Products",
+      "materials": "Materials",
+      "classification": "Classification",
+      "formulaDesigner": "Formula Designer",
+      "approvals": "Approvals",
+      "imports": "Imports & History"
+    },
+    "workspace": {
+      "searchPlaceholder": "Search by ProductCode, MaterialCode, Specification, UNS, or Product Type...",
+      "quickStats": "Coding Master Statistics",
+      "totalProducts": "Registered Products",
+      "totalMaterials": "Material Master Items",
+      "activeFormulas": "Active Formulas",
+      "pendingApprovals": "Pending Approvals",
+      "startNewCoding": "Start New Product Coding",
+      "exploreMaterials": "Explore Materials",
+      "recentRegistrations": "Recent Registrations",
+      "recentAuditLogs": "System Audit Trail"
+    },
+    "products": {
+      "title": "Product Coding & Registration",
+      "selectCategory": "Select Production Category",
+      "selectInternalProduct": "Select Internal Product",
+      "selectProductType": "Select Product Type",
+      "selectShape": "Select Shape",
+      "selectType": "Select Type",
+      "selectLiftSize": "Select Lift / Hole Size",
+      "selectThickness": "Select Thickness",
+      "candidateCode": "Candidate Product Code",
+      "activeFormula": "Active Formula Profile",
+      "codeBreakdown": "Code Segment Breakdown",
+      "reserveBtn": "Reserve Code (48 Hours)",
+      "registerBtn": "Confirm & Register Product",
+      "registeredSuccess": "Product permanently registered successfully!",
+      "reservedSuccess": "Product code reserved successfully for 48 hours!",
+      "emptyCatalog": "No products found matching filters."
+    },
+    "materials": {
+      "title": "Material Master & Specifications",
+      "subtitle": "Comprehensive material properties across 165 engineering and mechanical attributes",
+      "searchPlaceholder": "Search by Specification (SA-516...), Grade, UNS, Form...",
+      "specCol": "Specification",
+      "gradeCol": "Grade",
+      "classCol": "Class",
+      "unsCol": "UNS",
+      "formCol": "Form",
+      "densityCol": "Density (kg/m³)",
+      "tensileCol": "Tensile (MPa)",
+      "yieldCol": "Yield (MPa)",
+      "actionsCol": "Actions",
+      "viewDetails": "View Technical Properties",
+      "rawProperties": "All 165 Raw Master Data Properties"
+    },
+    "formulaDesigner": {
+      "title": "Visual Coding Formula Designer",
+      "subtitle": "Reorder segments, configure separators, and preview code outputs in real-time",
+      "selectProfile": "Select Formula Profile",
+      "activeVersion": "Active Version",
+      "draftVersion": "Draft Version",
+      "availableSegments": "Available Segments",
+      "arrangedSegments": "Arranged Code Segments",
+      "dragHint": "Drag segments or click arrows to rearrange sequence order",
+      "separatorLabel": "Global Separator",
+      "separatorNone": "None (Direct Concatenation)",
+      "separatorHyphen": "Hyphen (-)",
+      "separatorUnderscore": "Underscore (_)",
+      "separatorDot": "Dot (.)",
+      "separatorSlash": "Slash (/)",
+      "separatorCustom": "Custom Text",
+      "livePreview": "Live Code Preview",
+      "sampleOutput": "Sample Candidate Output",
+      "saveDraftBtn": "Save Draft Version",
+      "submitApprovalBtn": "Submit for Super Admin Approval",
+      "draftSaved": "Draft formula version saved successfully.",
+      "submittedSuccess": "Formula version submitted for Super Admin approval."
+    },
+    "approvals": {
+      "title": "Formula Approval & Activation Governance",
+      "subtitle": "Strict Super Admin authority gate for formula lifecycle management",
+      "superAdminBadge": "SUPER ADMIN REQUIRED",
+      "pendingList": "Pending Approval Queue",
+      "activeFormulas": "Currently Active Production Formulas",
+      "approveBtn": "Approve Formula",
+      "activateBtn": "Activate Formula",
+      "rejectBtn": "Reject",
+      "returnBtn": "Return for Revision",
+      "rollbackBtn": "Rollback to Previous Version",
+      "archiveBtn": "Archive",
+      "confirmActivation": "Confirm Super Admin Activation",
+      "activationReasonLabel": "Enter Activation Reason / Audit Justification *",
+      "forbiddenNotice": "You do not have Super Admin privileges to activate or approve formulas."
+    },
+    "imports": {
+      "title": "Excel Import & Migration Infrastructure",
+      "subtitle": "Import, validate, and verify Coding.xlsx workbook data with rollback safety",
+      "workbookStatus": "Workbook File Status",
+      "available": "Coding.xlsx Detected",
+      "missing": "Coding.xlsx Not Found",
+      "validateBtn": "Run Dry-Run Validation",
+      "executeBtn": "Import to Master Data",
+      "validationReport": "Validation & Integrity Report"
     }
   }
 }

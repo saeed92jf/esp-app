@@ -705,7 +705,8 @@
       "standards": "استاندارد ها",
       "Claud-Flow": "جریان ابری",
       "customers": "صنایع و کارفرمایان",
-      "directory": "راهنمای همکاران"
+      "directory": "راهنمای همکاران",
+      "espCoding": "کدگذاری قطعات و متریال"
     },
     "descriptions": {
       "dashboard": "نمای کلی از وضعیت و شاخص‌های کلیدی کسب‌وکار شما.",
@@ -736,7 +737,8 @@
       "audio": "دسترسی و مدیریت فایل‌های صوتی.",
       "mediaLibrary": "کتابخانه رسانه",
       "standards": "استاندارد ها",
-      "Claud-Flow": "جریان ابری"
+      "Claud-Flow": "جریان ابری",
+      "espCoding": "سامانه جامع و متمرکز کدگذاری، مستر دیتای متریال و طراحی فرمول‌های مهندسی"
     }
   },
   "NotFound": {
@@ -3152,6 +3154,114 @@
       "noHistory": "هنوز سابقه‌ای ثبت نشده است.",
       "violationsFound": "خطا شناسایی‌شده",
       "resolved": "مورد رفع‌شده"
+    }
+  },
+  "espCoding": {
+    "title": "کدگذاری قطعات و متریال (ESP Coding)",
+    "subtitle": "سامانه جامع و متمرکز کدگذاری، مستر دیتای متریال و طراحی فرمول‌های مهندسی",
+    "nav": {
+      "workspace": "میز کار",
+      "products": "محصولات",
+      "materials": "مستر متریال",
+      "classification": "طبقه‌بندی و فرم‌ها",
+      "formulaDesigner": "فرمول‌ساز بصری",
+      "approvals": "تأیید و فعال‌سازی",
+      "imports": "ایمپورت و تاریخچه"
+    },
+    "workspace": {
+      "searchPlaceholder": "جستجو بر اساس کد قطعه، کد متریال، استاندارد، UNS یا نوع محصول...",
+      "quickStats": "آمار کلان مستر دیتای کدگذاری",
+      "totalProducts": "محصولات ثبت‌شده",
+      "totalMaterials": "آیتم‌های مستر متریال",
+      "activeFormulas": "فرمول‌های فعال",
+      "pendingApprovals": "در انتظار تأیید ادمین کل",
+      "startNewCoding": "شروع کدگذاری محصول جدید",
+      "exploreMaterials": "کاوش مستر متریال",
+      "recentRegistrations": "کدهای اخیراً ثبت‌شده",
+      "recentAuditLogs": "رد پای ممیزی سیستم"
+    },
+    "products": {
+      "title": "کدگذاری و ثبت رسمی محصولات",
+      "selectCategory": "انتخاب دسته تولید",
+      "selectInternalProduct": "انتخاب محصول داخلی",
+      "selectProductType": "انتخاب نوع محصول",
+      "selectShape": "انتخاب شکل هندسی",
+      "selectType": "انتخاب نوع ساختار",
+      "selectLiftSize": "انتخاب اندازه سوراخ / لیفت",
+      "selectThickness": "انتخاب ضخامت",
+      "candidateCode": "کد پیشنهادی محصول",
+      "activeFormula": "پروفایل فرمول فعال",
+      "codeBreakdown": "تفکیک اجزای کد",
+      "reserveBtn": "رزرو موقت کد (۴۸ ساعت)",
+      "registerBtn": "تأیید نهایی و ثبت قطعی",
+      "registeredSuccess": "محصول با موفقیت و به صورت قطعی در سیستم ثبت گردید.",
+      "reservedSuccess": "کد محصول با موفقیت به مدت ۴۸ ساعت رزرو شد.",
+      "emptyCatalog": "هیچ محصولی با فیلترهای مشخص‌شده یافت نشد."
+    },
+    "materials": {
+      "title": "مستر دیتای متریال و مشخصات فنی",
+      "subtitle": "اطلاعات جامع مشخصات متریال در ۱۶۵ ویژگی مهندسی، مکانیکی و حرارتی",
+      "searchPlaceholder": "جستجو بر اساس استاندارد (SA-516...)، گرید، UNS، فرم متریال...",
+      "specCol": "استاندارد (SPEC)",
+      "gradeCol": "گرید (Grade)",
+      "classCol": "کلاس",
+      "unsCol": "کد UNS",
+      "formCol": "فرم متریال",
+      "densityCol": "چگالی (kg/m³)",
+      "tensileCol": "استحکام کششی (MPa)",
+      "yieldCol": "تنش تسلیم (MPa)",
+      "actionsCol": "عملیات",
+      "viewDetails": "مشاهده مشخصات فنی",
+      "rawProperties": "کلیه ۱۶۵ پارامتر و مشخصه خام مستر دیتا"
+    },
+    "formulaDesigner": {
+      "title": "طراح بصری فرمول‌های کدگذاری",
+      "subtitle": "جابه‌جایی اجزای کد، تنظیم جداکننده‌ها و پیش‌نمایش بلادرنگ کد خروجی",
+      "selectProfile": "انتخاب پروفایل فرمول",
+      "activeVersion": "نسخه فعال",
+      "draftVersion": "نسخه پیش‌نویس",
+      "availableSegments": "اجزای در دسترس",
+      "arrangedSegments": "چیدمان اجزای کد",
+      "dragHint": "اجزا را بکشید یا با دکمه‌های جهت‌نما ترتیب آن‌ها را تغییر دهید",
+      "separatorLabel": "جداکننده سراسری",
+      "separatorNone": "بدون جداکننده (اتصال مستقیم)",
+      "separatorHyphen": "خط تیره (-)",
+      "separatorUnderscore": "خط زیر (_)",
+      "separatorDot": "نقطه (.)",
+      "separatorSlash": "اسلش (/)",
+      "separatorCustom": "متن سفارشی",
+      "livePreview": "پیش‌نمایش بلادرنگ کد",
+      "sampleOutput": "نمونه کد خروجی",
+      "saveDraftBtn": "ذخیره پیش‌نویس",
+      "submitApprovalBtn": "ارسال برای تأیید سوپرادمین",
+      "draftSaved": "پیش‌نویس نسخه فرمول با موفقیت ذخیره شد.",
+      "submittedSuccess": "نسخه فرمول برای بررسی و تأیید سوپرادمین ارسال گردید."
+    },
+    "approvals": {
+      "title": "مدیریت و کنترل چرخه حیات فرمول‌ها",
+      "subtitle": "دروازه کنترل امنیتی انحصاری سوپرادمین برای تأیید و فعال‌سازی فرمول‌ها",
+      "superAdminBadge": "نیازمند سطح دسترسی سوپرادمین",
+      "pendingList": "صف فرمول‌های در انتظار تأیید",
+      "activeFormulas": "فرمول‌های فعال جاری در محیط پروداکشن",
+      "approveBtn": "تأیید فرمول",
+      "activateBtn": "فعال‌سازی رسمی",
+      "rejectBtn": "رد کردن",
+      "returnBtn": "بازگشت جهت اصلاح",
+      "rollbackBtn": "بازگردانی به نسخه قبلی",
+      "archiveBtn": "آرشیو کردن",
+      "confirmActivation": "تأیید فعال‌سازی سوپرادمین",
+      "activationReasonLabel": "دلیل فعال‌سازی / توجیه ممیزی *",
+      "forbiddenNotice": "تنها سوپرادمین (Super Admin) مجاز به تأیید، فعال‌سازی یا بازگردانی فرمول‌ها می‌باشد."
+    },
+    "imports": {
+      "title": "زیرساخت ایمپورت اکسل و مهاجرت داده‌ها",
+      "subtitle": "اعتبارسنجی، بازبینی و ایمپورت داده‌های Coding.xlsx با امکان بازگردانی امن",
+      "workbookStatus": "وضعیت فایل اکسل",
+      "available": "فایل Coding.xlsx شناسایی شد",
+      "missing": "فایل Coding.xlsx یافت نشد",
+      "validateBtn": "اجرای اعتبارسنجی آزمایشی (Dry-Run)",
+      "executeBtn": "ایمپورت قطعی به مستر دیتا",
+      "validationReport": "گزارش سلامت و اعتبارسنجی داده‌ها"
     }
   }
 }

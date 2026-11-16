@@ -17,6 +17,7 @@ import {
   Layers,
   Sparkles,
   FolderKanban,
+  Binary,
 } from "lucide-react";
 
 export type TabId = "tasks" | "custom" | "administrative" | "market";
@@ -38,6 +39,19 @@ export interface DashboardModuleMeta {
 }
 
 export const MODULES_REGISTRY: DashboardModuleMeta[] = [
+  {
+    id: "esp-coding",
+    titleFa: "کدگذاری قطعات و متریال",
+    titleEn: "ESP Coding",
+    descFa: "سامانه جامع و متمرکز کدگذاری، مستر دیتای متریال و طراحی فرمول‌های مهندسی",
+    descEn: "Enterprise product and material coding management system",
+    icon: Binary,
+    category: "tools",
+    minW: 4,
+    minH: 6,
+    defaultW: 12,
+    defaultH: 9,
+  },
   {
     id: "projects",
     titleFa: "مدیریت پروژه‌ها",

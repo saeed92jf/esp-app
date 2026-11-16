@@ -575,7 +575,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
         )}
       >
         {/* 1. Header: Title, Mode Toggle, Search Bar & Category Combobox */}
-        <div className="shrink-0 w-full bg-background/95 dark:bg-[#0c0d12]/95 backdrop-blur-md pt-2 sm:pt-3 pb-2.5 sm:pb-3 border-b border-border/40 mb-1 sm:mb-2">
+        <div className="shrink-0 w-full bg-background/95 backdrop-blur-md pt-2 sm:pt-3 pb-2.5 sm:pb-3 border-b border-border/40 mb-1 sm:mb-2">
           {/* Title with View Mode Toggle (80/80 badge removed as requested) */}
           <div className="flex items-center justify-between gap-3 mb-2 sm:mb-2.5">
             <div>

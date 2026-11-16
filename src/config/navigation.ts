@@ -338,6 +338,14 @@ export const NAVIGATION: NavGroup[] = [
         public: true,
         free: false,
       },
+      {
+        labelKey: "espCoding",
+        href: "/engineering/esp-coding",
+        icon: TreeStructure,
+        color: "emerald",
+        public: true,
+        free: false,
+      },
     ],
   },
   {
