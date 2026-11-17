@@ -20,10 +20,6 @@ const VALID_TABS = [
   "settings",
 ];
 
-export async function generateStaticParams() {
-  return VALID_TABS.map((tab) => ({ tab }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, tab } = await params;
   const isFa = locale === "fa";
