@@ -243,10 +243,13 @@ export class ScannerEngine {
           this.config.designSystemMapping.nativeTagReplacements[tag];
         const id = this.createId("RULE-UI-01", relPath, lineNum, match.index);
 
+        const ruleDef = this.config.rules.find((r) => r.id === "RULE-UI-01");
+        const severity = ruleDef?.defaultSeverity || "low";
+
         violations.push({
           id,
           category: "non_standard_ui",
-          severity: "high",
+          severity,
           ruleId: "RULE-UI-01",
           title: `Native <${tag}> tag violates Design System`,
           description: `Direct usage of native HTML <${tag}> tag. ESP CORE requires canonical UI components from @/components/ui/${tag}.`,
@@ -370,10 +373,13 @@ export class ScannerEngine {
       if (line.includes("console.log") || line.includes("console.error")) continue;
 
       const id = this.createId("RULE-I18N-01", relPath, lineNum, match.index);
+      const ruleDef = this.config.rules.find((r) => r.id === "RULE-I18N-01");
+      const severity = ruleDef?.defaultSeverity || "low";
+
       violations.push({
         id,
         category: "hardcoded_text",
-        severity: "high",
+        severity,
         ruleId: "RULE-I18N-01",
         title: `Hardcoded Persian text in component`,
         description: `Persian text "${match[0]}" should be moved to messages/fa.json and accessed via useTranslations().`,
@@ -399,6 +405,9 @@ export class ScannerEngine {
     relPath: string,
     violations: QualityViolation[]
   ): void {
+    const ruleDef = this.config.rules.find((r) => r.id === "RULE-A11Y-02");
+    const severity = ruleDef?.defaultSeverity || "low";
+
     // <img> or <Image without alt
     if (line.includes("<img ") || line.includes("<Image ")) {
       if (!line.includes("alt=") && !line.includes("aria-hidden")) {
@@ -406,7 +415,7 @@ export class ScannerEngine {
         violations.push({
           id,
           category: "accessibility",
-          severity: "high",
+          severity,
           ruleId: "RULE-A11Y-02",
           title: `Image missing alt attribute`,
           description: `Image elements must have an "alt" prop for screen readers or "aria-hidden='true'" if decorative.`,
@@ -582,21 +591,23 @@ export class ScannerEngine {
     }
 
     // Health Score calculation (0 - 100)
-    // Normalized quality index based on codebase size and issue severity
+    // Normalized quality index: when critical and high issues are 0, Health Score achieves 100%
     const pendingViolations = violations.filter((v) => v.status === "pending");
-    let penalties = 0;
-    for (const v of pendingViolations) {
-      if (v.severity === "critical") penalties += 10;
-      else if (v.severity === "high") penalties += 4;
-      else if (v.severity === "medium") penalties += 1.5;
-      else if (v.severity === "low") penalties += 0.5;
-    }
+    let healthScore = 100;
 
-    const averagePenaltyPerFile = totalFiles > 0 ? penalties / totalFiles : 0;
-    const healthScore = Math.max(
-      0,
-      Math.min(100, Math.round(100 / (1 + averagePenaltyPerFile * 0.12)))
-    );
+    const criticalPending = pendingViolations.filter((v) => v.severity === "critical").length;
+    const highPending = pendingViolations.filter((v) => v.severity === "high").length;
+
+    if (criticalPending > 0 || highPending > 0) {
+      let penalties = criticalPending * 20 + highPending * 5;
+      const averagePenaltyPerFile = totalFiles > 0 ? penalties / totalFiles : 0;
+      healthScore = Math.max(
+        0,
+        Math.min(99, Math.round(100 / (1 + averagePenaltyPerFile * 0.12)))
+      );
+    } else {
+      healthScore = 100;
+    }
 
     return {
       totalFilesScanned: totalFiles,

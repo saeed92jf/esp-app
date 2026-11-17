@@ -3,17 +3,17 @@
 import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { 
-  MapPin, 
-  Search, 
-  Crosshair, 
-  Maximize2, 
-  Minimize2, 
-  Trash2, 
-  Check, 
-  Loader2, 
-  Plus, 
-  Minus 
+import {
+  MapPin,
+  Search,
+  Crosshair,
+  Maximize2,
+  Minimize2,
+  Trash2,
+  Check,
+  Loader2,
+  Plus,
+  Minus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
