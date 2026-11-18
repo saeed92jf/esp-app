@@ -405,7 +405,7 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
 
         {/* ── Heat Map Grid: 7 Time Slots (Rows) x 7 Days (Cols) forming a Symmetrical 7x7 Flexible Grid ── */}
         <div className="flex-1 min-h-0 flex flex-col justify-center w-full overflow-hidden">
-          <div className="w-full flex flex-col gap-1 max-w-[500px] mx-auto">
+          <div className="w-full flex flex-col gap-1 max-w-[380px] mx-auto">
             
             {/* Day Headers (Horizontal Axis - افقی روزهای هفته) */}
             <div className="grid grid-cols-[36px_repeat(7,1fr)] sm:grid-cols-[40px_repeat(7,1fr)] gap-1 sm:gap-1.5 items-center pb-0.5 text-center w-full">
@@ -462,7 +462,7 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
                             onMouseEnter={() => cell && setHoveredCell(cell)}
                             onMouseLeave={() => setHoveredCell(null)}
                             className={cn(
-                              "aspect-square w-full max-w-[28px] sm:max-w-[32px] rounded sm:rounded-md transition-all duration-150 relative flex items-center justify-center",
+                              "aspect-square w-full max-w-[24px] sm:max-w-[28px] rounded sm:rounded-md transition-all duration-150 relative flex items-center justify-center",
                               // 0. آینده (هنوز فرا نرسیده - بدون رنگ، بوردر خط‌چین ظریف)
                               isFuture && (
                                 "bg-slate-200/20 dark:bg-slate-900/15 border border-dashed border-slate-300/50 dark:border-slate-700/50 opacity-40 hover:opacity-75 cursor-default"

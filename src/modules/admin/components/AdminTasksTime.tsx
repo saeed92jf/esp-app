@@ -299,8 +299,8 @@ export function AdminTasksTime({
           </div>
         </div>
 
-        {/* Module 2: Assigned User Tasks (عرض کمتر: lg:col-span-3، نمایش اطلاعات ساده‌تر و بهینه) */}
-        <div className="col-span-1 md:col-span-1 lg:col-span-3 bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col h-full min-h-0 shadow-2xs overflow-hidden">
+        {/* Module 2: Assigned User Tasks (افزایش به ۴ ستون برای تسک‌ها) */}
+        <div className="col-span-1 md:col-span-1 lg:col-span-4 bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col h-full min-h-0 shadow-2xs overflow-hidden">
           <div className="flex items-center justify-between mb-2 xl:mb-2.5 px-0.5 shrink-0 gap-1.5 pb-2 border-b border-border/30">
             <div className="flex items-center gap-1.5 min-w-0">
               <FolderKanban size={16} className="text-primary shrink-0" />
@@ -431,8 +431,8 @@ export function AdminTasksTime({
           </div>
         </div>
 
-        {/* Module 3 & 4: Online Heatmap & Module Access (ستون سوم: گسترش‌یافته به lg:col-span-5) */}
-        <div className="col-span-1 md:col-span-2 lg:col-span-5 flex flex-col gap-3 h-full min-h-0">
+        {/* Module 3 & 4: Online Heatmap & Module Access (ستون سوم: بهینه و متوازن‌شده به lg:col-span-4) */}
+        <div className="col-span-1 md:col-span-2 lg:col-span-4 flex flex-col gap-3 h-full min-h-0">
           <div className="flex-1 min-h-0">
             <AdminActivities selectedUser={selectedUser} />
           </div>

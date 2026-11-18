@@ -20,6 +20,7 @@ import { getRoleGradient, getRoleGlowShadow } from "@/lib/role-avatar";
 import { api } from "@/services";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { resolveDegreeLabel } from "@/config/profile-options";
 import {
   Dialog,
   DialogContent,
@@ -134,8 +135,11 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
   const insPlan = resolveInsurancePlan(selectedUser);
   const insDependents = childrenCount + (isMarried ? 1 : 0);
 
-  const educationField = selectedUser.educationField || t("defaultEducationField");
-  const educationDegree = selectedUser.educationDegree ? t(`degreesOptions.${selectedUser.educationDegree}` as any) : t("degreesOptions.master");
+  const educationField = selectedUser.educationField || selectedUser.fieldOfStudy || (selectedUser.education && selectedUser.education !== selectedUser.educationDegree ? selectedUser.education : "") || t("defaultEducationField");
+  const rawDegree = selectedUser.educationDegree || selectedUser.education;
+  const educationDegree = rawDegree
+    ? (t.has(`degreesOptions.${rawDegree}`) ? t(`degreesOptions.${rawDegree}`) : resolveDegreeLabel(rawDegree, locale))
+    : t("degreesOptions.master");
 
   const insuranceStyles: Record<'active' | 'inactive', Record<'golden' | 'silver' | 'special' | 'regular', { text: string; icon: any }>> = {
     active: {
