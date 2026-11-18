@@ -187,15 +187,15 @@ export function GuardianViolationsTable({
   return (
     <div className="space-y-3.5 animate-in fade-in duration-150">
       {/* Control Header */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-xl border shadow-xs">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border/40 shadow-xs">
         {/* Search */}
-        <form onSubmit={handleSearchSubmit} className="relative flex-1 min-w-[200px]">
-          <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+        <form onSubmit={handleSearchSubmit} className="relative flex-1 min-w-[200px] max-w-md">
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             value={searchVal}
             onChange={(e) => setSearchVal(e.target.value)}
             placeholder={t("filters.searchPlaceholder")}
-            className="ps-8.5 h-9 text-xs"
+            className="ps-9 pe-3 h-9 text-xs rounded-xl bg-muted/30"
           />
         </form>
 
@@ -203,7 +203,7 @@ export function GuardianViolationsTable({
         <div className="flex flex-wrap items-center gap-2">
           {/* Status */}
           <Select value={selectedStatus} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-[110px] h-9 text-xs">
+            <SelectTrigger className="w-[110px] h-9 text-xs rounded-xl">
               <SelectValue placeholder={t("filters.status")} />
             </SelectTrigger>
             <SelectContent>
@@ -216,7 +216,7 @@ export function GuardianViolationsTable({
 
           {/* Severity */}
           <Select value={selectedSeverity} onValueChange={handleSeverityChange}>
-            <SelectTrigger className="w-[110px] h-9 text-xs">
+            <SelectTrigger className="w-[110px] h-9 text-xs rounded-xl">
               <SelectValue placeholder={t("filters.severity")} />
             </SelectTrigger>
             <SelectContent>
@@ -230,7 +230,7 @@ export function GuardianViolationsTable({
 
           {/* Category */}
           <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-            <SelectTrigger className="w-[130px] h-9 text-xs">
+            <SelectTrigger className="w-[130px] h-9 text-xs rounded-xl">
               <SelectValue placeholder={t("filters.category")} />
             </SelectTrigger>
             <SelectContent>
@@ -251,10 +251,10 @@ export function GuardianViolationsTable({
             size="sm"
             onClick={() => onRunScan(false)}
             disabled={loading}
-            className="h-9 text-xs gap-1.5"
+            className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
           >
-            <RefreshCw className={`size-3.5 ${loading ? "animate-spin" : ""}`} />
-            {t("actions.scan")}
+            <RefreshCw className={`size-3.5 shrink-0 ${loading ? "animate-spin" : ""}`} />
+            <span>{t("actions.scan")}</span>
           </Button>
 
           <Button
@@ -262,16 +262,16 @@ export function GuardianViolationsTable({
             size="sm"
             onClick={onBatchAutoFix}
             disabled={loading}
-            className="h-9 text-xs gap-1.5"
+            className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer whitespace-nowrap shrink-0 shadow-xs"
           >
-            <Sparkles className="size-3.5" />
-            {t("actions.autoFixSafe")}
+            <Sparkles className="size-3.5 shrink-0" />
+            <span>{t("actions.autoFixSafe")}</span>
           </Button>
         </div>
       </div>
 
       {/* Violations Table */}
-      <div className="rounded-xl border bg-card shadow-xs overflow-hidden">
+      <div className="rounded-2xl sm:rounded-3xl border border-border/50 bg-card shadow-xs overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">

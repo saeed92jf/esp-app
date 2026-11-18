@@ -263,14 +263,14 @@ export function AdminAuditLogsView({ currentUser }: AdminAuditLogsViewProps) {
               type="button"
               onClick={() => setAutoRefresh(!autoRefresh)}
               className={cn(
-                "h-9 px-3 rounded-xl text-xs font-semibold border transition-all inline-flex items-center gap-1.5 cursor-pointer",
+                "h-9 px-3 rounded-xl text-xs font-semibold border transition-all inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0",
                 autoRefresh
                   ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
                   : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
               )}
             >
-              <span className={cn("size-2 rounded-full", autoRefresh ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/40")} />
-              <span>{isRtl ? (autoRefresh ? "به‌روزرسانی زنده فعال" : "به‌روزرسانی خودکار خاموش") : (autoRefresh ? "Live Sync On" : "Live Sync Off")}</span>
+              <span className={cn("size-2 rounded-full shrink-0", autoRefresh ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/40")} />
+              <span>{isRtl ? (autoRefresh ? "زنده" : "آفلاین") : (autoRefresh ? "Live Sync" : "Sync Off")}</span>
             </button>
 
             {/* Manual refresh button */}
@@ -279,9 +279,9 @@ export function AdminAuditLogsView({ currentUser }: AdminAuditLogsViewProps) {
               size="sm"
               onClick={() => fetchLogs()}
               disabled={refreshing}
-              className="h-9 rounded-xl gap-1.5 cursor-pointer"
+              className="h-9 rounded-xl gap-1.5 cursor-pointer text-xs whitespace-nowrap shrink-0"
             >
-              <RotateCw className={cn("size-3.5", refreshing && "animate-spin")} />
+              <RotateCw className={cn("size-3.5 shrink-0", refreshing && "animate-spin")} />
               <span>{isRtl ? "به‌روزرسانی" : "Refresh"}</span>
             </Button>
 
@@ -291,10 +291,10 @@ export function AdminAuditLogsView({ currentUser }: AdminAuditLogsViewProps) {
                 variant="destructive"
                 size="sm"
                 onClick={() => setClearModalOpen(true)}
-                className="h-9 rounded-xl gap-1.5 cursor-pointer"
+                className="h-9 rounded-xl gap-1.5 cursor-pointer text-xs whitespace-nowrap shrink-0"
               >
-                <Trash2 className="size-3.5" />
-                <span>{isRtl ? "پاکسازی لاگ‌ها" : "Clear Logs"}</span>
+                <Trash2 className="size-3.5 shrink-0" />
+                <span>{isRtl ? "پاکسازی" : "Clear"}</span>
               </Button>
             )}
           </div>

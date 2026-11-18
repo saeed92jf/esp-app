@@ -5,6 +5,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import {
   ShieldCheck,
   RefreshCw,
@@ -209,44 +211,51 @@ export default function QualityGuardianPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full animate-in fade-in duration-150">
+    <div className="flex flex-col flex-1 w-full max-w-[1600px] mx-auto pb-8 gap-4 font-sans animate-in fade-in duration-150">
       {/* Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
-              <ShieldCheck className="size-5" />
+      <div className="bg-card border border-border/50 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xs relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <div className="size-12 sm:size-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 shadow-xs">
+              <ShieldCheck className="size-6 sm:size-7" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              {t("header.title")}
-            </h1>
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg sm:text-xl font-black text-foreground tracking-tight">
+                  {t("header.title")}
+                </h1>
+                <Badge variant="outline" className="text-[11px] font-bold border-primary/30 text-primary bg-primary/5">
+                  {t("header.badge") || "Quality Guardian"}
+                </Badge>
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 line-clamp-1">
+                {t("header.subtitle")}
+              </p>
+            </div>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            {t("header.subtitle")}
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleRunScan(true)}
-            disabled={scanning || loading}
-            className="text-xs h-9 gap-1.5"
-          >
-            <RefreshCw className={`size-3.5 ${scanning ? "animate-spin" : ""}`} />
-            {t("actions.fullScan")}
-          </Button>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={() => handleRunScan(false)}
-            disabled={scanning || loading}
-            className="text-xs h-9 gap-1.5"
-          >
-            <Sparkles className="size-3.5" />
-            {t("actions.incrementalScan")}
-          </Button>
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleRunScan(true)}
+              disabled={scanning || loading}
+              className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+            >
+              <RefreshCw className={cn("size-3.5 shrink-0", scanning && "animate-spin")} />
+              <span>{t("actions.fullScan")}</span>
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => handleRunScan(false)}
+              disabled={scanning || loading}
+              className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer whitespace-nowrap shrink-0 shadow-xs"
+            >
+              <Sparkles className="size-3.5 shrink-0" />
+              <span>{t("actions.incrementalScan")}</span>
+            </Button>
+          </div>
         </div>
       </div>
 
