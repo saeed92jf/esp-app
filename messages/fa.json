@@ -3399,5 +3399,124 @@
       "desc": "توضیحات",
       "save": "ذخیره موقعیت"
     }
+  },
+  "Warehouse": {
+    "title": "ESP Warehouse",
+    "subtitle": "انبارداری و مدیریت قطعات کارخانه",
+    "nav": {
+      "inventory": "موجودی قطعات و انبار",
+      "locations": "قفسه‌بندی و جایگاه‌ها",
+      "transactions": "گردش کالا (ورود/خروج)",
+      "receipts": "رسیدها و حواله‌ها"
+    },
+    "metrics": {
+      "registeredSkus": "تعداد اقلام ثبت‌شده (SKU)",
+      "totalPhysicalUnits": "موجودی فیزیکی کل قطعات",
+      "lowStockAlerts": "اقلام در حد سفارش",
+      "inboundShipments": "محموله‌های در راه",
+      "totalBays": "تعداد سالن‌ها و زون‌های انبار",
+      "occupancyRate": "میانگین ضریب اشغال قفسه‌ها",
+      "activeRacks": "تعداد کل پالت‌ها و قفسه‌ها",
+      "climateControlled": "زون‌های با کنترل دما و رطوبت",
+      "todayMovements": "تعداد تراکنش‌های امروز",
+      "inboundVolume": "ورودی‌های امروز به انبار",
+      "outboundVolume": "خروجی به خطوط تولید",
+      "pendingQc": "اقلام در انتظار کنترل کیفی",
+      "totalVouchers": "کل اسناد صادره این ماه",
+      "approvedMrv": "رسیدهای انبار تایید شده",
+      "issuedSio": "حواله‌های خروج به کارگاه",
+      "awaitingApproval": "در انتظار تایید سرپرست"
+    },
+    "units": {
+      "skus": "قلم کالا",
+      "units": "واحد",
+      "alerts": "هشدار",
+      "shipments": "بارنامه",
+      "zones": "زون انبار",
+      "racks": "جایگاه",
+      "controlled": "زون استاندارد",
+      "records": "مورد",
+      "documents": "سند"
+    },
+    "status": {
+      "inStock": "موجود در انبار",
+      "lowStock": "حد نصاب سفارش",
+      "critical": "کسری بحرانی",
+      "completed": "تکمیل شده",
+      "pendingQc": "در انتظار تایید کیفی",
+      "inProgress": "در حال پردازش",
+      "approved": "تایید شده",
+      "draft": "پیش‌نویس",
+      "underReview": "در حال بررسی"
+    },
+    "movementTypes": {
+      "all": "همه تراکنش‌ها",
+      "inbound": "ورود به انبار (خرید / تامین)",
+      "outbound": "خروج به خط تولید",
+      "transfer": "جابه‌جایی بین قفسه‌ها",
+      "return": "مرجوعی به تامین‌کننده"
+    },
+    "voucherTypes": {
+      "all": "همه اسناد",
+      "mrv": "رسید ورود کالا (MRV)",
+      "sio": "حواله خروج کالا (SIO)",
+      "transfer": "حواله انتقال بین‌انباری",
+      "stockCount": "برگه انبارگردانی"
+    },
+    "actions": {
+      "newStockEntry": "ثبت ورودی جدید کالا",
+      "createVoucher": "صدور سند انبار جدید",
+      "searchPlaceholder": "جستجوی قطعه، کد کالا (SKU)، جایگاه قفسه یا دسته‌بندی...",
+      "searchTransactions": "جستجو با شماره رهگیری، کد کالا یا شماره سند...",
+      "searchReceipts": "جستجوی شماره سند، تامین‌کننده، پروژه یا تحویل‌گیرنده...",
+      "filterCategory": "گروه کالایی:",
+      "filterType": "نوع تراکنش:",
+      "filterVoucher": "نوع سند:",
+      "all": "همه",
+      "viewDetails": "مشاهده جزئیات",
+      "viewItems": "مشاهده اقلام موجود",
+      "print": "چاپ سند",
+      "download": "دریافت PDF",
+      "save": "ذخیره",
+      "cancel": "انصراف",
+      "close": "بستن"
+    },
+    "table": {
+      "sku": "شناسه کالا (SKU)",
+      "partDescription": "عنوان قطعه و مشخصات فنی",
+      "category": "گروه انبار",
+      "storageLocation": "موقعیت در انبار",
+      "currentStock": "موجودی جاری",
+      "status": "وضعیت انبار",
+      "actions": "عملیات",
+      "transId": "شماره رهگیری",
+      "transType": "نوع عملیات",
+      "dateTime": "تاریخ و زمان",
+      "quantity": "تعداد / مقدار",
+      "route": "مبدا / مقصد",
+      "refDoc": "سند مرجع / دستورکار",
+      "operator": "ثبت‌کننده / انباردار",
+      "voucherNo": "شماره سند انبار",
+      "voucherType": "نوع سند",
+      "subject": "شرح کالا و پروژه",
+      "counterparty": "طرف حساب / دریافت‌کننده",
+      "issueDate": "تاریخ صدور",
+      "itemsCount": "تعداد ردیف"
+    },
+    "dialogs": {
+      "itemDetailsTitle": "مشخصات فنی و پرونده قطعه انبار",
+      "stockEntryTitle": "ثبت ورودی کالای جدید به انبار",
+      "voucherTitle": "سند رسمی انبار کارخانه",
+      "bayItemsTitle": "اقلام مستقر در این جایگاه انبار",
+      "skuLabel": "کد کالا (SKU)",
+      "titleFaLabel": "عنوان قطعه (فارسی)",
+      "titleEnLabel": "عنوان قطعه (انگلیسی)",
+      "categoryLabel": "دسته‌بندی",
+      "locationLabel": "جایگاه قفسه",
+      "quantityLabel": "تعداد / مقدار اولیه",
+      "unitLabel": "واحد سنجش",
+      "minLevelLabel": "حداقل موجودی (نقطه سفارش)",
+      "notesLabel": "یادداشت‌ها و شرایط نگهداری"
+    }
   }
 }

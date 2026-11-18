@@ -3399,5 +3399,124 @@
       "desc": "Description",
       "save": "Save Location"
     }
+  },
+  "Warehouse": {
+    "title": "ESP Warehouse",
+    "subtitle": "Factory Warehouse & Inventory Management",
+    "nav": {
+      "inventory": "Inventory & Parts",
+      "locations": "Bays & Locations",
+      "transactions": "Stock Transactions",
+      "receipts": "Vouchers & Receipts"
+    },
+    "metrics": {
+      "registeredSkus": "Registered SKUs",
+      "totalPhysicalUnits": "Total Physical Units",
+      "lowStockAlerts": "Low Stock Alerts",
+      "inboundShipments": "Inbound Shipments",
+      "totalBays": "Warehouse Bays & Zones",
+      "occupancyRate": "Average Bay Occupancy",
+      "activeRacks": "Total Active Racks & Pallets",
+      "climateControlled": "Climate-Controlled Zones",
+      "todayMovements": "Today's Transactions",
+      "inboundVolume": "Today's Inbound Volume",
+      "outboundVolume": "Outbound to Production",
+      "pendingQc": "Items Awaiting QC Inspection",
+      "totalVouchers": "Monthly Issued Vouchers",
+      "approvedMrv": "Approved Material Receipts",
+      "issuedSio": "Store Issue Orders",
+      "awaitingApproval": "Pending Supervisor Sign"
+    },
+    "units": {
+      "skus": "SKUs",
+      "units": "Units",
+      "alerts": "Alerts",
+      "shipments": "Shipments",
+      "zones": "Zones",
+      "racks": "Racks",
+      "controlled": "Controlled",
+      "records": "Records",
+      "documents": "Vouchers"
+    },
+    "status": {
+      "inStock": "In Stock",
+      "lowStock": "Low Stock",
+      "critical": "Critical Shortage",
+      "completed": "Completed",
+      "pendingQc": "QC Review Pending",
+      "inProgress": "Processing",
+      "approved": "Approved",
+      "draft": "Draft",
+      "underReview": "Under Review"
+    },
+    "movementTypes": {
+      "all": "All Movements",
+      "inbound": "Inbound (Supplier / PO)",
+      "outbound": "Outbound to Production",
+      "transfer": "Internal Bay Transfer",
+      "return": "Return to Vendor"
+    },
+    "voucherTypes": {
+      "all": "All Vouchers",
+      "mrv": "Material Receipt Voucher (MRV)",
+      "sio": "Store Issue Order (SIO)",
+      "transfer": "Transfer Voucher (WTV)",
+      "stockCount": "Stocktaking Count Sheet"
+    },
+    "actions": {
+      "newStockEntry": "New Stock Entry",
+      "createVoucher": "New Warehouse Voucher",
+      "searchPlaceholder": "Search by part title, SKU, location or category...",
+      "searchTransactions": "Search by tracking ID, SKU or work order...",
+      "searchReceipts": "Search by voucher no, supplier, project or recipient...",
+      "filterCategory": "Category:",
+      "filterType": "Transaction Type:",
+      "filterVoucher": "Voucher Type:",
+      "all": "All",
+      "viewDetails": "View Details",
+      "viewItems": "View Items in Bay",
+      "print": "Print Voucher",
+      "download": "Download PDF",
+      "save": "Save",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "table": {
+      "sku": "SKU",
+      "partDescription": "Part Description & Technical Specs",
+      "category": "Category",
+      "storageLocation": "Storage Location",
+      "currentStock": "Current Stock",
+      "status": "Status",
+      "actions": "Actions",
+      "transId": "Tracking ID",
+      "transType": "Operation Type",
+      "dateTime": "Date & Time",
+      "quantity": "Quantity / Vol",
+      "route": "Origin / Destination",
+      "refDoc": "Reference Doc / WO",
+      "operator": "Issuer / Operator",
+      "voucherNo": "Voucher No",
+      "voucherType": "Document Type",
+      "subject": "Part & Project Subject",
+      "counterparty": "Counterparty / Recipient",
+      "issueDate": "Issue Date",
+      "itemsCount": "Line Items"
+    },
+    "dialogs": {
+      "itemDetailsTitle": "Technical Specifications & Warehouse File",
+      "stockEntryTitle": "Register New Inventory Item",
+      "voucherTitle": "Official Warehouse Voucher Document",
+      "bayItemsTitle": "Items Stored in this Warehouse Bay",
+      "skuLabel": "Part SKU Code",
+      "titleFaLabel": "Part Title (Persian)",
+      "titleEnLabel": "Part Title (English)",
+      "categoryLabel": "Category",
+      "locationLabel": "Storage Bay / Rack",
+      "quantityLabel": "Initial Quantity",
+      "unitLabel": "Unit of Measure",
+      "minLevelLabel": "Min Reorder Level",
+      "notesLabel": "Storage Notes & Conditions"
+    }
   }
 }
