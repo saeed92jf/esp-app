@@ -1,59 +1,63 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { AppHeader } from "@/components/layout/app-header";
 import { AssetsPageContainer } from "./AssetsPageContainer";
+import { AssetCategoriesView } from "./AssetCategoriesView";
+import { AssetLocationsView } from "./AssetLocationsView";
 import { cn } from "@/lib/utils";
 import { 
   Gauge, 
   Layers, 
-  MapPin, 
-  Settings2, 
-  ShieldCheck 
+  MapPin 
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-type AssetTab = "directory" | "categories" | "locations" | "maintenance";
+type AssetTab = "directory" | "categories" | "locations";
 
 export function AssetsModuleShell() {
   const locale = useLocale();
   const isRtl = locale === "fa";
+  const t = useTranslations("Assets");
   const [activeTab, setActiveTab] = useState<AssetTab>("directory");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems = useMemo(() => [
     { 
       id: "directory" as AssetTab, 
-      labelFa: "ماشین‌آلات و تجهیزات", 
-      labelEn: "Machinery & Equipment", 
+      label: t("nav.machinery"), 
       icon: Gauge 
     },
     { 
       id: "categories" as AssetTab, 
-      labelFa: "دسته‌بندی و مشخصات فنی", 
-      labelEn: "Categories & Parameters", 
+      label: t("nav.categories"), 
       icon: Layers 
     },
     { 
       id: "locations" as AssetTab, 
-      labelFa: "موقعیت‌های فیزیکی و سالن‌ها", 
-      labelEn: "Physical Plant Locations", 
+      label: t("nav.locations"), 
       icon: MapPin 
     },
-    { 
-      id: "maintenance" as AssetTab, 
-      labelFa: "قطعات یدکی و قرارداد انبار", 
-      labelEn: "Spare Parts & Warehouse", 
-      icon: ShieldCheck 
-    },
-  ], []);
+  ], [t]);
+
+  const renderActiveView = () => {
+    switch (activeTab) {
+      case "categories":
+        return <AssetCategoriesView />;
+      case "locations":
+        return <AssetLocationsView />;
+      case "directory":
+      default:
+        return <AssetsPageContainer />;
+    }
+  };
 
   return (
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
       {/* ── 1. Top Unified Header (Stable Title: Industrial Assets) ── */}
       <AppHeader
-        tag={isRtl ? "تجهیزات و دارایی‌های صنعتی" : "Industrial Assets & Machinery"}
+        tag={t("title")}
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
@@ -84,7 +88,6 @@ export function AssetsModuleShell() {
               {navItems.map((item) => {
                 const isActive = activeTab === item.id;
                 const Icon = item.icon;
-                const label = isRtl ? item.labelFa : item.labelEn;
 
                 const buttonEl = (
                   <button
@@ -94,7 +97,7 @@ export function AssetsModuleShell() {
                       setSidebarOpen(false);
                     }}
                     className={cn(
-                      "flex items-center gap-3.5 w-full rounded-xl transition-all duration-150 text-sm font-medium",
+                      "flex items-center gap-3.5 w-full rounded-xl transition-all duration-150 text-sm font-medium cursor-pointer",
                       sidebarOpen ? "px-3.5 py-2.5" : "justify-center p-2.5 sm:p-3",
                       isActive
                         ? "bg-primary text-primary-foreground shadow-sm shadow-primary/25"
@@ -102,7 +105,7 @@ export function AssetsModuleShell() {
                     )}
                   >
                     <Icon className="w-5 h-5 shrink-0" />
-                    {sidebarOpen && <span className="truncate">{label}</span>}
+                    {sidebarOpen && <span className="truncate">{item.label}</span>}
                   </button>
                 );
 
@@ -111,7 +114,7 @@ export function AssetsModuleShell() {
                     <Tooltip key={item.id}>
                       <TooltipTrigger asChild>{buttonEl}</TooltipTrigger>
                       <TooltipContent side={isRtl ? "left" : "right"} className="text-xs font-medium">
-                        {label}
+                        {item.label}
                       </TooltipContent>
                     </Tooltip>
                   );
@@ -126,7 +129,7 @@ export function AssetsModuleShell() {
         {/* ── 3. Main Content Container (Jump-Free Pure Fade Transition) ── */}
         <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 animate-in fade-in duration-150">
           <div className="max-w-7xl mx-auto space-y-6">
-            <AssetsPageContainer />
+            {renderActiveView()}
           </div>
         </main>
       </div>

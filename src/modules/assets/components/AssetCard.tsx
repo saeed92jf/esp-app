@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,6 +41,10 @@ export const AssetCard: React.FC<AssetCardProps> = ({
   onEdit,
   onStatusChange,
 }) => {
+  const locale = useLocale();
+  const isRtl = locale === "fa";
+  const t = useTranslations("Assets");
+
   const category = categories.find((c) => c.id === asset.category_id);
   const location = locations.find((l) => l.id === asset.location_id);
 
@@ -49,21 +54,21 @@ export const AssetCard: React.FC<AssetCardProps> = ({
         return (
           <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 gap-1.5 font-medium">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            در حال کار
+            {t("status.operational")}
           </Badge>
         );
       case "STANDBY":
         return (
           <Badge className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 gap-1.5 font-medium">
             <PauseCircle className="w-3.5 h-3.5" />
-            آماده‌به‌کار
+            {t("status.standby")}
           </Badge>
         );
       case "UNDER_MAINTENANCE":
         return (
           <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 gap-1.5 font-medium">
             <Wrench className="w-3.5 h-3.5" />
-            تعمیرات / سرویس
+            {t("status.underMaintenance")}
           </Badge>
         );
       case "OUT_OF_SERVICE":
@@ -71,7 +76,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({
         return (
           <Badge className="bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30 gap-1.5 font-medium">
             <AlertTriangle className="w-3.5 h-3.5" />
-            خارج از سرویس
+            {t("status.outOfService")}
           </Badge>
         );
     }
@@ -80,13 +85,17 @@ export const AssetCard: React.FC<AssetCardProps> = ({
   const getCriticalityBadge = (crit: string) => {
     switch (crit) {
       case "CRITICAL":
-        return <Badge variant="outline" className="border-rose-500/40 text-rose-600 dark:text-rose-400 text-xs">بحرانی</Badge>;
+        return <Badge variant="outline" className="border-rose-500/40 text-rose-600 dark:text-rose-400 text-xs">{t("criticality.critical")}</Badge>;
       case "HIGH":
-        return <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 text-xs">اهمیت بالا</Badge>;
+        return <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 text-xs">{t("criticality.high")}</Badge>;
       default:
-        return <Badge variant="outline" className="border-slate-300 dark:border-slate-700 text-muted-foreground text-xs">عادی</Badge>;
+        return <Badge variant="outline" className="border-slate-300 dark:border-slate-700 text-muted-foreground text-xs">{t("criticality.medium")}</Badge>;
     }
   };
+
+  const categoryName = isRtl ? category?.name_fa : (category?.name_en || category?.name_fa);
+  const locationName = isRtl ? location?.name_fa : (location?.name_en || location?.name_fa);
+  const assetDisplayName = isRtl ? asset.name_fa : (asset.name_en || asset.name_fa);
 
   return (
     <Card 
@@ -105,11 +114,16 @@ export const AssetCard: React.FC<AssetCardProps> = ({
               {getCriticalityBadge(asset.criticality)}
             </div>
             <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-              {asset.name_fa}
+              {assetDisplayName}
             </h3>
-            {asset.name_en && (
+            {asset.name_en && isRtl && (
               <p className="text-xs text-muted-foreground font-mono truncate dir-ltr text-right">
                 {asset.name_en}
+              </p>
+            )}
+            {asset.name_fa && !isRtl && (
+              <p className="text-xs text-muted-foreground truncate">
+                {asset.name_fa}
               </p>
             )}
           </div>
@@ -123,24 +137,24 @@ export const AssetCard: React.FC<AssetCardProps> = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44 text-sm font-normal">
                 <DropdownMenuItem onClick={() => onSelect(asset)}>
-                  <Activity className="w-4 h-4 ml-2" />
-                  مشاهده شناسنامه
+                  <Activity className="w-4 h-4 mr-2 rtl:mr-0 rtl:ml-2" />
+                  {t("actions.viewDetails")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onEdit(asset)}>
-                  <Wrench className="w-4 h-4 ml-2" />
-                  ویرایش مشخصات
+                  <Wrench className="w-4 h-4 mr-2 rtl:mr-0 rtl:ml-2" />
+                  {t("actions.editSpecs")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onStatusChange(asset, "OPERATIONAL")}>
-                  <CheckCircle2 className="w-4 h-4 ml-2 text-emerald-600" />
-                  تنظیم به در حال کار
+                  <CheckCircle2 className="w-4 h-4 mr-2 rtl:mr-0 rtl:ml-2 text-emerald-600" />
+                  {t("status.operational")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onStatusChange(asset, "UNDER_MAINTENANCE")}>
-                  <Wrench className="w-4 h-4 ml-2 text-amber-600" />
-                  اعزام به تعمیرات
+                  <Wrench className="w-4 h-4 mr-2 rtl:mr-0 rtl:ml-2 text-amber-600" />
+                  {t("status.underMaintenance")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onStatusChange(asset, "STANDBY")}>
-                  <PauseCircle className="w-4 h-4 ml-2 text-blue-600" />
-                  قرار دادن در استندبای
+                  <PauseCircle className="w-4 h-4 mr-2 rtl:mr-0 rtl:ml-2 text-blue-600" />
+                  {t("status.standby")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -151,11 +165,11 @@ export const AssetCard: React.FC<AssetCardProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground pt-2 border-t border-border/60">
           <div className="flex items-center gap-1.5 truncate">
             <MapPin className="w-3.5 h-3.5 shrink-0 text-primary/70" />
-            <span className="truncate">{location?.name_fa || "محل نامشخص"}</span>
+            <span className="truncate">{locationName || "—"}</span>
           </div>
           <div className="flex items-center gap-1.5 truncate">
             <Layers className="w-3.5 h-3.5 shrink-0 text-primary/70" />
-            <span className="truncate">{category?.name_fa || "دسته‌بندی نشده"}</span>
+            <span className="truncate">{categoryName || "—"}</span>
           </div>
         </div>
 
@@ -170,7 +184,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({
             {asset.documents?.length > 0 && (
               <span className="flex items-center gap-1 text-primary/80">
                 <FileText className="w-3.5 h-3.5" />
-                {asset.documents.length} سند
+                {asset.documents.length}
               </span>
             )}
           </div>
@@ -179,7 +193,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({
             size="sm" 
             className="h-7 text-xs font-medium text-primary hover:text-primary hover:bg-primary/10 px-2"
           >
-            مشاهده جزئیات
+            {t("actions.viewDetails")}
           </Button>
         </div>
       </CardContent>

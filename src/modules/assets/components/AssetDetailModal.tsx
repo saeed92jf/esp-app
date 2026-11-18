@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { 
   Dialog, 
   DialogContent, 
@@ -22,7 +23,6 @@ import {
   MapPin, 
   FileText, 
   Settings2, 
-  Package, 
   Calendar, 
   Building2, 
   Download, 
@@ -49,6 +49,10 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
   locations,
   onStatusChange,
 }) => {
+  const locale = useLocale();
+  const isRtl = locale === "fa";
+  const t = useTranslations("Assets");
+
   const [activeTab, setActiveTab] = useState<string>("overview");
 
   if (!asset) return null;
@@ -62,21 +66,21 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
         return (
           <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 gap-1.5 font-medium">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            در حال کار
+            {t("status.operational")}
           </Badge>
         );
       case "STANDBY":
         return (
           <Badge className="bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30 gap-1.5 font-medium">
             <PauseCircle className="w-3.5 h-3.5" />
-            آماده‌به‌کار
+            {t("status.standby")}
           </Badge>
         );
       case "UNDER_MAINTENANCE":
         return (
           <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 gap-1.5 font-medium">
             <Wrench className="w-3.5 h-3.5" />
-            تعمیرات / سرویس
+            {t("status.underMaintenance")}
           </Badge>
         );
       case "OUT_OF_SERVICE":
@@ -84,11 +88,15 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
         return (
           <Badge className="bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30 gap-1.5 font-medium">
             <AlertTriangle className="w-3.5 h-3.5" />
-            خارج از سرویس
+            {t("status.outOfService")}
           </Badge>
         );
     }
   };
+
+  const categoryName = isRtl ? category?.name_fa : (category?.name_en || category?.name_fa);
+  const locationName = isRtl ? location?.name_fa : (location?.name_en || location?.name_fa);
+  const assetDisplayName = isRtl ? asset.name_fa : (asset.name_en || asset.name_fa);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -102,13 +110,13 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                 </span>
                 {getStatusBadge(asset.status)}
                 <Badge variant="outline" className="text-xs">
-                  {asset.criticality === "CRITICAL" ? "بحرانی" : asset.criticality === "HIGH" ? "اهمیت بالا" : "عادی"}
+                  {asset.criticality === "CRITICAL" ? t("criticality.critical") : asset.criticality === "HIGH" ? t("criticality.high") : t("criticality.medium")}
                 </Badge>
               </div>
               <DialogTitle className="text-lg font-bold text-foreground">
-                {asset.name_fa}
+                {assetDisplayName}
               </DialogTitle>
-              {asset.name_en && (
+              {asset.name_en && isRtl && (
                 <p className="text-xs text-muted-foreground font-mono mt-0.5 dir-ltr text-right">
                   {asset.name_en}
                 </p>
@@ -124,7 +132,7 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                 onClick={() => onStatusChange(asset, "OPERATIONAL")}
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                روشن
+                {t("status.quickRunning")}
               </Button>
               <Button
                 variant={asset.status === "STANDBY" ? "secondary" : "ghost"}
@@ -133,7 +141,7 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                 onClick={() => onStatusChange(asset, "STANDBY")}
               >
                 <PauseCircle className="w-3.5 h-3.5" />
-                استندبای
+                {t("status.quickStandby")}
               </Button>
               <Button
                 variant={asset.status === "UNDER_MAINTENANCE" ? "destructive" : "ghost"}
@@ -142,7 +150,7 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                 onClick={() => onStatusChange(asset, "UNDER_MAINTENANCE")}
               >
                 <Wrench className="w-3.5 h-3.5" />
-                تعمیرات
+                {t("status.quickMaintenance")}
               </Button>
             </div>
           </div>
@@ -150,22 +158,18 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
 
         <div className="p-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-3 mb-6">
               <TabsTrigger value="overview" className="text-xs sm:text-sm gap-1.5">
                 <Activity className="w-4 h-4" />
-                شناسنامه کلی
+                {t("modal.overview")}
               </TabsTrigger>
               <TabsTrigger value="specs" className="text-xs sm:text-sm gap-1.5">
                 <Settings2 className="w-4 h-4" />
-                مشخصات فنی
+                {t("modal.specs")}
               </TabsTrigger>
               <TabsTrigger value="documents" className="text-xs sm:text-sm gap-1.5">
                 <FileText className="w-4 h-4" />
-                اسناد و نقشه‌ها ({asset.documents?.length || 0})
-              </TabsTrigger>
-              <TabsTrigger value="spares" className="text-xs sm:text-sm gap-1.5">
-                <Package className="w-4 h-4" />
-                قطعات یدکی ({asset.spare_parts?.length || 0})
+                {t("modal.docs")} ({asset.documents?.length || 0})
               </TabsTrigger>
             </TabsList>
 
@@ -175,10 +179,10 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                 <div className="p-3.5 rounded-lg border border-border/80 bg-card/50 space-y-2">
                   <div className="text-xs text-muted-foreground flex items-center gap-1.5">
                     <MapPin className="w-4 h-4 text-primary" />
-                    موقعیت استقرار فیزیکی
+                    {t("modal.location")}
                   </div>
                   <div className="text-sm font-semibold text-foreground">
-                    {location?.name_fa || "تعیین نشده"}
+                    {locationName || "—"}
                   </div>
                   {location?.description && (
                     <div className="text-xs text-muted-foreground">
@@ -190,14 +194,14 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                 <div className="p-3.5 rounded-lg border border-border/80 bg-card/50 space-y-2">
                   <div className="text-xs text-muted-foreground flex items-center gap-1.5">
                     <Building2 className="w-4 h-4 text-primary" />
-                    سازنده و مدل دستگاه
+                    {t("modal.manufacturer")}
                   </div>
                   <div className="text-sm font-semibold text-foreground">
-                    {asset.manufacturer || "نامشخص"} {asset.model_number ? `- ${asset.model_number}` : ""}
+                    {asset.manufacturer || "—"} {asset.model_number ? `- ${asset.model_number}` : ""}
                   </div>
                   {asset.serial_number && (
                     <div className="text-xs text-muted-foreground font-mono">
-                      شماره سریال: {asset.serial_number}
+                      SN: {asset.serial_number}
                     </div>
                   )}
                 </div>
@@ -205,31 +209,31 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                 <div className="p-3.5 rounded-lg border border-border/80 bg-card/50 space-y-2">
                   <div className="text-xs text-muted-foreground flex items-center gap-1.5">
                     <Calendar className="w-4 h-4 text-primary" />
-                    تاریخچه و زمان‌بندی
+                    {t("modal.history")}
                   </div>
                   <div className="text-sm text-foreground space-y-1">
-                    <div>سال ساخت: <span className="font-mono font-medium">{asset.year_built || "—"}</span></div>
-                    <div>تاریخ نصب: <span className="font-mono font-medium">{asset.installation_date || "—"}</span></div>
+                    <div>{t("modal.yearBuilt")}: <span className="font-mono font-medium">{asset.year_built || "—"}</span></div>
+                    <div>{t("modal.installationDate")}: <span className="font-mono font-medium">{asset.installation_date || "—"}</span></div>
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-lg border border-border/80 bg-card/50 space-y-2">
                   <div className="text-xs text-muted-foreground flex items-center gap-1.5">
                     <Activity className="w-4 h-4 text-primary" />
-                    دسته‌بندی تجهیزات
+                    {t("modal.category")}
                   </div>
                   <div className="text-sm font-semibold text-foreground">
-                    {category?.name_fa || "عمومی"}
+                    {categoryName || "—"}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    کد رده: <span className="font-mono">{category?.code || "—"}</span>
+                    <span className="font-mono">{category?.code || "—"}</span>
                   </div>
                 </div>
               </div>
 
               {asset.description && (
                 <div className="p-4 rounded-lg border border-border/80 bg-muted/10 space-y-1.5">
-                  <div className="text-xs font-semibold text-foreground">توضیحات و یادداشت فنی:</div>
+                  <div className="text-xs font-semibold text-foreground">{t("modal.notes")}:</div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     {asset.description}
                   </p>
@@ -241,33 +245,29 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
             <TabsContent value="specs" className="space-y-4 animate-in fade-in duration-150">
               {Object.keys(asset.specifications || {}).length === 0 ? (
                 <div className="text-center py-8 text-sm text-muted-foreground border border-dashed rounded-lg">
-                  هیچ مشخصه فنی برای این تجهیز ثبت نشده است.
+                  {t("empty.noSpecs")}
                 </div>
               ) : (
                 <div className="border border-border rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-muted/40 text-xs font-medium text-muted-foreground border-b border-border">
                       <tr>
-                        <th className="py-2.5 px-4 text-right">عنوان پارامتر</th>
-                        <th className="py-2.5 px-4 text-right">مقدار</th>
-                        <th className="py-2.5 px-4 text-right">واحد اندازه‌گیری</th>
+                        <th className="py-2.5 px-4 text-start">{t("modal.paramTitle")}</th>
+                        <th className="py-2.5 px-4 text-start">{t("modal.paramValue")}</th>
+                        <th className="py-2.5 px-4 text-start">{t("modal.paramUnit")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
                       {category?.parameter_templates.map((tpl) => {
                         const val = asset.specifications[tpl.key];
                         if (val === undefined || val === null || val === "") return null;
+                        const paramLabel = isRtl ? tpl.name_fa : (tpl.name_en || tpl.name_fa);
                         return (
                           <tr key={tpl.key} className="hover:bg-muted/20">
                             <td className="py-2.5 px-4 font-medium text-foreground">
-                              {tpl.name_fa}
-                              {tpl.name_en && (
-                                <span className="text-xs text-muted-foreground font-mono block">
-                                  {tpl.name_en}
-                                </span>
-                              )}
+                              {paramLabel}
                             </td>
-                            <td className="py-2.5 px-4 font-mono font-semibold text-foreground dir-ltr text-right">
+                            <td className="py-2.5 px-4 font-mono font-semibold text-foreground dir-ltr text-start">
                               {String(val)}
                             </td>
                             <td className="py-2.5 px-4 font-mono text-xs text-muted-foreground">
@@ -276,14 +276,13 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                           </tr>
                         );
                       })}
-                      {/* Any custom specs not in template */}
                       {Object.entries(asset.specifications).map(([k, v]) => {
                         const isTemplated = category?.parameter_templates.some((t) => t.key === k);
                         if (isTemplated) return null;
                         return (
                           <tr key={k} className="hover:bg-muted/20">
                             <td className="py-2.5 px-4 font-medium text-foreground font-mono">{k}</td>
-                            <td className="py-2.5 px-4 font-mono font-semibold text-foreground dir-ltr text-right">
+                            <td className="py-2.5 px-4 font-mono font-semibold text-foreground dir-ltr text-start">
                               {String(v)}
                             </td>
                             <td className="py-2.5 px-4 text-xs text-muted-foreground">—</td>
@@ -300,7 +299,7 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
             <TabsContent value="documents" className="space-y-3 animate-in fade-in duration-150">
               {(!asset.documents || asset.documents.length === 0) ? (
                 <div className="text-center py-8 text-sm text-muted-foreground border border-dashed rounded-lg">
-                  هیچ سند فنی، نقشه P&ID یا راهنمایی بارگذاری نشده است.
+                  {t("empty.noDocs")}
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -321,66 +320,11 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                       <Button variant="outline" size="sm" className="gap-1.5 shrink-0" asChild>
                         <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
                           <Download className="w-3.5 h-3.5" />
-                          دانلود سند
+                          {t("actions.download")}
                         </a>
                       </Button>
                     </div>
                   ))}
-                </div>
-              )}
-            </TabsContent>
-
-            {/* Tab 4: Spare Parts (ESP Warehouse Contract) */}
-            <TabsContent value="spares" className="space-y-3 animate-in fade-in duration-150">
-              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs text-muted-foreground flex items-center gap-2">
-                <Package className="w-4 h-4 text-primary shrink-0" />
-                <span>
-                  این قطعات یدکی با سیستم انبار ESP Warehouse متصل بوده و وضعیت موجودی به صورت مرجع نمایش داده می‌شود.
-                </span>
-              </div>
-
-              {(!asset.spare_parts || asset.spare_parts.length === 0) ? (
-                <div className="text-center py-8 text-sm text-muted-foreground border border-dashed rounded-lg">
-                  هیچ قطعه یدکی مرتبطی برای این تجهیز تعریف نشده است.
-                </div>
-              ) : (
-                <div className="border border-border rounded-lg overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted/40 text-xs font-medium text-muted-foreground border-b border-border">
-                      <tr>
-                        <th className="py-2.5 px-4 text-right">کد قطعه</th>
-                        <th className="py-2.5 px-4 text-right">شرح قطعه یدکی</th>
-                        <th className="py-2.5 px-4 text-right">حداقل نیاز</th>
-                        <th className="py-2.5 px-4 text-right">موجودی انبار</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {asset.spare_parts.map((part, idx) => (
-                        <tr key={idx} className="hover:bg-muted/20">
-                          <td className="py-2.5 px-4 font-mono text-xs font-bold text-primary">
-                            {part.part_code}
-                          </td>
-                          <td className="py-2.5 px-4">
-                            <div className="font-medium text-foreground">{part.description_fa}</div>
-                            {part.description_en && (
-                              <div className="text-xs text-muted-foreground font-mono">{part.description_en}</div>
-                            )}
-                          </td>
-                          <td className="py-2.5 px-4 font-mono text-xs text-foreground text-center">
-                            {part.minimum_stock}
-                          </td>
-                          <td className="py-2.5 px-4 text-center">
-                            <Badge 
-                              variant={part.current_stock_ref >= part.minimum_stock ? "secondary" : "destructive"}
-                              className="font-mono text-xs"
-                            >
-                              {part.current_stock_ref} عدد
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
                 </div>
               )}
             </TabsContent>
@@ -389,7 +333,7 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
 
         <DialogFooter className="p-4 border-t border-border/80 bg-muted/10 flex justify-end">
           <Button variant="outline" onClick={onClose} className="px-5">
-            بستن
+            {t("actions.close")}
           </Button>
         </DialogFooter>
       </DialogContent>

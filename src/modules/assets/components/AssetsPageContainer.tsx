@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useTransition } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { 
   Select, 
   SelectContent, 
@@ -11,7 +11,6 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssetCard } from "./AssetCard";
 import { AssetDetailModal } from "./AssetDetailModal";
 import { AssetUpsertModal } from "./AssetUpsertModal";
@@ -26,7 +25,6 @@ import {
   Search, 
   Plus, 
   Layers, 
-  Filter, 
   RefreshCw, 
   CheckCircle2, 
   PauseCircle, 
@@ -36,6 +34,9 @@ import {
 
 export const AssetsPageContainer: React.FC = () => {
   const [, startTransition] = useTransition();
+  const locale = useLocale();
+  const isRtl = locale === "fa";
+  const t = useTranslations("Assets");
 
   const [assets, setAssets] = useState<IndustrialAsset[]>([]);
   const [categories, setCategories] = useState<AssetCategory[]>([]);
@@ -47,14 +48,13 @@ export const AssetsPageContainer: React.FC = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [selectedLocation, setSelectedLocation] = useState<string>("ALL");
-  const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
+  const [selectedStatus] = useState<string>("ALL");
 
   // Modals
   const [selectedAssetForView, setSelectedAssetForView] = useState<IndustrialAsset | null>(null);
   const [isUpsertOpen, setIsUpsertOpen] = useState(false);
   const [assetToEdit, setAssetToEdit] = useState<IndustrialAsset | null>(null);
 
-  // Initial load
   const loadMetadata = async () => {
     try {
       const [cats, locs] = await Promise.all([
@@ -139,11 +139,11 @@ export const AssetsPageContainer: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-150">
-      {/* Top Banner / Worker Dashboard Overview */}
+      {/* Top Operational Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-4 rounded-xl border border-border/80 bg-card/60 backdrop-blur-sm flex items-center justify-between">
           <div>
-            <div className="text-xs text-muted-foreground font-medium">کل ماشین‌آلات</div>
+            <div className="text-xs text-muted-foreground font-medium">{t("metrics.total")}</div>
             <div className="text-2xl font-bold font-mono text-foreground mt-1">{totalCount}</div>
           </div>
           <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
@@ -153,7 +153,7 @@ export const AssetsPageContainer: React.FC = () => {
 
         <div className="p-4 rounded-xl border border-border/80 bg-card/60 backdrop-blur-sm flex items-center justify-between">
           <div>
-            <div className="text-xs text-muted-foreground font-medium">در حال کار</div>
+            <div className="text-xs text-muted-foreground font-medium">{t("metrics.operational")}</div>
             <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
               {operationalCount}
             </div>
@@ -165,7 +165,7 @@ export const AssetsPageContainer: React.FC = () => {
 
         <div className="p-4 rounded-xl border border-border/80 bg-card/60 backdrop-blur-sm flex items-center justify-between">
           <div>
-            <div className="text-xs text-muted-foreground font-medium">تعمیرات / سرویس</div>
+            <div className="text-xs text-muted-foreground font-medium">{t("metrics.maintenance")}</div>
             <div className="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-1">
               {maintenanceCount}
             </div>
@@ -177,7 +177,7 @@ export const AssetsPageContainer: React.FC = () => {
 
         <div className="p-4 rounded-xl border border-border/80 bg-card/60 backdrop-blur-sm flex items-center justify-between">
           <div>
-            <div className="text-xs text-muted-foreground font-medium">آماده‌به‌کار</div>
+            <div className="text-xs text-muted-foreground font-medium">{t("metrics.standby")}</div>
             <div className="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400 mt-1">
               {standbyCount}
             </div>
@@ -192,24 +192,24 @@ export const AssetsPageContainer: React.FC = () => {
       <div className="p-4 rounded-xl border border-border/80 bg-card/40 backdrop-blur-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         <div className="flex-1 flex flex-col sm:flex-row items-center gap-2">
           <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search className={`w-4 h-4 absolute top-1/2 -translate-y-1/2 text-muted-foreground ${isRtl ? "right-3" : "left-3"}`} />
             <Input
-              placeholder="جستجوی تگ (P-101)، نام، سریال..."
+              placeholder={t("actions.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pr-9 h-9 text-xs"
+              className={`h-9 text-xs ${isRtl ? "pr-9" : "pl-9"}`}
             />
           </div>
 
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger className="w-full sm:w-48 h-9 text-xs">
-              <SelectValue placeholder="دسته‌بندی تجهیز" />
+              <SelectValue placeholder={t("actions.allCategories")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">همه دسته‌بندی‌ها</SelectItem>
+              <SelectItem value="ALL">{t("actions.allCategories")}</SelectItem>
               {categories.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
-                  {c.name_fa}
+                  {isRtl ? c.name_fa : (c.name_en || c.name_fa)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -217,13 +217,13 @@ export const AssetsPageContainer: React.FC = () => {
 
           <Select value={selectedLocation} onValueChange={setSelectedLocation}>
             <SelectTrigger className="w-full sm:w-48 h-9 text-xs">
-              <SelectValue placeholder="محل استقرار" />
+              <SelectValue placeholder={t("actions.allLocations")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">همه سالن‌ها و واحدها</SelectItem>
+              <SelectItem value="ALL">{t("actions.allLocations")}</SelectItem>
               {locations.map((l) => (
                 <SelectItem key={l.id} value={l.id}>
-                  {l.name_fa}
+                  {isRtl ? l.name_fa : (l.name_en || l.name_fa)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -236,10 +236,10 @@ export const AssetsPageContainer: React.FC = () => {
             size="sm"
             onClick={loadAssets}
             className="h-9 px-3 text-xs gap-1.5"
-            title="بروزرسانی داده‌ها"
+            title={t("actions.refresh")}
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-            بروزرسانی
+            {t("actions.refresh")}
           </Button>
 
           <Button
@@ -248,7 +248,7 @@ export const AssetsPageContainer: React.FC = () => {
             className="h-9 px-4 text-xs font-semibold gap-1.5 shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            ثبت تجهیز جدید
+            {t("actions.addNew")}
           </Button>
         </div>
       </div>
@@ -266,12 +266,12 @@ export const AssetsPageContainer: React.FC = () => {
       ) : assets.length === 0 ? (
         <div className="text-center py-16 px-4 rounded-xl border border-dashed border-border bg-card/20 space-y-3">
           <Building2 className="w-10 h-10 mx-auto text-muted-foreground/60" />
-          <h3 className="text-base font-semibold text-foreground">هیچ تجهیزی یافت نشد</h3>
+          <h3 className="text-base font-semibold text-foreground">{t("empty.noAssetsFound")}</h3>
           <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            با معیارهای جستجوی فعلی تجهیزی پیدا نشد. فیلترها را ریست کنید یا تجهیز جدیدی ثبت نمایید.
+            {t("empty.noAssetsDesc")}
           </p>
           <Button onClick={handleOpenAdd} size="sm" className="mt-2 text-xs">
-            ثبت تجهیز جدید
+            {t("actions.addNew")}
           </Button>
         </div>
       ) : (

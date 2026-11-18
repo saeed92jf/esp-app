@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { 
   Dialog, 
   DialogContent, 
@@ -24,7 +25,7 @@ import {
   AssetStatus, 
   AssetCriticality 
 } from "../types/assets.types";
-import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface AssetUpsertModalProps {
   isOpen: boolean;
@@ -43,6 +44,10 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
   categories,
   locations,
 }) => {
+  const locale = useLocale();
+  const isRtl = locale === "fa";
+  const t = useTranslations("Assets");
+
   const [tagNumber, setTagNumber] = useState("");
   const [nameFa, setNameFa] = useState("");
   const [nameEn, setNameEn] = useState("");
@@ -60,12 +65,6 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
   const [installationDate, setInstallationDate] = useState("");
   const [description, setDescription] = useState("");
   const [specifications, setSpecifications] = useState<Record<string, any>>({});
-  const [spareParts, setSpareParts] = useState<Array<{
-    part_code: string;
-    description_fa: string;
-    minimum_stock: number;
-    current_stock_ref: number;
-  }>>([]);
 
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -86,7 +85,6 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
       setInstallationDate(asset.installation_date || "");
       setDescription(asset.description || "");
       setSpecifications(asset.specifications || {});
-      setSpareParts(asset.spare_parts || []);
       setShowAdvanced(true);
     } else {
       setTagNumber("");
@@ -103,7 +101,6 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
       setInstallationDate(new Date().toISOString().split("T")[0]);
       setDescription("");
       setSpecifications({});
-      setSpareParts([]);
       setShowAdvanced(false);
     }
     setErrorMsg(null);
@@ -114,7 +111,7 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tagNumber.trim() || !nameFa.trim() || !categoryId || !locationId) {
-      setErrorMsg("لطفاً تگ تجهیز، نام فارسی، دسته‌بندی و موقعیت مکانی را وارد کنید.");
+      setErrorMsg(t("form.validationError"));
       return;
     }
 
@@ -136,11 +133,11 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
         installation_date: installationDate || undefined,
         description: description.trim() || undefined,
         specifications,
-        spare_parts: spareParts,
+        spare_parts: [],
       });
       onClose();
     } catch (err: any) {
-      setErrorMsg(err.message || "خطا در ذخیره تجهیز");
+      setErrorMsg(err.message || "Error saving asset");
     } finally {
       setSaving(false);
     }
@@ -153,34 +150,15 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
     }));
   };
 
-  const addSparePart = () => {
-    setSpareParts((prev) => [
-      ...prev,
-      { part_code: "", description_fa: "", minimum_stock: 1, current_stock_ref: 0 },
-    ]);
-  };
-
-  const updateSparePart = (idx: number, field: string, val: any) => {
-    setSpareParts((prev) => {
-      const copy = [...prev];
-      copy[idx] = { ...copy[idx], [field]: val };
-      return copy;
-    });
-  };
-
-  const removeSparePart = (idx: number) => {
-    setSpareParts((prev) => prev.filter((_, i) => i !== idx));
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
         <DialogHeader className="p-5 border-b border-border bg-muted/20">
           <DialogTitle className="text-base font-bold text-foreground">
-            {asset ? "ویرایش شناسنامه تجهیز" : "ثبت تجهیز و ماشین‌آلات صنعتی جدید"}
+            {asset ? t("form.editTitle") : t("form.createTitle")}
           </DialogTitle>
           <p className="text-xs text-muted-foreground mt-0.5">
-            فیلدهای اصلی برای پرسنل و کارگران، مشخصات تفصیلی در بخش اطلاعات فنی پیشرفته
+            {t("form.subtitle")}
           </p>
         </DialogHeader>
 
@@ -196,11 +174,11 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold text-foreground mb-1 block">
-                  تگ یا شناسه فنی تجهیز (Tag No) *
+                  {t("form.tagNumber")}
                 </label>
                 <Input
                   required
-                  placeholder="مثال: P-101A یا CMP-202"
+                  placeholder={t("form.tagPlaceholder")}
                   value={tagNumber}
                   onChange={(e) => setTagNumber(e.target.value)}
                   className="font-mono text-sm uppercase"
@@ -209,11 +187,11 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
 
               <div>
                 <label className="text-xs font-semibold text-foreground mb-1 block">
-                  نام فارسی تجهیز *
+                  {t("form.nameFa")}
                 </label>
                 <Input
                   required
-                  placeholder="مثال: پمپ تغذیه بویلر شماره یک"
+                  placeholder={t("nameFa")}
                   value={nameFa}
                   onChange={(e) => setNameFa(e.target.value)}
                 />
@@ -221,16 +199,16 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
 
               <div>
                 <label className="text-xs font-semibold text-foreground mb-1 block">
-                  دسته‌بندی تجهیز *
+                  {t("form.category")}
                 </label>
                 <Select value={categoryId} onValueChange={setCategoryId}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="انتخاب دسته‌بندی" />
+                    <SelectValue placeholder={t("category")} />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((c) => (
                       <SelectItem key={c.id} value={c.id}>
-                        {c.name_fa} ({c.code})
+                        {isRtl ? c.name_fa : (c.name_en || c.name_fa)} ({c.code})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -239,16 +217,16 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
 
               <div>
                 <label className="text-xs font-semibold text-foreground mb-1 block">
-                  محل فیزیکی و سالن استقرار *
+                  {t("form.location")}
                 </label>
                 <Select value={locationId} onValueChange={setLocationId}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="انتخاب موقعیت مکانی" />
+                    <SelectValue placeholder={t("location")} />
                   </SelectTrigger>
                   <SelectContent>
                     {locations.map((l) => (
                       <SelectItem key={l.id} value={l.id}>
-                        {l.name_fa}
+                        {isRtl ? l.name_fa : (l.name_en || l.name_fa)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -257,34 +235,34 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
 
               <div>
                 <label className="text-xs font-semibold text-foreground mb-1 block">
-                  وضعیت کارکرد فعلی
+                  {t("form.status")}
                 </label>
                 <Select value={status} onValueChange={(v) => setStatus(v as AssetStatus)}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="OPERATIONAL">در حال کار (Operational)</SelectItem>
-                    <SelectItem value="STANDBY">آماده‌به‌کار (Standby)</SelectItem>
-                    <SelectItem value="UNDER_MAINTENANCE">تعمیرات و سرویس (Under Maintenance)</SelectItem>
-                    <SelectItem value="OUT_OF_SERVICE">خارج از مدار (Out of Service)</SelectItem>
+                    <SelectItem value="OPERATIONAL">{t("status.operational")}</SelectItem>
+                    <SelectItem value="STANDBY">{t("status.standby")}</SelectItem>
+                    <SelectItem value="UNDER_MAINTENANCE">{t("status.underMaintenance")}</SelectItem>
+                    <SelectItem value="OUT_OF_SERVICE">{t("status.outOfService")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-foreground mb-1 block">
-                  سطح حساسیت و اهمیت خط
+                  {t("form.criticality")}
                 </label>
                 <Select value={criticality} onValueChange={(v) => setCriticality(v as AssetCriticality)}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="LOW">پایین (Low)</SelectItem>
-                    <SelectItem value="MEDIUM">متوسط (Medium)</SelectItem>
-                    <SelectItem value="HIGH">بالا (High)</SelectItem>
-                    <SelectItem value="CRITICAL">بحرانی (Critical)</SelectItem>
+                    <SelectItem value="LOW">{t("criticality.low")}</SelectItem>
+                    <SelectItem value="MEDIUM">{t("criticality.medium")}</SelectItem>
+                    <SelectItem value="HIGH">{t("criticality.high")}</SelectItem>
+                    <SelectItem value="CRITICAL">{t("criticality.critical")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -299,7 +277,7 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className="w-full justify-between text-xs font-medium text-muted-foreground hover:text-foreground"
               >
-                <span>مشخصات پیشرفته، سازنده، کاتالوگ و قطعات یدکی</span>
+                <span>{t("form.advancedToggle")}</span>
                 {showAdvanced ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
               </Button>
             </div>
@@ -309,25 +287,25 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
               <div className="space-y-4 pt-2 border-t border-border animate-in fade-in duration-150">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">نام انگلیسی (En)</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">{t("form.nameEn")}</label>
                     <Input
-                      placeholder="Feed Pump A"
+                      placeholder="e.g. Centrifugal Pump A"
                       value={nameEn}
                       onChange={(e) => setNameEn(e.target.value)}
                       className="font-mono text-xs"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">سازنده (Manufacturer)</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">{t("form.manufacturer")}</label>
                     <Input
-                      placeholder="Sulzer, KSB, ..."
+                      placeholder="Sulzer, Atlas Copco, ..."
                       value={manufacturer}
                       onChange={(e) => setManufacturer(e.target.value)}
                       className="text-xs"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">مدل دستگاه</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">{t("form.model")}</label>
                     <Input
                       placeholder="ZE-80-315"
                       value={modelNumber}
@@ -336,7 +314,7 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">شماره سریال سازنده</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">{t("form.serial")}</label>
                     <Input
                       placeholder="SN-123456"
                       value={serialNumber}
@@ -345,17 +323,17 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">سال ساخت</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">{t("form.year")}</label>
                     <Input
                       type="number"
-                      placeholder="2023"
+                      placeholder="2024"
                       value={yearBuilt || ""}
                       onChange={(e) => setYearBuilt(e.target.value ? Number(e.target.value) : undefined)}
                       className="font-mono text-xs"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">تاریخ نصب و راه‌اندازی</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">{t("form.installDate")}</label>
                     <Input
                       type="date"
                       value={installationDate}
@@ -369,13 +347,13 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
                 {selectedCategory && selectedCategory.parameter_templates.length > 0 && (
                   <div className="p-3.5 rounded-lg border border-border/80 bg-muted/10 space-y-3">
                     <div className="text-xs font-semibold text-foreground">
-                      پارامترهای فنی اختصاصی ({selectedCategory.name_fa})
+                      {t("form.categorySpecs")} ({isRtl ? selectedCategory.name_fa : (selectedCategory.name_en || selectedCategory.name_fa)})
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {selectedCategory.parameter_templates.map((tpl) => (
                         <div key={tpl.key}>
                           <label className="text-xs text-muted-foreground mb-1 flex items-center justify-between">
-                            <span>{tpl.name_fa}</span>
+                            <span>{isRtl ? tpl.name_fa : (tpl.name_en || tpl.name_fa)}</span>
                             {tpl.unit && <span className="font-mono text-[10px]">({tpl.unit})</span>}
                           </label>
                           <Input
@@ -390,70 +368,10 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
                   </div>
                 )}
 
-                {/* Spare Parts Linking (ESP Warehouse Integration) */}
-                <div className="p-3.5 rounded-lg border border-border/80 bg-muted/10 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs font-semibold text-foreground">
-                      قطعات یدکی مصرفی (اتصال با انبار)
-                    </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addSparePart}
-                      className="h-7 text-xs gap-1"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      افزودن قطعه یدکی
-                    </Button>
-                  </div>
-
-                  {spareParts.length === 0 ? (
-                    <div className="text-xs text-muted-foreground py-2 text-center">
-                      هیچ قطعه یدکی ثبت نشده است.
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {spareParts.map((sp, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <Input
-                            placeholder="کد قطعه (مثال: SP-SEAL-80)"
-                            value={sp.part_code}
-                            onChange={(e) => updateSparePart(idx, "part_code", e.target.value)}
-                            className="w-1/3 font-mono text-xs"
-                          />
-                          <Input
-                            placeholder="شرح قطعه یدکی"
-                            value={sp.description_fa}
-                            onChange={(e) => updateSparePart(idx, "description_fa", e.target.value)}
-                            className="flex-1 text-xs"
-                          />
-                          <Input
-                            type="number"
-                            placeholder="حداقل نیاز"
-                            value={sp.minimum_stock}
-                            onChange={(e) => updateSparePart(idx, "minimum_stock", Number(e.target.value))}
-                            className="w-20 font-mono text-xs"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeSparePart(idx)}
-                            className="h-8 w-8 text-rose-500 hover:text-rose-700"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
                 <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">توضیحات و دستورالعمل‌های خاص</label>
+                  <label className="text-xs text-muted-foreground mb-1 block">{t("form.desc")}</label>
                   <Input
-                    placeholder="نکات نگهداری یا شرایط محیطی خاص..."
+                    placeholder="Notes..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className="text-xs"
@@ -465,10 +383,10 @@ export const AssetUpsertModal: React.FC<AssetUpsertModalProps> = ({
 
           <DialogFooter className="p-4 border-t border-border bg-muted/20 flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
-              انصراف
+              {t("actions.cancel")}
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? "در حال ذخیره..." : asset ? "ذخیره تغییرات" : "ثبت تجهیز"}
+              {saving ? t("form.saving") : asset ? t("actions.save") : t("actions.addNew")}
             </Button>
           </DialogFooter>
         </form>
