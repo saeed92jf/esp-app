@@ -19,6 +19,7 @@ import {
   UploadCloud,
   ArrowUpRight,
   Plus,
+  AlertTriangle,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ import { customersService } from "../services/customers.service";
 import { IRANIAN_LICENSORS } from "../data/licensors.data";
 import { LicensorDetailModal } from "./LicensorDetailModal";
 import { AddEditLicensorModal } from "./AddEditLicensorModal";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 import type { Licensor, LicensorCategory } from "../types/licensors.types";
 
 const CATEGORY_TABS: { id: LicensorCategory; labelFa: string; labelEn: string }[] = [
@@ -80,6 +82,8 @@ function getCategoryLabel(category: LicensorCategory, isRtl: boolean): string {
 }
 
 export function LicensorsDirectoryView() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin" || user?.role === "superadmin";
   const locale = useLocale();
   const isRtl = locale === "fa";
   const searchParams = useSearchParams();
@@ -94,6 +98,10 @@ export function LicensorsDirectoryView() {
   const [customLicensors, setCustomLicensors] = useState<Licensor[]>([]);
   const [editingLicensor, setEditingLicensor] = useState<Licensor | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [deletingLicensor, setDeletingLicensor] = useState<Licensor | null>(null);
+
+  // Hidden/Deleted base licensors (persisted in localStorage)
+  const [deletedLicensorIds, setDeletedLicensorIds] = useState<string[]>([]);
 
   // Persistent Custom Logos (localStorage)
   const [customLogos, setCustomLogos] = useState<Record<string, string>>({});
@@ -102,7 +110,7 @@ export function LicensorsDirectoryView() {
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load persisted logos and custom licensors on mount
+  // Load persisted logos, custom licensors and deleted IDs on mount
   useEffect(() => {
     try {
       const storedLogos = localStorage.getItem("esp_licensor_logos_override");
@@ -113,10 +121,14 @@ export function LicensorsDirectoryView() {
       if (storedLicensors) {
         setCustomLicensors(JSON.parse(storedLicensors));
       }
+      const storedDeleted = localStorage.getItem("esp_deleted_licensor_ids_v1");
+      if (storedDeleted) {
+        setDeletedLicensorIds(JSON.parse(storedDeleted));
+      }
     } catch {}
   }, []);
 
-  // Merged Master Licensors List
+  // Merged Master Licensors List (filtering out deleted items)
   const allLicensors = useMemo(() => {
     const customMap = new Map<string, Licensor>();
     customLicensors.forEach((cl) => customMap.set(cl.id, cl));
@@ -141,8 +153,9 @@ export function LicensorsDirectoryView() {
       }
     });
 
-    return result;
-  }, [customLicensors]);
+    const deletedSet = new Set(deletedLicensorIds);
+    return result.filter((l) => !deletedSet.has(l.id));
+  }, [customLicensors, deletedLicensorIds]);
 
   const handleSaveLicensor = (updated: Licensor) => {
     setCustomLicensors((prev) => {
@@ -163,6 +176,37 @@ export function LicensorsDirectoryView() {
     if (detailLicensor && detailLicensor.id === updated.id) {
       setDetailLicensor(updated);
     }
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deletingLicensor) return;
+    const idToDelete = deletingLicensor.id;
+
+    // 1. Remove from custom licensors if present
+    setCustomLicensors((prev) => {
+      const next = prev.filter((l) => l.id !== idToDelete);
+      try {
+        localStorage.setItem("esp_custom_licensors_v1", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+
+    // 2. Add to deleted IDs list
+    setDeletedLicensorIds((prev) => {
+      const next = Array.from(new Set([...prev, idToDelete]));
+      try {
+        localStorage.setItem("esp_deleted_licensor_ids_v1", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+
+    if (detailLicensor?.id === idToDelete) {
+      setIsDetailModalOpen(false);
+      setDetailLicensor(null);
+    }
+
+    toast.success(isRtl ? "کارت لایسنسور با موفقیت حذف شد." : "Licensor card deleted successfully.");
+    setDeletingLicensor(null);
   };
 
   const handleOpenCreateModal = () => {
@@ -188,11 +232,31 @@ export function LicensorsDirectoryView() {
   };
 
   const saveCustomLogo = (licensorId: string, url: string) => {
-    const updated = { ...customLogos, [licensorId]: url };
+    const trimmedUrl = url.trim();
+    const updated = { ...customLogos, [licensorId]: trimmedUrl };
     setCustomLogos(updated);
     try {
       localStorage.setItem("esp_licensor_logos_override", JSON.stringify(updated));
     } catch {}
+
+    // Update in customLicensors for instantaneous reactivity
+    setCustomLicensors((prev) => {
+      const idx = prev.findIndex((l) => l.id === licensorId);
+      if (idx !== -1) {
+        const next = [...prev];
+        next[idx] = { ...next[idx], logoUrl: trimmedUrl };
+        try {
+          localStorage.setItem("esp_custom_licensors_v1", JSON.stringify(next));
+        } catch {}
+        return next;
+      }
+      return prev;
+    });
+
+    // Update detailLicensor if open
+    if (detailLicensor && detailLicensor.id === licensorId) {
+      setDetailLicensor((prev) => (prev ? { ...prev, logoUrl: trimmedUrl } : null));
+    }
   };
 
   const handleLogoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -500,11 +564,15 @@ export function LicensorsDirectoryView() {
                       {hasLogo ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
+                          key={currentLogo}
                           src={currentLogo}
                           alt={displayName}
                           className="max-h-24 sm:max-h-28 max-w-[85%] object-contain transition-transform duration-200 group-hover:scale-105 select-none"
                           onError={(e) => {
                             (e.target as HTMLElement).style.display = "none";
+                          }}
+                          onLoad={(e) => {
+                            (e.target as HTMLElement).style.display = "block";
                           }}
                         />
                       ) : (
@@ -580,6 +648,23 @@ export function LicensorsDirectoryView() {
                   </span>
 
                   <div className="flex items-center gap-1.5">
+                    {isAdmin && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="xs"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeletingLicensor(licensor);
+                        }}
+                        className="h-7.5 px-2 rounded-xl text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                        title={isRtl ? "حذف کارت لایسنسور" : "Delete Licensor Card"}
+                      >
+                        <Trash2 className="size-3.5 text-destructive" />
+                        <span className="sr-only">{isRtl ? "حذف" : "Delete"}</span>
+                      </Button>
+                    )}
+
                     <Button
                       type="button"
                       variant="outline"
@@ -628,7 +713,7 @@ export function LicensorsDirectoryView() {
       {/* ── 5. Edit Logo Modal ── */}
       {editingLogoLicensor && (
         <Dialog open={!!editingLogoLicensor} onOpenChange={(open) => !open && setEditingLogoLicensor(null)}>
-          <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl z-[110]">
+          <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden rounded-2xl z-[110]">
             <DialogHeader className="p-5 pb-3 border-b border-border/60 bg-muted/20">
               <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
                 <Camera className="size-4.5 text-primary" />
@@ -649,11 +734,15 @@ export function LicensorsDirectoryView() {
                   {logoInputValue ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
+                      key={logoInputValue}
                       src={logoInputValue}
                       alt="Preview"
                       className="max-h-24 max-w-[85%] object-contain select-none"
                       onError={(e) => {
                         (e.target as HTMLElement).style.display = "none";
+                      }}
+                      onLoad={(e) => {
+                        (e.target as HTMLElement).style.display = "block";
                       }}
                     />
                   ) : (
@@ -708,13 +797,13 @@ export function LicensorsDirectoryView() {
               </div>
             </div>
 
-            <DialogFooter className="p-4 border-t border-border/60 bg-muted/10 flex items-center justify-between sm:justify-between gap-2">
+            <div className="p-4 border-t border-border/60 bg-muted/10 flex items-center justify-between gap-2 shrink-0">
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={handleClearLogo}
-                className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl"
+                className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl cursor-pointer"
               >
                 <Trash2 className="size-3.5 me-1" />
                 <span>{isRtl ? "خالی کردن لوگو" : "Remove Logo"}</span>
@@ -726,7 +815,7 @@ export function LicensorsDirectoryView() {
                   variant="outline"
                   size="sm"
                   onClick={() => setEditingLogoLicensor(null)}
-                  className="text-xs rounded-xl"
+                  className="text-xs rounded-xl cursor-pointer"
                 >
                   {isRtl ? "انصراف" : "Cancel"}
                 </Button>
@@ -735,18 +824,67 @@ export function LicensorsDirectoryView() {
                   variant="default"
                   size="sm"
                   onClick={handleSaveLogo}
-                  className="text-xs rounded-xl"
+                  className="text-xs rounded-xl cursor-pointer"
                 >
                   <Check className="size-3.5 me-1" />
                   <span>{isRtl ? "ذخیره تغییرات" : "Save Changes"}</span>
                 </Button>
               </div>
-            </DialogFooter>
+            </div>
           </DialogContent>
         </Dialog>
       )}
 
-      {/* ── 6. Create / Edit Licensor Modal ── */}
+      {/* ── 6. Delete Licensor Confirmation Modal (Admin Only) ── */}
+      {deletingLicensor && (
+        <Dialog open={!!deletingLicensor} onOpenChange={(open) => !open && setDeletingLicensor(null)}>
+          <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden rounded-2xl z-[120]">
+            <DialogHeader className="p-5 pb-3 border-b border-border/60 bg-destructive/10">
+              <DialogTitle className="text-base font-bold text-destructive flex items-center gap-2">
+                <AlertTriangle className="size-5 text-destructive shrink-0" />
+                <span>{isRtl ? "هشدار حذف کارت لایسنسور" : "Delete Licensor Card"}</span>
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground pt-1">
+                {isRtl
+                  ? `آیا از حذف کارت لایسنسور «${getLicensorDisplayName(deletingLicensor, true)}» اطمینان دارید؟`
+                  : `Are you sure you want to delete "${deletingLicensor.nameEn}"?`}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="p-5 space-y-2">
+              <p className="text-xs leading-relaxed text-foreground/80">
+                {isRtl
+                  ? "با تأیید این عملیات، کارت لایسنسور از نمای بانک جامع حذف خواهد شد. این اقدام نیازمند مجوز سطح مدیریت است."
+                  : "This will remove this licensor card from the directory view. Administrator permission required."}
+              </p>
+            </div>
+
+            <div className="p-4 border-t border-border/60 bg-muted/10 flex items-center justify-end gap-2.5 shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setDeletingLicensor(null)}
+                className="text-xs rounded-xl cursor-pointer"
+              >
+                {isRtl ? "انصراف" : "Cancel"}
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={handleConfirmDelete}
+                className="text-xs rounded-xl cursor-pointer font-semibold gap-1.5"
+              >
+                <Trash2 className="size-3.5" />
+                <span>{isRtl ? "حذف قطعی کارت" : "Delete Card"}</span>
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* ── 7. Create / Edit Licensor Modal ── */}
       <AddEditLicensorModal
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}

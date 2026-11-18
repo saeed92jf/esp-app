@@ -268,27 +268,27 @@ export function AddEditLicensorModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex-1 min-h-0 flex flex-col overflow-hidden">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 gap-0">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 gap-0 overflow-hidden">
             {/* Tabs List */}
-            <div className="px-5 pt-2 border-b border-border/70 bg-background shrink-0 overflow-x-auto no-scrollbar">
-              <TabsList variant="line" className="h-10 gap-2 sm:gap-4 p-0">
-                <TabsTrigger value="identity" className="gap-2 text-xs sm:text-sm font-semibold pb-2 data-active:text-primary">
-                  <Award className="size-4" />
+            <div className="px-5 py-2 border-b border-border/70 bg-muted/15 shrink-0 overflow-x-auto no-scrollbar">
+              <TabsList className="h-9 gap-1 sm:gap-2 p-1 bg-muted/60 rounded-xl">
+                <TabsTrigger value="identity" className="gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg data-active:bg-background data-active:text-primary data-active:shadow-xs transition-all">
+                  <Award className="size-3.5" />
                   <span>{isRtl ? "اطلاعات هویتی و ثبتی" : "Identity & Status"}</span>
                 </TabsTrigger>
 
-                <TabsTrigger value="location" className="gap-2 text-xs sm:text-sm font-semibold pb-2 data-active:text-primary">
-                  <MapPin className="size-4" />
+                <TabsTrigger value="location" className="gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg data-active:bg-background data-active:text-primary data-active:shadow-xs transition-all">
+                  <MapPin className="size-3.5" />
                   <span>{isRtl ? "موقعیت و نشانی" : "Location & Address"}</span>
                 </TabsTrigger>
 
-                <TabsTrigger value="contacts" className="gap-2 text-xs sm:text-sm font-semibold pb-2 data-active:text-primary">
-                  <Phone className="size-4" />
+                <TabsTrigger value="contacts" className="gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg data-active:bg-background data-active:text-primary data-active:shadow-xs transition-all">
+                  <Phone className="size-3.5" />
                   <span>{isRtl ? "راه‌های ارتباطی و رابط" : "Contacts & Rep"}</span>
                 </TabsTrigger>
 
-                <TabsTrigger value="history" className="gap-2 text-xs sm:text-sm font-semibold pb-2 data-active:text-primary">
-                  <BookOpen className="size-4" />
+                <TabsTrigger value="history" className="gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg data-active:bg-background data-active:text-primary data-active:shadow-xs transition-all">
+                  <BookOpen className="size-3.5" />
                   <span>{isRtl ? "تاریخچه و معرفی" : "History & Overview"}</span>
                 </TabsTrigger>
               </TabsList>
@@ -367,11 +367,15 @@ export function AddEditLicensorModal({
                       {logoUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
+                          key={logoUrl}
                           src={logoUrl}
                           alt="Logo Preview"
                           className="max-h-full max-w-full object-contain select-none"
                           onError={(e) => {
                             (e.target as HTMLElement).style.display = "none";
+                          }}
+                          onLoad={(e) => {
+                            (e.target as HTMLElement).style.display = "block";
                           }}
                         />
                       ) : (
@@ -646,7 +650,7 @@ export function AddEditLicensorModal({
           </Tabs>
 
           {/* Footer Actions */}
-          <DialogFooter className="p-4 border-t border-border/70 bg-muted/15 flex items-center justify-between sm:justify-between gap-3 shrink-0">
+          <div className="p-4 border-t border-border/70 bg-muted/15 flex items-center justify-between gap-3 shrink-0">
             <Button
               type="button"
               variant="outline"
@@ -665,7 +669,7 @@ export function AddEditLicensorModal({
               <Check className="size-4" />
               <span>{isRtl ? (isEdit ? "ذخیره تغییرات" : "ثبت لایسنسور") : (isEdit ? "Save Changes" : "Create Licensor")}</span>
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

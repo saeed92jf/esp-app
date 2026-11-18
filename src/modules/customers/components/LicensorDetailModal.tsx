@@ -84,7 +84,6 @@ export function LicensorDetailModal({
   const isRtl = locale === "fa";
 
   const [activeTab, setActiveTab] = useState<string>("overview");
-  const [historyLang, setHistoryLang] = useState<"fa" | "en">(isRtl ? "fa" : "en");
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   if (!isOpen || !licensor) return null;
@@ -120,11 +119,15 @@ export function LicensorDetailModal({
               {currentLogo ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
+                  key={currentLogo}
                   src={currentLogo}
                   alt={cleanNameFa}
                   className="max-h-full max-w-full object-contain select-none transition-transform duration-200 group-hover/logo:scale-105"
                   onError={(e) => {
                     (e.target as HTMLElement).style.display = "none";
+                  }}
+                  onLoad={(e) => {
+                    (e.target as HTMLElement).style.display = "block";
                   }}
                 />
               ) : (
@@ -260,37 +263,37 @@ export function LicensorDetailModal({
             className="flex-1 flex flex-col min-h-0 gap-0"
           >
             {/* Tabs Bar */}
-            <div className="px-4 sm:px-6 pt-3 border-b border-border/80 bg-background/95 shrink-0 overflow-x-auto no-scrollbar">
-              <TabsList variant="line" className="h-10 gap-2 sm:gap-4 p-0">
+            <div className="px-4 sm:px-6 py-2 border-b border-border/70 bg-muted/15 shrink-0 overflow-x-auto no-scrollbar">
+              <TabsList className="h-9 gap-1 sm:gap-2 p-1 bg-muted/60 rounded-xl">
                 <TabsTrigger
                   value="overview"
-                  className="gap-2 text-xs sm:text-sm font-semibold pb-2.5 data-active:text-primary"
+                  className="gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg data-active:bg-background data-active:text-primary data-active:shadow-xs transition-all"
                 >
-                  <Building2 className="size-4" />
+                  <Building2 className="size-3.5" />
                   <span>{isRtl ? "مشخصات و ارتباطات" : "Overview & Contacts"}</span>
                 </TabsTrigger>
 
                 <TabsTrigger
                   value="processes"
-                  className="gap-2 text-xs sm:text-sm font-semibold pb-2.5 data-active:text-primary"
+                  className="gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg data-active:bg-background data-active:text-primary data-active:shadow-xs transition-all"
                 >
-                  <Cpu className="size-4" />
+                  <Cpu className="size-3.5" />
                   <span>{isRtl ? "فرآیندها و تکنولوژی‌ها" : "Processes & Tech"}</span>
-                  <Badge variant="secondary" className="text-[10px] py-0 px-1.5 h-4.5 rounded-full">
+                  <Badge variant="secondary" className="text-[10px] py-0 px-1.5 h-4 rounded-full">
                     {licensor.keyTechnologies.length}
                   </Badge>
                 </TabsTrigger>
 
                 <TabsTrigger
                   value="plants"
-                  className="gap-2 text-xs sm:text-sm font-semibold pb-2.5 data-active:text-primary"
+                  className="gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg data-active:bg-background data-active:text-primary data-active:shadow-xs transition-all"
                 >
-                  <Factory className="size-4" />
+                  <Factory className="size-3.5" />
                   <span>{isRtl ? "واحدهای لایسنس‌شده ایران" : "Licensed Units"}</span>
                   <Badge
                     variant={licensor.licensedPlants.length > 0 ? "default" : "outline"}
                     className={cn(
-                      "text-[10px] py-0 px-1.5 h-4.5 rounded-full font-bold",
+                      "text-[10px] py-0 px-1.5 h-4 rounded-full font-bold",
                       licensor.licensedPlants.length > 0 ? "bg-primary text-primary-foreground" : "text-muted-foreground"
                     )}
                   >
@@ -300,9 +303,9 @@ export function LicensorDetailModal({
 
                 <TabsTrigger
                   value="history"
-                  className="gap-2 text-xs sm:text-sm font-semibold pb-2.5 data-active:text-primary"
+                  className="gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg data-active:bg-background data-active:text-primary data-active:shadow-xs transition-all"
                 >
-                  <BookOpen className="size-4" />
+                  <BookOpen className="size-3.5" />
                   <span>{isRtl ? "تاریخچه و مراجع" : "History & Sources"}</span>
                 </TabsTrigger>
               </TabsList>
@@ -773,39 +776,18 @@ export function LicensorDetailModal({
 
               {/* ── TAB 4: HISTORY & SOURCES ── */}
               <TabsContent value="history" className="space-y-6 mt-0">
-                {/* Language Switcher */}
-                <div className="flex items-center justify-between gap-3 pb-1 border-b border-border/50">
+                <div className="pb-1 border-b border-border/50">
                   <h3 className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
                     <BookOpen className="size-4 text-primary" />
                     <span>{isRtl ? "تاریخچه، پیدایش و سیر تکامل" : "Corporate History & Evolution"}</span>
                   </h3>
-                  <div className="flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/60">
-                    <Button
-                      type="button"
-                      variant={historyLang === "fa" ? "default" : "ghost"}
-                      size="xs"
-                      onClick={() => setHistoryLang("fa")}
-                      className="h-6 px-2.5 text-xs rounded-lg font-semibold"
-                    >
-                      فارسی
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={historyLang === "en" ? "default" : "ghost"}
-                      size="xs"
-                      onClick={() => setHistoryLang("en")}
-                      className="h-6 px-2.5 text-xs rounded-lg font-semibold font-sans"
-                    >
-                      English
-                    </Button>
-                  </div>
                 </div>
 
                 {/* History Text */}
                 <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/80 shadow-2xs space-y-3">
                   <p className="text-xs sm:text-sm leading-relaxed text-foreground/90 text-justify">
-                    {historyLang === "fa"
-                      ? (licensor.historyFa || licensor.descriptionFa)
+                    {isRtl
+                      ? (licensor.historyFa || licensor.descriptionFa || licensor.historyEn || licensor.descriptionEn)
                       : (licensor.historyEn || licensor.descriptionEn || licensor.historyFa || licensor.descriptionFa)}
                   </p>
                 </div>
