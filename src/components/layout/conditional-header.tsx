@@ -18,6 +18,7 @@ const HIDDEN_PREFIXES = [
   '/projects',
   '/tasks',
   '/customers',
+  '/assets',
   '/directory',
   '/bug-reports',
   // Modules with their own AppHeader in layout — adding here prevents double header

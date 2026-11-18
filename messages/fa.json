@@ -3263,5 +3263,33 @@
       "executeBtn": "ایمپورت قطعی به مستر دیتا",
       "validationReport": "گزارش سلامت و اعتبارسنجی داده‌ها"
     }
+  },
+  "Assets": {
+    "title": "مدیریت دارایی‌ها و تجهیزات صنعتی",
+    "subtitle": "شناسنامه ماشین‌آلات، مشخصات فنی، موقعیت استقرار و ارتباط با قطعات یدکی انبار",
+    "totalAssets": "کل ماشین‌آلات و تجهیزات",
+    "operational": "در حال کار",
+    "standby": "آماده‌به‌کار",
+    "underMaintenance": "در حال تعمیر و سرویس",
+    "outOfService": "خارج از مدار",
+    "tagNumber": "تگ / شناسه فنی",
+    "nameFa": "نام فارسی تجهیز",
+    "nameEn": "نام انگلیسی",
+    "category": "دسته‌بندی",
+    "location": "موقعیت فیزیکی",
+    "status": "وضعیت کارکرد",
+    "criticality": "درجه اهمیت",
+    "serialNumber": "شماره سریال سازنده",
+    "manufacturer": "شرکت سازنده",
+    "modelNumber": "مدل دستگاه",
+    "yearBuilt": "سال ساخت",
+    "installationDate": "تاریخ نصب",
+    "addNewAsset": "ثبت تجهیز جدید",
+    "editAsset": "ویرایش شناسنامه تجهیز",
+    "specifications": "مشخصات فنی",
+    "documents": "اسناد و نقشه‌ها",
+    "spareParts": "قطعات یدکی انبار",
+    "downloadDoc": "دانلود سند",
+    "quickStatus": "تغییر سریع وضعیت"
   }
 }

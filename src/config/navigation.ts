@@ -13,6 +13,7 @@ import {
   FileMagnifyingGlass,
   AddressBook,
   Users,
+  Gauge,
 } from "@phosphor-icons/react";
 
 /**
@@ -343,6 +344,14 @@ export const NAVIGATION: NavGroup[] = [
         href: "/engineering/esp-coding",
         icon: TreeStructure,
         color: "emerald",
+        public: true,
+        free: false,
+      },
+      {
+        labelKey: "assets",
+        href: "/assets",
+        icon: Gauge,
+        color: "cyan",
         public: true,
         free: false,
       },

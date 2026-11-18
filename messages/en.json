@@ -3263,5 +3263,33 @@
       "executeBtn": "Import to Master Data",
       "validationReport": "Validation & Integrity Report"
     }
+  },
+  "Assets": {
+    "title": "Industrial Assets & Machinery Management",
+    "subtitle": "Machinery specifications, technical data sheets, physical plant locations, and warehouse spare parts",
+    "totalAssets": "Total Machinery & Equipment",
+    "operational": "In Operation",
+    "standby": "Standby",
+    "underMaintenance": "Under Maintenance",
+    "outOfService": "Out of Service",
+    "tagNumber": "Tag / Technical ID",
+    "nameFa": "Persian Name",
+    "nameEn": "English Name",
+    "category": "Category",
+    "location": "Physical Location",
+    "status": "Operational Status",
+    "criticality": "Criticality",
+    "serialNumber": "Serial Number",
+    "manufacturer": "Manufacturer",
+    "modelNumber": "Model Number",
+    "yearBuilt": "Year Built",
+    "installationDate": "Installation Date",
+    "addNewAsset": "Register New Asset",
+    "editAsset": "Edit Asset Information",
+    "specifications": "Technical Specifications",
+    "documents": "Documents & Drawings",
+    "spareParts": "Warehouse Spare Parts",
+    "downloadDoc": "Download Document",
+    "quickStatus": "Quick Status Update"
   }
 }
