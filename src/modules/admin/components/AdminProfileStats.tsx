@@ -291,18 +291,22 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
           {displayName}
         </h2>
 
-        {/* Degree of Education directly under User Name in Avatar Card */}
-        {(selectedUser.education || selectedUser.educationDegree || selectedUser.fieldOfStudy) && (
-          <div 
-            className="inline-flex items-center justify-center gap-1.5 px-2.5 py-0.5 mt-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10.5px] sm:text-[11.5px] font-semibold max-w-full truncate shadow-2xs"
-            title={isRtl ? `${educationDegree} ${educationField}` : `${educationDegree} of ${educationField}`}
-          >
-            <GraduationCap size={13} className="stroke-[2.2] shrink-0" />
-            <span className="truncate">
-              {isRtl ? `${educationDegree} ${educationField}` : `${educationDegree} of ${educationField}`}
-            </span>
-          </div>
-        )}
+        {/* Degree of Education directly under User Name in Avatar Card (Fixed container to avoid height jump) */}
+        <div className="h-6 flex items-center justify-center mt-1 w-full overflow-hidden">
+          {(selectedUser.education || selectedUser.educationDegree || selectedUser.fieldOfStudy) ? (
+            <div 
+              className="inline-flex items-center justify-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10.5px] sm:text-[11.5px] font-semibold max-w-full truncate shadow-2xs"
+              title={isRtl ? `${educationDegree} ${educationField}` : `${educationDegree} of ${educationField}`}
+            >
+              <GraduationCap size={13} className="stroke-[2.2] shrink-0" />
+              <span className="truncate">
+                {isRtl ? `${educationDegree} ${educationField}` : `${educationDegree} of ${educationField}`}
+              </span>
+            </div>
+          ) : (
+            <div className="h-5" />
+          )}
+        </div>
 
         {/* Role & Company Badges */}
         <div className="flex items-center justify-center gap-1.5 flex-nowrap mt-1 max-w-full overflow-hidden">
@@ -396,20 +400,20 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
           )}
         </div>
 
-        {/* Personnel & National ID Badges */}
-        <div className="flex items-center justify-center gap-1.5 mt-2 w-full flex-wrap">
+        {/* Personnel & National ID Badges (Single row with fixed height to prevent vertical expansion) */}
+        <div className="flex items-center justify-center gap-1.5 mt-2 w-full flex-nowrap overflow-hidden h-6">
           {selectedUser.personnelCode && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 fa-num shadow-2xs">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 fa-num shadow-2xs truncate shrink-0">
               {isRtl ? `کد پرسنلی: ${selectedUser.personnelCode}` : `ID: ${selectedUser.personnelCode}`}
             </span>
           )}
           {selectedUser.nationalId && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-foreground/80 border border-border/40 fa-num shadow-2xs">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-foreground/80 border border-border/40 fa-num shadow-2xs truncate shrink-0">
               {isRtl ? `کد ملی: ${selectedUser.nationalId}` : `Nat: ${selectedUser.nationalId}`}
             </span>
           )}
           {selectedUser.extensionNumber && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-foreground/80 border border-border/40 fa-num shadow-2xs">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-foreground/80 border border-border/40 fa-num shadow-2xs truncate shrink-0">
               {isRtl ? `داخلی: ${selectedUser.extensionNumber}` : `Ext: ${selectedUser.extensionNumber}`}
             </span>
           )}

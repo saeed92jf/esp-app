@@ -179,26 +179,26 @@ export function AdminTasksTime({
         
         {/* Module 1: Personnel, Education & Insurance Profile (عمودی تا پایین) */}
         <div className="col-span-1 md:col-span-1 lg:col-span-4 bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col shadow-2xs h-full min-h-0 overflow-hidden">
-          <div className="flex items-center justify-between mb-2.5 px-0.5 shrink-0 flex-wrap gap-2 pb-2 border-b border-border/30">
+          <div className="flex items-center justify-between mb-2.5 px-0.5 shrink-0 flex-nowrap gap-2 pb-2 border-b border-border/30 min-h-[34px] overflow-hidden">
             <div className="flex items-center gap-1.5 min-w-0">
               <Briefcase size={16} className="text-primary shrink-0" />
               <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">
                 {isRtl ? "مشخصات پرسنلی، تحصیلات و بیمه" : "Personnel, Education & Insurance Profile"}
               </h3>
             </div>
-            <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+            <div className="flex items-center gap-1.5 shrink-0 flex-nowrap overflow-hidden">
               {selectedUser?.personnelCode && (
-                <span className="text-[10px] xl:text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 fa-num shrink-0">
+                <span className="text-[10px] xl:text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 fa-num shrink-0 truncate">
                   {isRtl ? `کد ${selectedUser.personnelCode}` : `ID: ${selectedUser.personnelCode}`}
                 </span>
               )}
               {selectedUser?.education && (
-                <span className="text-[10px] xl:text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                <span className="text-[10px] xl:text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0 truncate">
                   {selectedUser.education}
                 </span>
               )}
               {selectedUser?.insuranceType && selectedUser.insuranceType !== "none" && (
-                <span className="text-[10px] xl:text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 shrink-0">
+                <span className="text-[10px] xl:text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 shrink-0 truncate">
                   {isRtl ? `بیمه ${selectedUser.insuranceType}` : `Insurance: ${selectedUser.insuranceType}`}
                 </span>
               )}
