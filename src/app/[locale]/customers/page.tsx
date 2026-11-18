@@ -14,11 +14,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const isFa = locale === "fa";
   return {
     title: isFa
-      ? "فهرست کارفرمایان و مشتریان | یورواسلات پارس"
-      : "Clients & Partners Directory | Euroslot Pars",
+      ? "ESP Atlas | اطلس جامع صنایع و کارفرمایان | یورواسلات پارس"
+      : "ESP Atlas | Clients & Licensors Directory | Euroslot Pars",
     description: isFa
-      ? "بانک اطلاعات کارفرمایان و صنایع پتروشیمی، پالایشگاهی و صنعتی طرف قرارداد"
-      : "Official directory of industrial clients, petrochemical complexes, and refineries",
+      ? "اطلس جامع صنایع پتروشیمی، پالایشگاهی و لایسنسورهای فرآیندی طرف قرارداد یورواسلات پارس (ESP Atlas)"
+      : "ESP Atlas: Official directory of industrial clients, petrochemical complexes, and process licensors",
   };
 }
 

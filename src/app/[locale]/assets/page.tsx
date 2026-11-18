@@ -14,11 +14,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const isFa = locale === "fa";
   return {
     title: isFa
-      ? "مدیریت تجهیزات و دارایی‌های صنعتی | یورواسلات پارس"
-      : "Industrial Assets & Equipment | Euroslot Pars",
+      ? "ESP Asset | مدیریت ماشین‌آلات و تجهیزات صنعتی | یورواسلات پارس"
+      : "ESP Asset | Industrial Assets & Machinery | Euroslot Pars",
     description: isFa
-      ? "شناسنامه ماشین‌آلات صنعتی، مشخصات فنی، موقعیت استقرار و سوابق نگهداری"
-      : "Industrial asset registry, machinery specs, physical plant locations and lifecycle management",
+      ? "سامانه شناسنامه ماشین‌آلات صنعتی، مشخصات فنی، موقعیت استقرار و سوابق نگهداری کارخانه (ESP Asset)"
+      : "ESP Asset: Industrial machinery registry, technical specs, physical plant locations, and lifecycle management",
   };
 }
 

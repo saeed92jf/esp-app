@@ -80,9 +80,10 @@ export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTa
 
   return (
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
-      {/* ── 1. Top Unified Header (Stable Title: Industries & Clients) ── */}
+      {/* ── 1. Top Unified Header (Stable Title: ESP Atlas) ── */}
       <AppHeader
-        tag={isRtl ? "صنایع و کارفرمایان" : "Industries & Clients"}
+        tag="ESP Atlas"
+        subTag={isRtl ? "اطلس جامع صنایع، کارفرمایان و لایسنسورها" : "Industrial Clients & Process Licensors Atlas"}
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"

@@ -18,6 +18,8 @@ import {
   House,
   ShieldCheck,
   Archive,
+  Gauge,
+  Warehouse,
 } from "@phosphor-icons/react";
 import { ArrowUpRight, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -82,12 +84,34 @@ const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   "/customers": {
     icon: Buildings,
     color: "teal",
-    badgeFa: "بانک اطلاعات کارفرماها و لایسنسورها",
-    badgeEn: "Industrial Clients & Licensors",
+    badgeFa: "اطلس جامع صنایع و لایسنسورها (ESP Atlas)",
+    badgeEn: "ESP Atlas - Clients & Licensors",
     sitelinks: [
-      { labelFa: "شرکت‌ها و کارفرمایان", labelEn: "Companies & Clients", href: "/customers?tab=companies" },
+      { labelFa: "مشتریان و صنایع", labelEn: "Clients & Complexes", href: "/customers" },
       { labelFa: "دایرکتوری لایسنسورها", labelEn: "Licensors Directory", href: "/customers?tab=licensors" },
       { labelFa: "ثبت کارفرمای جدید", labelEn: "Add Customer", href: "/customers/new" },
+    ],
+  },
+  "/assets": {
+    icon: Gauge,
+    color: "cyan",
+    badgeFa: "مدیریت ماشین‌آلات و تجهیزات (ESP Asset)",
+    badgeEn: "ESP Asset - Industrial Machinery",
+    sitelinks: [
+      { labelFa: "شناسنامه ماشین‌آلات", labelEn: "Machinery Registry", href: "/assets" },
+      { labelFa: "دسته‌بندی تجهیزات", labelEn: "Asset Categories", href: "/assets" },
+      { labelFa: "موقعیت‌های استقرار", labelEn: "Plant Locations", href: "/assets" },
+    ],
+  },
+  "/warehouse": {
+    icon: Warehouse,
+    color: "amber",
+    badgeFa: "انبارداری و قطعات کارخانه (ESP Warehouse)",
+    badgeEn: "ESP Warehouse - Factory Inventory",
+    sitelinks: [
+      { labelFa: "موجودی قطعات و اقلام", labelEn: "Inventory & SKUs", href: "/warehouse" },
+      { labelFa: "قفسه‌بندی و جایگاه‌ها", labelEn: "Bays & Locations", href: "/warehouse" },
+      { labelFa: "گردش کالا و ترانزاکشن", labelEn: "Stock Transactions", href: "/warehouse" },
     ],
   },
   "/datasheet-ai": {

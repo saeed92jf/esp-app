@@ -14,6 +14,8 @@ import {
   AddressBook,
   Users,
   Gauge,
+  Factory,
+  Warehouse,
 } from "@phosphor-icons/react";
 
 /**
@@ -347,11 +349,27 @@ export const NAVIGATION: NavGroup[] = [
         public: true,
         free: false,
       },
+    ],
+  },
+  {
+    id: "factory",
+    labelKey: "factory",
+    icon: Factory,
+    color: "amber",
+    items: [
       {
-        labelKey: "assets",
+        labelKey: "espAsset",
         href: "/assets",
         icon: Gauge,
         color: "cyan",
+        public: true,
+        free: false,
+      },
+      {
+        labelKey: "espWarehouse",
+        href: "/warehouse",
+        icon: Warehouse,
+        color: "amber",
         public: true,
         free: false,
       },

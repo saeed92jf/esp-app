@@ -138,6 +138,7 @@ export function Header() {
   const isSitemapPage = pathname === "/sitemap" || pathname.startsWith("/sitemap/");
   const isCustomersPage = pathname === "/customers" || pathname.startsWith("/customers/");
   const isDirectoryPage = pathname === "/directory" || pathname.startsWith("/directory/");
+  const isWarehousePage = pathname === "/warehouse" || pathname.startsWith("/warehouse/");
 
   return (
     <AppHeader
@@ -148,6 +149,8 @@ export function Header() {
           ? "customers"
           : isDirectoryPage
           ? "directory"
+          : isWarehousePage
+          ? "warehouse"
           : undefined
       }
       menuTrigger={<SideMenu />}

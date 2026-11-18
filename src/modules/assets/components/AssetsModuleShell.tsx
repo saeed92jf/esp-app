@@ -55,9 +55,10 @@ export function AssetsModuleShell() {
 
   return (
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
-      {/* ── 1. Top Unified Header (Stable Title: Industrial Assets) ── */}
+      {/* ── 1. Top Unified Header (Stable Title: ESP Asset) ── */}
       <AppHeader
-        tag={t("title")}
+        tag="ESP Asset"
+        subTag={isRtl ? "مدیریت تجهیزات و ماشین‌آلات صنعتی کارخانه" : "Industrial Assets & Machinery Registry"}
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
