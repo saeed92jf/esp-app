@@ -2,7 +2,7 @@
 
 export type WarehouseTab = "inventory" | "locations" | "transactions" | "receipts";
 
-export type StockStatus = "in_stock" | "low_stock" | "critical";
+export type StockStatus = "in_stock" | "low_stock" | "critical" | "in_progress" | "booked";
 
 export interface WarehouseItem {
   id: string;
@@ -18,13 +18,20 @@ export interface WarehouseItem {
   minLevel: number;
   status: StockStatus;
   lastUpdated: string;
-  materialGrade?: string;
-  weightKg?: number;
-  lotNumber?: string;
-  supplierFa?: string;
-  supplierEn?: string;
-  notesFa?: string;
-  notesEn?: string;
+  sheet?: string | null;
+  materialGrade?: string | null;
+  dimensions?: string | null;
+  weightKg?: number | null;
+  lotNumber?: string | null;
+  client?: string | null;
+  jobNo?: string | null;
+  remarks?: string | null;
+  packingList?: string | null;
+  allocatedQty?: number | string | null;
+  supplierFa?: string | null;
+  supplierEn?: string | null;
+  notesFa?: string | null;
+  notesEn?: string | null;
 }
 
 export interface BayRack {

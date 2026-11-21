@@ -25,6 +25,11 @@ import {
   AlertTriangle,
   Scale,
   FileSpreadsheet,
+  Ruler,
+  Briefcase,
+  FileText,
+  Clock,
+  BookmarkCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatLocaleNumber } from "@/lib/format-number";
@@ -80,6 +85,18 @@ export function WarehouseItemDetailModal({
                       <span>{t("status.critical")}</span>
                     </Badge>
                   )}
+                  {item.status === "in_progress" && (
+                    <Badge variant="outline" className="text-[10px] py-0.5 px-2 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 font-semibold gap-1">
+                      <Clock className="size-3" />
+                      <span>{isRtl ? "در حال ساخت / تولید" : "In Manufacture"}</span>
+                    </Badge>
+                  )}
+                  {item.status === "booked" && (
+                    <Badge variant="outline" className="text-[10px] py-0.5 px-2 bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 font-semibold gap-1">
+                      <BookmarkCheck className="size-3" />
+                      <span>{isRtl ? "رزرو پروژه" : "Booked"}</span>
+                    </Badge>
+                  )}
                 </div>
                 <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
                   {isRtl ? item.nameFa : item.nameEn}
@@ -125,20 +142,26 @@ export function WarehouseItemDetailModal({
             <div className="p-3 rounded-2xl bg-muted/30 border border-border/50">
               <div className="text-[11px] text-muted-foreground font-medium flex items-center gap-1.5">
                 <Scale className="size-3.5 text-blue-500" />
-                <span>{isRtl ? "وزن تقریبی" : "Est. Weight"}</span>
+                <span>{isRtl ? "وزن کل (کیلوگرم)" : "Weight (kg)"}</span>
               </div>
               <div className={cn("text-base sm:text-lg font-bold text-foreground mt-1 tabular-nums", isRtl && "fa-num")}>
-                {formatLocaleNumber(item.weightKg || item.quantity, isRtl)}{" "}
-                <span className="text-xs font-normal text-muted-foreground font-sans">
-                  {isRtl ? "کیلوگرم" : "kg"}
-                </span>
+                {item.weightKg ? (
+                  <>
+                    {formatLocaleNumber(item.weightKg, isRtl)}{" "}
+                    <span className="text-xs font-normal text-muted-foreground font-sans">
+                      {isRtl ? "کیلوگرم" : "kg"}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-xs text-muted-foreground">-</span>
+                )}
               </div>
             </div>
 
             <div className="p-3 rounded-2xl bg-muted/30 border border-border/50">
               <div className="text-[11px] text-muted-foreground font-medium flex items-center gap-1.5">
                 <Calendar className="size-3.5 text-emerald-500" />
-                <span>{isRtl ? "آخرین گردش" : "Last Movement"}</span>
+                <span>{isRtl ? "تاریخ ثبت / ویرایش" : "Record Date"}</span>
               </div>
               <div className="text-xs sm:text-sm font-bold text-foreground mt-1">
                 {item.lastUpdated}
@@ -168,6 +191,18 @@ export function WarehouseItemDetailModal({
               </span>
             </div>
 
+            {item.dimensions && (
+              <div className="flex items-center justify-between p-3.5 bg-card">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <Ruler className="size-4 text-sky-500" />
+                  <span>{isRtl ? "ابعاد و مشخصات هندسی" : "Dimensions"}</span>
+                </span>
+                <span className="font-mono font-semibold text-foreground">
+                  {item.dimensions}
+                </span>
+              </div>
+            )}
+
             {item.materialGrade && (
               <div className="flex items-center justify-between p-3.5 bg-card">
                 <span className="text-muted-foreground flex items-center gap-1.5">
@@ -180,38 +215,52 @@ export function WarehouseItemDetailModal({
               </div>
             )}
 
-            {item.lotNumber && (
+            {item.client && (
               <div className="flex items-center justify-between p-3.5 bg-card">
                 <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Tag className="size-4 text-amber-500" />
-                  <span>{isRtl ? "شماره بهر / بهر کیفی (LOT)" : "Lot / Batch No"}</span>
+                  <Building2 className="size-4 text-blue-500" />
+                  <span>{isRtl ? "کارفرما / پروژه اختصاصی" : "Client / Project"}</span>
                 </span>
-                <span className="font-mono font-bold text-primary">
-                  {item.lotNumber}
+                <span className="font-semibold text-foreground">
+                  {item.client}
                 </span>
               </div>
             )}
 
-            <div className="flex items-center justify-between p-3.5 bg-card">
-              <span className="text-muted-foreground flex items-center gap-1.5">
-                <Building2 className="size-4 text-blue-500" />
-                <span>{isRtl ? "تامین‌کننده / سازنده" : "Supplier / Manufacturer"}</span>
-              </span>
-              <span className="font-semibold text-foreground">
-                {isRtl ? item.supplierFa || "یورواسلات پارس" : item.supplierEn || "Euroslot Pars"}
-              </span>
-            </div>
+            {item.jobNo && (
+              <div className="flex items-center justify-between p-3.5 bg-card">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <Briefcase className="size-4 text-amber-500" />
+                  <span>{isRtl ? "شماره سفارش کارخانه (Job No)" : "Job No"}</span>
+                </span>
+                <span className="font-mono font-bold text-primary">
+                  {item.jobNo}
+                </span>
+              </div>
+            )}
+
+            {item.packingList && (
+              <div className="flex items-center justify-between p-3.5 bg-card">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <FileText className="size-4 text-indigo-500" />
+                  <span>{isRtl ? "پکینگ لیست مرجع (Packing List)" : "Packing List"}</span>
+                </span>
+                <span className="font-mono font-bold text-foreground">
+                  {item.packingList}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Storage Conditions & Engineering Notes */}
-          {(item.notesFa || item.notesEn) && (
+          {(item.remarks || item.notesFa) && (
             <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-1.5">
               <div className="text-xs font-bold text-primary flex items-center gap-1.5">
                 <FileSpreadsheet className="size-4" />
-                <span>{t("dialogs.notesLabel")}</span>
+                <span>{t("dialogs.notesLabel")} / {isRtl ? "توضیحات و ریمارک" : "Remarks"}</span>
               </div>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                {isRtl ? item.notesFa : item.notesEn}
+                {item.remarks || (isRtl ? item.notesFa : item.notesEn)}
               </p>
             </div>
           )}
@@ -220,7 +269,7 @@ export function WarehouseItemDetailModal({
         {/* Footer Actions */}
         <DialogFooter className="p-4 sm:p-5 bg-muted/30 border-t border-border/60 flex items-center justify-between">
           <div className="text-[11px] text-muted-foreground">
-            {isRtl ? "سامانه انبارداری صنعتی یورواسلات" : "Euroslot Industrial Warehouse ERP"}
+            {isRtl ? "گزارش رسمی مواد اولیه کارخانه یورواسلات پارس" : "Euroslot Pars Raw Materials Official Registry"}
           </div>
           <Button
             type="button"
