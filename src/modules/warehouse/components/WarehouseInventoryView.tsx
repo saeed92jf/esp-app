@@ -89,6 +89,71 @@ interface ActiveAccordionState {
   tab: AccordionTab;
 }
 
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? React.useLayoutEffect : React.useEffect;
+
+interface TableAccordionPanelProps {
+  activeType: string;
+  isRtl: boolean;
+  children: React.ReactNode;
+}
+
+function TableAccordionPanel({ activeType, isRtl, children }: TableAccordionPanelProps) {
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const [height, setHeight] = React.useState<number | undefined>(undefined);
+
+  useIsomorphicLayoutEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    const updateHeight = () => {
+      const h = el.offsetHeight;
+      if (h > 0) {
+        setHeight((prev) => (prev === h ? prev : h));
+      }
+    };
+
+    updateHeight();
+
+    const ro = new ResizeObserver(() => {
+      updateHeight();
+    });
+
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [activeType]);
+
+  return (
+    <motion.div
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: height ?? "auto", opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{
+        height: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+        opacity: { duration: 0.22, ease: "easeOut" }
+      }}
+      dir={isRtl ? "rtl" : "ltr"}
+      className={cn(
+        "w-full bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-md border-x border-b border-border/50 rounded-t-none overflow-hidden",
+        isRtl ? "rounded-br-none rounded-bl-2xl" : "rounded-bl-none rounded-br-2xl",
+        "shadow-[inset_0_4px_8px_-3px_rgba(15,23,42,0.08)] dark:shadow-[inset_0_4px_8px_-3px_rgba(0,0,0,0.4)]"
+      )}
+    >
+      <div ref={contentRef} className="p-4 sm:p-5">
+        <div className="w-full max-w-5xl mx-auto">
+          <motion.div
+            key={activeType}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+          >
+            {children}
+          </motion.div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 const CATEGORY_ICONS: Record<string, { icon: any; color: string; bg: string }> = {
   all: { icon: Boxes, color: "text-primary", bg: "bg-primary/10" },
   "Plates & Sheets": { icon: Layers, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10" },
@@ -136,7 +201,7 @@ export function WarehouseInventoryView() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   // Expandable Row & Flap State
-  const [openFlapItemId, setOpenFlapItemId] = useState<string | null>(null);
+  const [openTrayItemId, setOpenTrayItemId] = useState<string | null>(null);
   const [activeAccordion, setActiveAccordion] = useState<ActiveAccordionState | null>(null);
 
   // Modals State
@@ -348,24 +413,23 @@ export function WarehouseInventoryView() {
 
   // Toggle Accordion / Flap
   const toggleAccordion = (itemId: string, tab: AccordionTab) => {
+    setOpenTrayItemId(itemId);
     if (activeAccordion?.itemId === itemId && activeAccordion.tab === tab) {
       setActiveAccordion(null);
     } else {
       setActiveAccordion({ itemId, tab });
-      setOpenFlapItemId(itemId);
     }
   };
 
   const handleRowClick = (item: WarehouseItem) => {
-    if (openFlapItemId === item.id) {
-      if (activeAccordion?.itemId === item.id) {
-        setActiveAccordion(null);
-      } else {
-        setActiveAccordion({ itemId: item.id, tab: "specs" });
-      }
+    if (openTrayItemId === item.id) {
+      setOpenTrayItemId(null);
+      setActiveAccordion(null);
     } else {
-      setOpenFlapItemId(item.id);
-      setActiveAccordion({ itemId: item.id, tab: "specs" });
+      setOpenTrayItemId(item.id);
+      if (activeAccordion && activeAccordion.itemId !== item.id) {
+        setActiveAccordion(null);
+      }
     }
   };
 
@@ -995,8 +1059,9 @@ export function WarehouseInventoryView() {
               </tbody>
             ) : (
               displayedItems.map((item, index) => {
-                const isRowActive = openFlapItemId === item.id;
                 const isAccordionOpen = activeAccordion?.itemId === item.id;
+                const isTrayOpen = openTrayItemId === item.id;
+                const isRowActive = isAccordionOpen || isTrayOpen;
 
                 return (
                   <tbody key={item.id} className="group/row">
@@ -1004,9 +1069,9 @@ export function WarehouseInventoryView() {
                     <tr
                       onClick={() => handleRowClick(item)}
                       className={cn(
-                        "transition-colors duration-150 cursor-pointer select-none",
+                        "transition-colors duration-150 group cursor-pointer select-none",
                         isRowActive
-                          ? "bg-primary/[0.06] dark:bg-primary/15 [&>td]:border-b [&>td]:border-primary/25"
+                          ? "bg-primary/[0.08] dark:bg-primary/20 [&>td]:border-b [&>td]:border-primary/25 dark:[&>td]:border-primary/35 [&>td]:relative [&>td]:z-20"
                           : "bg-card hover:bg-slate-50/80 dark:hover:bg-slate-800/40 [&>td]:border-b [&>td]:border-border/40"
                       )}
                     >
@@ -1153,17 +1218,13 @@ export function WarehouseInventoryView() {
                               {/* Top Subtle Continuous Shadow */}
                               <div className="w-full h-1.5 bg-gradient-to-b from-slate-900/[0.06] dark:from-black/30 to-transparent pointer-events-none absolute top-0 inset-x-0 z-10" />
 
-                              {/* Accordion Content Panel */}
+                              {/* ── A. Content Container on Top (فول واید هم‌اندازه سطر، بدون فیلت در بالا) ── */}
                               <AnimatePresence initial={false}>
                                 {isAccordionOpen && activeAccordion && (
-                                  <motion.div
+                                  <TableAccordionPanel
                                     key={`acc-panel-${item.id}`}
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: "auto", opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    transition={{ duration: 0.2, ease: "easeOut" }}
-                                    dir={isRtl ? "rtl" : "ltr"}
-                                    className="w-full bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-md border-x border-b border-border/50 rounded-2xl p-4 sm:p-5 mt-1 shadow-sm"
+                                    activeType={activeAccordion.tab}
+                                    isRtl={isRtl}
                                   >
                                     {/* Panel Top Header Bar */}
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
@@ -1345,17 +1406,17 @@ export function WarehouseInventoryView() {
                                         </div>
                                       )}
                                     </div>
-                                  </motion.div>
+                                  </TableAccordionPanel>
                                 )}
                               </AnimatePresence>
 
-                              {/* ── B. Icon Tab Flap (لبه ایکون برای هر سطر دقیقا مثل یوزر تیبل در ادمین) ── */}
+                              {/* ── B. Icon Tab (در پایین کانتینر محتوا - سمت راست در فارسی، سمت چپ در انگلیسی) ── */}
                               <div
                                 dir={isRtl ? "rtl" : "ltr"}
                                 className={cn(
                                   "flex items-center justify-between px-3 py-1 transition-colors select-none shrink-0",
                                   isAccordionOpen ? "-mt-px" : "mt-0",
-                                  "rounded-b-xl border-x border-b border-border/50",
+                                  "rounded-b-xl shadow-none border-x border-b border-border/50",
                                   "bg-slate-100/95 dark:bg-slate-800/95",
                                   isRowActive ? "text-foreground" : "text-muted-foreground",
                                   !isAccordionOpen && (isRowActive ? "hover:bg-slate-200/90 dark:hover:bg-slate-700/90" : "hover:bg-slate-200/80 dark:hover:bg-slate-700/80")
@@ -1433,22 +1494,26 @@ export function WarehouseInventoryView() {
                                     <FileSpreadsheet size={13} className="shrink-0" />
                                     <span className="hidden sm:inline">{isRtl ? "توضیحات و ریمارک" : "Remarks"}</span>
                                   </Button>
+
+                                  <div className="h-3.5 w-px bg-border/40 mx-0.5 shrink-0" />
                                 </div>
 
-                                <div className="flex items-center gap-1.5">
-                                  {isAccordionOpen && (
+                                {/* ── Fixed 28px slot for Close (X) so the tab width NEVER shifts when X appears ── */}
+                                <div className="size-7 flex items-center justify-center shrink-0 ms-1">
+                                  {(isAccordionOpen || isTrayOpen) && (
                                     <Button
                                       type="button"
                                       variant="ghost"
-                                      size="xs"
+                                      size="icon-xs"
                                       onClick={() => {
                                         setActiveAccordion(null);
-                                        setOpenFlapItemId(null);
+                                        setOpenTrayItemId(null);
                                       }}
-                                      className="text-[11px] text-muted-foreground hover:text-foreground h-auto p-1 rounded-md cursor-pointer"
+                                      className="size-6.5 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background/80 dark:hover:bg-card transition-colors cursor-pointer"
+                                      title={isRtl ? "بستن لبه" : "Close"}
+                                      aria-label={isRtl ? "بستن لبه" : "Close"}
                                     >
-                                      <X size={13} className="shrink-0 me-1" />
-                                      <span>{isRtl ? "بستن لبه" : "Close"}</span>
+                                      <X size={13} className="shrink-0" />
                                     </Button>
                                   )}
                                 </div>
