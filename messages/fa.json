@@ -132,6 +132,8 @@
       "assets": "ESP Asset",
       "espWarehouse": "ESP Warehouse",
       "warehouse": "ESP Warehouse",
+      "esp coding": "ESP Coding",
+      "esp material": "ESP Material",
       "directory": "ESP Directory",
       "همکاران": "ESP Directory",
       "راهنمای سازمانی": "ESP Directory",
@@ -716,6 +718,7 @@
       "customers": "ESP Customers",
       "directory": "ESP Directory",
       "espCoding": "ESP Coding",
+      "espMaterial": "ESP Material",
       "espAsset": "ESP Asset",
       "espWarehouse": "ESP Warehouse",
       "assets": "ESP Asset",
@@ -757,7 +760,8 @@
       "mediaLibrary": "کتابخانه رسانه",
       "standards": "استاندارد ها",
       "Claud-Flow": "جریان ابری",
-      "espCoding": "سامانه جامع و متمرکز کدگذاری، مستر دیتای متریال و طراحی فرمول‌های مهندسی"
+      "espCoding": "سامانه جامع و متمرکز کدگذاری قطعات و مشخصات متریال (ESP Coding)",
+      "espMaterial": "بانک اطلاعات جامع مستر دیتای متریال، مشخصات مکانیکی و طبقه‌بندی فرم‌ها (ESP Material)"
     }
   },
   "NotFound": {

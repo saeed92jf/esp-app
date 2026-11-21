@@ -21,6 +21,7 @@ export const PANEL_BACKGROUND_PREFIXES = [
   '/customers',
   '/assets',
   '/warehouse',
+  '/engineering',
   '/profile',
   '/community',
   '/did-you-know',

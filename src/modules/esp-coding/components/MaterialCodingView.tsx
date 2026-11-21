@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,11 +13,8 @@ import {
   Search,
   SlidersHorizontal,
   Check,
-  Database,
-  Sparkles,
-  Flame,
-  ShieldCheck,
   Atom,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,7 +82,7 @@ export function MaterialCodingView() {
           const rawCombinations = res.options.combinations;
           setCombinations(rawCombinations);
 
-          // Default selection matching the authoritative example (SA-516 Gr.55)
+          // Default selection matching authoritative example (SA-516 Gr.55)
           const defaultRecord = rawCombinations.find(
             (r) => r.spec === "SA-516" && r.grade === "55"
           ) || rawCombinations[0];
@@ -610,6 +606,8 @@ export function MaterialCodingView() {
   // Reverse Lookup Handler
   const handleReverseLookup = (inputCode: string) => {
     const cleanCode = inputCode.trim().toUpperCase();
+    setReverseCodeInput(cleanCode);
+
     if (!cleanCode) {
       setReverseMatchStatus("idle");
       setMatchedCombination(null);
@@ -621,7 +619,7 @@ export function MaterialCodingView() {
       setReverseMatchStatus("matched");
       setMatchedCombination(match);
 
-      // Also sync active dropdown state
+      // Sync active state
       setSelectedBasicMaterial(match.bm);
       setSelectedSubMaterial(match.sm);
       setSelectedMaterialCategory(match.gm);
@@ -635,9 +633,11 @@ export function MaterialCodingView() {
     } else {
       setReverseMatchStatus("not_found");
       setMatchedCombination(null);
-      toast.error(isRtl ? "کد در پایگاه داده متریال یافت نشد" : "Material code not found in database", {
-        description: cleanCode,
-      });
+      if (cleanCode.length >= 7) {
+        toast.error(isRtl ? "کد در پایگاه داده متریال یافت نشد" : "Material code not found in database", {
+          description: cleanCode,
+        });
+      }
     }
   };
 
@@ -665,32 +665,126 @@ export function MaterialCodingView() {
     selectedClass,
   ]);
 
+  // Dynamic combobox definitions with numerical step indices
+  const comboConfig = [
+    {
+      id: "bm" as const,
+      num: 1,
+      labelFa: "متریال پایه (Basic Material)",
+      labelEn: "Basic Material",
+      value: selectedBasicMaterial,
+      options: basicMaterialOptions,
+      placeholderFa: "انتخاب متریال پایه...",
+      placeholderEn: "Select Basic Material...",
+      disabled: basicMaterialOptions.length === 0,
+      code: selectedBasicMaterialCode,
+      onChange: handleSelectBasicMaterial,
+    },
+    {
+      id: "sm" as const,
+      num: 2,
+      labelFa: "زیرگروه متریال (Sub-Material)",
+      labelEn: "Sub-Material",
+      value: selectedSubMaterial,
+      options: subMaterialOptions,
+      placeholderFa: selectedBasicMaterial
+        ? "انتخاب زیرگروه متریال..."
+        : "ابتدا مرحله قبل را انتخاب کنید...",
+      placeholderEn: selectedBasicMaterial
+        ? "Select Sub-Material..."
+        : "Select previous step first...",
+      disabled: !selectedBasicMaterial || subMaterialOptions.length === 0,
+      code: selectedSubMaterialCode,
+      onChange: handleSelectSubMaterial,
+    },
+    {
+      id: "gm" as const,
+      num: 3,
+      labelFa: "رده متریال (Material Category)",
+      labelEn: "Material Category",
+      value: selectedMaterialCategory,
+      options: materialCategoryOptions,
+      placeholderFa: selectedSubMaterial
+        ? "انتخاب رده متریال..."
+        : "ابتدا مرحله قبل را انتخاب کنید...",
+      placeholderEn: selectedSubMaterial
+        ? "Select Material Category..."
+        : "Select previous step first...",
+      disabled: !selectedSubMaterial || materialCategoryOptions.length === 0,
+      code: selectedMaterialCategoryCode,
+      onChange: handleSelectMaterialCategory,
+      isFramedHeader: true,
+    },
+    {
+      id: "spec" as const,
+      num: 4,
+      labelFa: "مشخصه فنی (Specification - SPEC)",
+      labelEn: "Specification",
+      value: selectedSpecification,
+      options: specificationOptions,
+      placeholderFa: selectedMaterialCategory
+        ? "انتخاب استاندارد / مشخصه فنی..."
+        : "ابتدا مرحله قبل را انتخاب کنید...",
+      placeholderEn: selectedMaterialCategory
+        ? "Select Specification..."
+        : "Select previous step first...",
+      disabled: !selectedMaterialCategory || specificationOptions.length === 0,
+      code: selectedSpecificationCode,
+      onChange: handleSelectSpecification,
+    },
+    {
+      id: "grade" as const,
+      num: 5,
+      labelFa: "گرید متریال (Grade)",
+      labelEn: "Grade",
+      value: selectedGrade,
+      options: gradeOptions,
+      placeholderFa: selectedSpecification
+        ? "انتخاب گرید..."
+        : "ابتدا مرحله قبل را انتخاب کنید...",
+      placeholderEn: selectedSpecification
+        ? "Select Grade..."
+        : "Select previous step first...",
+      disabled: !selectedSpecification || gradeOptions.length === 0,
+      code: selectedGradeCode,
+      onChange: handleSelectGrade,
+    },
+    {
+      id: "class" as const,
+      num: 6,
+      labelFa: "کلاس کاری و یادداشت (Note / Class)",
+      labelEn: "Note (Class)",
+      value: selectedClass,
+      options: classOptions,
+      placeholderFa: selectedGrade
+        ? "انتخاب کلاس کاری..."
+        : "ابتدا مرحله قبل را انتخاب کنید...",
+      placeholderEn: selectedGrade
+        ? "Select Note (Class)..."
+        : "Select previous step first...",
+      disabled: !selectedGrade || classOptions.length === 0,
+      code: selectedClassCode,
+      onChange: handleSelectClass,
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-5xl mx-auto animate-in fade-in duration-150">
-      {/* Top Title & Mode Selector Bar */}
+      {/* Top Title & Mode Selector Bar (Exactly matching ProductCodingView style) */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
-              className="px-2.5 py-0.5 text-xs font-semibold bg-primary/10 text-primary border-primary/20"
-            >
-              <Sparkles className="size-3.5 me-1.5" />
-              <span>{isRtl ? "مستر دیتا و کدگذاری مواد اولیه" : "Master Data & Raw Material Coding"}</span>
-            </Badge>
-          </div>
           <h1 className="text-lg sm:text-xl font-black text-foreground tracking-tight flex items-center gap-2">
-            <Database className="size-5 text-primary" />
-            <span>{isRtl ? "کدینگ هوشمند متریال (Raw Material Coding)" : "Smart Raw Material Coding"}</span>
+            <Atom className="size-5 text-primary" />
+            <span>{isRtl ? "کدگذاری و ثبت مشخصات متریال" : "Material Coding & Specifications"}</span>
           </h1>
           <p className="text-xs text-muted-foreground">
             {codingMode === "forward"
               ? isRtl
-                ? "انتخاب مرحله‌ای مشخصات متریال، فیلترینگ خودکار گزینه‌ها و صدور کد رسمی متریال"
-                : "Cascading material specification selection, auto-filtering & official code issuance"
+                ? "انتخاب مشخصات، فیلتر به هم وابسته کومبوباکس‌ها و صدور آنی کد متریال"
+                : "Interdependent cascading specification filters & real-time material code generation"
               : isRtl
-                ? "حالت معکوس: وارد کردن کد متریال جهت استخراج مشخصات مکانیکی، استاندارد و آنالیز فنی"
-                : "Reverse mode: Enter material code to decode specifications & mechanical properties"}
+                ? "حالت معکوس: وارد کردن کد متریال و استخراج آنی مشخصات متالورژیکی و مکانیکی"
+                : "Reverse mode: Enter material code to instantly decode specifications & mechanical properties"}
           </p>
         </div>
 
@@ -708,7 +802,7 @@ export function MaterialCodingView() {
               )}
             >
               <SlidersHorizontal className="size-3.5" />
-              <span>{isRtl ? "کدگذاری با مشخصات" : "Forward (Specs)"}</span>
+              <span>{isRtl ? "تولید با مشخصات" : "Forward (Specs)"}</span>
             </button>
             <button
               type="button"
@@ -745,16 +839,16 @@ export function MaterialCodingView() {
 
       {/* Two Column Layout: Coding Controls & Live Material Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Form: Code Preview on top + Material Dropdowns */}
+        {/* Left Form: Code Preview on top + Comboboxes stacked under each other (7 cols) */}
         <div className="lg:col-span-7 flex flex-col gap-4">
           <Card className="p-5 sm:p-6 rounded-2xl border-border/50 bg-card shadow-xs flex flex-col gap-4">
             <div className="flex items-center justify-between border-b border-border/30 pb-3">
               <span className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
                 <Layers className="size-4.5 text-primary" />
-                <span>{isRtl ? "مشخصات فنی و متالورژیکی متریال" : "Material Specifications"}</span>
+                <span>{isRtl ? "سلسله‌مراتب و مشخصات متریال" : "Material Specifications"}</span>
               </span>
               <Badge variant="outline" className="text-[10px] font-mono">
-                {matchingCount} {isRtl ? "رکورد منطبق" : "Matching items"}
+                {matchingCount} {isRtl ? "رکورد معتبر" : "Valid records"}
               </Badge>
             </div>
 
@@ -764,7 +858,7 @@ export function MaterialCodingView() {
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <Search className="size-4 text-primary" />
-                    <span>{isRtl ? "ورود کد متریال جهت رمزگشایی" : "Enter Material Code to Decode"}</span>
+                    <span>{isRtl ? "ورود کد متریال جهت استخراج مشخصات" : "Enter Material Code to Decode"}</span>
                   </span>
                   {reverseMatchStatus === "matched" && (
                     <Badge
@@ -789,36 +883,35 @@ export function MaterialCodingView() {
                   <div className="relative flex-1">
                     <Input
                       type="text"
-                      placeholder="e.g. M11101020"
                       value={reverseCodeInput}
-                      onChange={(e) => {
-                        const val = e.target.value.toUpperCase();
-                        setReverseCodeInput(val);
-                        if (val.length >= 7) {
-                          handleReverseLookup(val);
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          handleReverseLookup(reverseCodeInput);
-                        }
-                      }}
-                      className="h-10 font-mono font-bold text-sm tracking-wider uppercase bg-background"
+                      onChange={(e) => handleReverseLookup(e.target.value)}
+                      placeholder={isRtl ? "کد متریال را وارد یا الصاق کنید (مثال: M11101020)..." : "Enter or paste material code (e.g. M11101020)..."}
+                      className="h-11 rounded-xl text-sm font-mono tracking-wider uppercase ps-3 pe-8 bg-background border-primary/30"
+                      dir="ltr"
                     />
+                    {reverseCodeInput && (
+                      <button
+                        type="button"
+                        onClick={() => handleReverseLookup("")}
+                        className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer text-xs"
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                   <Button
                     type="button"
-                    size="sm"
                     onClick={() => handleReverseLookup(reverseCodeInput)}
-                    className="h-10 px-4 rounded-xl font-bold cursor-pointer"
+                    className="h-11 rounded-xl px-4 text-xs font-bold gap-1.5 cursor-pointer bg-primary text-primary-foreground"
                   >
-                    <span>{isRtl ? "رمزگشایی" : "Decode"}</span>
+                    <Search className="size-3.5" />
+                    <span>{isRtl ? "استخراج" : "Decode"}</span>
                   </Button>
                 </div>
 
-                {/* Quick Sample Code Chips */}
-                <div className="flex items-center gap-1.5 flex-wrap pt-1 text-[11px] text-muted-foreground">
-                  <span className="text-[10px] font-medium">{isRtl ? "نمونه‌های سریع:" : "Quick samples:"}</span>
+                {/* Quick Test Samples */}
+                <div className="flex items-center gap-1.5 flex-wrap pt-1 text-[11px]">
+                  <span className="text-muted-foreground text-[10px]">{isRtl ? "نمونه‌های سریع:" : "Quick samples:"}</span>
                   {[
                     { code: "M11101020", label: "SA-516 Gr.55" },
                     { code: "M11101010", label: "SA-516 Gr.70" },
@@ -829,11 +922,8 @@ export function MaterialCodingView() {
                     <button
                       key={s.code}
                       type="button"
-                      onClick={() => {
-                        setReverseCodeInput(s.code);
-                        handleReverseLookup(s.code);
-                      }}
-                      className="px-2 py-0.5 rounded-md bg-muted/80 hover:bg-primary/10 hover:text-primary transition-colors font-mono text-[10px] border border-border/40 cursor-pointer"
+                      onClick={() => handleReverseLookup(s.code)}
+                      className="px-2 py-0.5 rounded-md bg-background border border-border/60 hover:border-primary/50 text-[10px] font-mono text-foreground hover:text-primary transition-colors cursor-pointer"
                     >
                       {s.code} ({s.label})
                     </button>
@@ -841,369 +931,209 @@ export function MaterialCodingView() {
                 </div>
               </div>
             ) : (
-              /* Forward Mode: Monospace Material Code Preview at Top of Combos */
-              <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 shadow-2xs flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <Sparkles className="size-3.5 text-primary" />
-                    <span>{isRtl ? "پیش‌نمایش کد رسمی متریال" : "Material Code Preview"}</span>
+              /* Forward Mode: Live Animated Material Code Preview (Identical to ProductCodingView) */
+              <div className="p-3.5 sm:p-4 rounded-xl bg-background border border-border/60 shadow-2xs flex items-center justify-between gap-3 overflow-hidden">
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                    MaterialCode
                   </span>
-                  <Badge variant="outline" className="text-[10px] font-mono bg-background/80">
-                    Prefix: M (Material)
-                  </Badge>
+                  <div className="flex items-center gap-0.5 mt-1 overflow-x-auto py-1" dir="ltr">
+                    {(generatedMaterialCode || "M--------").split("").map((char, idx) => (
+                      <div
+                        key={idx}
+                        className="relative h-9 w-6 sm:w-7 rounded-md bg-muted/30 border border-border/40 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs"
+                      >
+                        <AnimatePresence mode="popLayout" initial={false}>
+                          <motion.span
+                            key={`${idx}-${char}`}
+                            initial={{ y: 24, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -24, opacity: 0 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 450,
+                              damping: 28,
+                              delay: idx * 0.02,
+                            }}
+                            className={cn(
+                              "font-mono font-black text-base sm:text-lg select-none",
+                              char === "-" ? "text-muted-foreground/40" : "text-primary"
+                            )}
+                          >
+                            {char}
+                          </motion.span>
+                        </AnimatePresence>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-
-                <div className="flex items-center justify-between gap-3 bg-background/90 px-4 py-3 rounded-xl border border-border/60 shadow-inner">
-                  <span className="font-mono text-xl sm:text-2xl font-black tracking-widest text-primary select-all">
-                    {generatedMaterialCode}
-                  </span>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleCopyCode(generatedMaterialCode)}
-                    className="h-8 gap-1.5 text-xs rounded-lg cursor-pointer"
-                  >
-                    <Copy className="size-3.5" />
-                    <span>{isRtl ? "کپی کد" : "Copy"}</span>
-                  </Button>
-                </div>
-
-                {/* Segment breakdown preview pills */}
-                <div className="flex items-center gap-1.5 flex-wrap text-[10px] font-mono text-muted-foreground">
-                  <span className="px-1.5 py-0.5 rounded bg-muted/70 text-foreground font-bold">M</span>
-                  <span>+</span>
-                  <span className="px-1.5 py-0.5 rounded bg-muted/70" title="Basic Material">
-                    {selectedBasicMaterialCode || "-"}: {selectedBasicMaterial || "Basic"}
-                  </span>
-                  <span>+</span>
-                  <span className="px-1.5 py-0.5 rounded bg-muted/70" title="Sub Material">
-                    {selectedSubMaterialCode || "-"}: {selectedSubMaterial || "Sub"}
-                  </span>
-                  <span>+</span>
-                  <span className="px-1.5 py-0.5 rounded bg-muted/70" title="Material Category">
-                    {selectedMaterialCategoryCode || "-"}: {selectedMaterialCategory || "Cat"}
-                  </span>
-                  <span>+</span>
-                  <span className="px-1.5 py-0.5 rounded bg-muted/70" title="Specification">
-                    {selectedSpecificationCode || "--"}: {selectedSpecification || "Spec"}
-                  </span>
-                  <span>+</span>
-                  <span className="px-1.5 py-0.5 rounded bg-muted/70" title="Grade">
-                    {selectedGradeCode || "--"}: {selectedGrade || "Grade"}
-                  </span>
-                  <span>+</span>
-                  <span className="px-1.5 py-0.5 rounded bg-muted/70" title="Class">
-                    {selectedClassCode || "-"}: {selectedClass || "Class"}
-                  </span>
-                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleCopyCode(generatedMaterialCode)}
+                  className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+                  title="Copy Code"
+                >
+                  <Copy className="size-4" />
+                </Button>
               </div>
             )}
 
-            {/* Reverse Mode: Specifications Read-Only View (NO comboboxes!) */}
-            {codingMode === "reverse" && matchedCombination && (
-              <div className="flex flex-col gap-2.5 p-4 rounded-xl bg-card border border-border/60 shadow-2xs">
-                <span className="text-xs font-bold text-foreground border-b border-border/30 pb-2">
-                  {isRtl ? "مشخصات فنی استخراج‌شده از کد متریال" : "Decoded Material Specifications"}
-                </span>
-                <div className="grid grid-cols-1 gap-2 pt-1">
-                  {[
-                    {
-                      labelFa: "متریال پایه (Basic Material)",
-                      labelEn: "Basic Material",
-                      value: matchedCombination.bm,
-                      code: matchedCombination.bmCode,
-                    },
-                    {
-                      labelFa: "زیرگروه متریال (Sub-Material)",
-                      labelEn: "Sub-Material",
-                      value: matchedCombination.sm,
-                      code: matchedCombination.smCode,
-                    },
-                    {
-                      labelFa: "رده متریال (Material Category)",
-                      labelEn: "Material Category",
-                      value: matchedCombination.gm,
-                      code: matchedCombination.gmCode,
-                    },
-                    {
-                      labelFa: "مشخصه فنی (Specification - SPEC)",
-                      labelEn: "Specification",
-                      value: matchedCombination.spec,
-                      code: matchedCombination.specCode,
-                    },
-                    {
-                      labelFa: "گرید متریال (Grade)",
-                      labelEn: "Grade",
-                      value: matchedCombination.grade,
-                      code: matchedCombination.gradeCode,
-                    },
-                    {
-                      labelFa: "کلاس کاری و یادداشت (Note / Class)",
-                      labelEn: "Note (Class)",
-                      value: matchedCombination.classVal || "--",
-                      code: matchedCombination.classCode,
-                    },
-                  ].map((row, idx) => (
+            {codingMode === "forward" ? (
+              /* Forward Mode: Comboboxes stacked vertically with numbered steps and code badges */
+              <div className="flex flex-col divide-y divide-border/25">
+                {comboConfig.map((item) => {
+                  const label = isRtl ? item.labelFa : item.labelEn;
+                  const placeholder = isRtl ? item.placeholderFa : item.placeholderEn;
+
+                  return (
                     <div
-                      key={idx}
-                      className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-muted/30 border border-border/30 text-xs"
+                      key={item.id}
+                      className={cn(
+                        "flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 py-3 first:pt-0 last:pb-0",
+                        item.isFramedHeader && "relative"
+                      )}
                     >
-                      <span className="font-semibold text-muted-foreground">
-                        {isRtl ? row.labelFa : row.labelEn}:
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-foreground">{row.value}</span>
-                        <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">
-                          {row.code}
+                      {/* Title beside the combobox */}
+                      <div className="flex items-center gap-2.5 sm:w-48 md:w-56 lg:w-64 shrink-0">
+                        <span className="size-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs fa-num shrink-0">
+                          {item.num}
                         </span>
+                        <Label className="text-xs sm:text-[13px] font-semibold text-foreground truncate cursor-pointer select-none">
+                          {label}
+                        </Label>
+                      </div>
+
+                      {/* Combobox + Code Box */}
+                      <div className="flex-1 min-w-0 flex items-center gap-2.5">
+                        <Select
+                          value={item.value}
+                          onValueChange={(val) => item.onChange(val)}
+                          disabled={item.disabled}
+                        >
+                          <SelectTrigger className="h-10 rounded-xl text-xs sm:text-[13px] bg-background w-full">
+                            <SelectValue placeholder={placeholder} />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-64">
+                            {item.options.map((opt) => (
+                              <SelectItem key={opt.name} value={opt.name} className="text-xs sm:text-[13px]">
+                                <div className="flex items-center justify-between w-full gap-3">
+                                  <span className="truncate">{opt.name}</span>
+                                  <span className="font-mono text-[11px] text-muted-foreground shrink-0 ms-2">
+                                    ({opt.code})
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        {/* Individual Code Box next to combobox */}
+                        <div className="w-12 sm:w-14 h-10 shrink-0 flex items-center justify-center font-mono font-bold text-xs rounded-xl border border-border/60 bg-muted/30 text-foreground shadow-2xs">
+                          {item.code || "-"}
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-            )}
+            ) : (
+              /* Reverse Mode: Decoded Specifications View (NO comboboxes) */
+              <div className="flex flex-col gap-3">
+                {matchedCombination || selectedBasicMaterial ? (
+                  <div className="flex flex-col divide-y divide-border/25 rounded-xl border border-border/50 bg-background/50 overflow-hidden shadow-2xs">
+                    {[
+                      {
+                        num: 1,
+                        label: isRtl ? "متریال پایه (Basic Material)" : "Basic Material",
+                        val: matchedCombination?.bm || selectedBasicMaterial,
+                        code: matchedCombination?.bmCode || selectedBasicMaterialCode,
+                      },
+                      {
+                        num: 2,
+                        label: isRtl ? "زیرگروه متریال (Sub-Material)" : "Sub-Material",
+                        val: matchedCombination?.sm || selectedSubMaterial,
+                        code: matchedCombination?.smCode || selectedSubMaterialCode,
+                      },
+                      {
+                        num: 3,
+                        label: isRtl ? "رده متریال (Material Category)" : "Material Category",
+                        val: matchedCombination?.gm || selectedMaterialCategory,
+                        code: matchedCombination?.gmCode || selectedMaterialCategoryCode,
+                      },
+                      {
+                        num: 4,
+                        label: isRtl ? "مشخصه فنی (Specification - SPEC)" : "Specification (SPEC)",
+                        val: matchedCombination?.spec || selectedSpecification,
+                        code: matchedCombination?.specCode || selectedSpecificationCode,
+                      },
+                      {
+                        num: 5,
+                        label: isRtl ? "گرید متریال (Grade)" : "Grade",
+                        val: matchedCombination?.grade || selectedGrade,
+                        code: matchedCombination?.gradeCode || selectedGradeCode,
+                      },
+                      {
+                        num: 6,
+                        label: isRtl ? "کلاس کاری و یادداشت (Note / Class)" : "Note (Class)",
+                        val: (matchedCombination?.classVal !== undefined ? matchedCombination.classVal : selectedClass) || "--",
+                        code: matchedCombination?.classCode || selectedClassCode,
+                      },
+                    ].map((row) => (
+                      <div
+                        key={row.num}
+                        className="flex items-center justify-between gap-4 p-3 hover:bg-muted/20 transition-colors"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="size-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs fa-num shrink-0">
+                            {row.num}
+                          </span>
+                          <span className="text-xs sm:text-[13px] font-semibold text-muted-foreground">
+                            {row.label}:
+                          </span>
+                        </div>
 
-            {/* Forward Mode: Interactive Cascading Select Fields */}
-            {codingMode === "forward" && (
-              <div className="flex flex-col gap-4">
-                {/* 1. Basic Material */}
-                <div className="flex items-center gap-3">
-                  <Label className="min-w-[130px] max-w-[150px] shrink-0 text-xs font-semibold text-foreground">
-                    {isRtl ? "متریال پایه:" : "Basic Material:"}
-                  </Label>
-                  <div className="flex-1 min-w-0">
-                    <Select value={selectedBasicMaterial} onValueChange={handleSelectBasicMaterial}>
-                      <SelectTrigger className="w-full text-xs h-9 bg-background">
-                        <SelectValue placeholder={isRtl ? "انتخاب متریال پایه..." : "Select Basic Material..."} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {basicMaterialOptions.map((opt) => (
-                          <SelectItem key={opt.name} value={opt.name} className="text-xs">
-                            {opt.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs sm:text-[13px] font-bold text-foreground">
+                            {row.val || "—"}
+                          </span>
+                          {row.code && (
+                            <Badge variant="outline" className="font-mono text-[11px] bg-muted/40">
+                              {row.code}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="w-14 sm:w-16 h-9 shrink-0 flex items-center justify-center font-mono font-bold text-xs rounded-lg border bg-muted/40 text-foreground shadow-2xs">
-                    {selectedBasicMaterialCode || "-"}
-                  </div>
-                </div>
-
-                {/* 2. Sub-Material */}
-                <div className="flex items-center gap-3">
-                  <Label className="min-w-[130px] max-w-[150px] shrink-0 text-xs font-semibold text-foreground">
-                    {isRtl ? "زیرگروه متریال:" : "Sub-Material:"}
-                  </Label>
-                  <div className="flex-1 min-w-0">
-                    <Select
-                      value={selectedSubMaterial}
-                      onValueChange={handleSelectSubMaterial}
-                      disabled={!selectedBasicMaterial || subMaterialOptions.length === 0}
-                    >
-                      <SelectTrigger className="w-full text-xs h-9 bg-background">
-                        <SelectValue
-                          placeholder={
-                            selectedBasicMaterial
-                              ? isRtl
-                                ? "انتخاب زیرگروه..."
-                                : "Select Sub-Material..."
-                              : isRtl
-                                ? "ابتدا مرحله قبل را انتخاب کنید..."
-                                : "Select previous step first..."
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {subMaterialOptions.map((opt) => (
-                          <SelectItem key={opt.name} value={opt.name} className="text-xs">
-                            {opt.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="w-14 sm:w-16 h-9 shrink-0 flex items-center justify-center font-mono font-bold text-xs rounded-lg border bg-muted/40 text-foreground shadow-2xs">
-                    {selectedSubMaterialCode || "-"}
-                  </div>
-                </div>
-
-                {/* 3. Material Specification Framed Box (matching user image groupbox) */}
-                <div className="flex flex-col gap-3 p-4 rounded-xl border border-border/70 bg-muted/20 relative mt-2">
-                  <div className="flex items-center gap-2 border-b border-border/40 pb-2 mb-1">
-                    <Atom className="size-4 text-primary" />
-                    <span className="text-xs font-bold text-foreground">
-                      {isRtl ? "مشخصات متریال (Material Specification)" : "Material Specification"}
+                ) : (
+                  <div className="p-8 rounded-xl border border-dashed border-border/60 flex flex-col items-center justify-center text-center gap-2 bg-muted/5">
+                    <Search className="size-8 text-muted-foreground/40" />
+                    <span className="text-xs font-semibold text-foreground">
+                      {isRtl ? "در انتظار ورود کد متریال" : "Waiting for Material Code"}
                     </span>
+                    <p className="text-[11px] text-muted-foreground max-w-sm">
+                      {isRtl
+                        ? "کد متریال را در کادر بالا وارد نمایید تا مشخصات فنی و متالورژیکی به صورت خودکار استخراج شود."
+                        : "Enter or paste material code above to automatically decode technical and mechanical specifications."}
+                    </p>
                   </div>
-
-                  {/* 3.1 Material Category */}
-                  <div className="flex items-center gap-3">
-                    <Label className="min-w-[120px] max-w-[140px] shrink-0 text-xs font-medium text-foreground">
-                      {isRtl ? "رده متریال:" : "Material Category:"}
-                    </Label>
-                    <div className="flex-1 min-w-0">
-                      <Select
-                        value={selectedMaterialCategory}
-                        onValueChange={handleSelectMaterialCategory}
-                        disabled={!selectedSubMaterial || materialCategoryOptions.length === 0}
-                      >
-                        <SelectTrigger className="w-full text-xs h-9 bg-background">
-                          <SelectValue
-                            placeholder={
-                              selectedSubMaterial
-                                ? isRtl
-                                  ? "انتخاب رده متریال..."
-                                  : "Select Material Category..."
-                                : isRtl
-                                  ? "ابتدا مرحله قبل را انتخاب کنید..."
-                                  : "Select previous step first..."
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {materialCategoryOptions.map((opt) => (
-                            <SelectItem key={opt.name} value={opt.name} className="text-xs">
-                              {opt.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="w-14 sm:w-16 h-9 shrink-0 flex items-center justify-center font-mono font-bold text-xs rounded-lg border bg-muted/40 text-foreground shadow-2xs">
-                      {selectedMaterialCategoryCode || "-"}
-                    </div>
-                  </div>
-
-                  {/* 3.2 Specification */}
-                  <div className="flex items-center gap-3">
-                    <Label className="min-w-[120px] max-w-[140px] shrink-0 text-xs font-medium text-foreground">
-                      {isRtl ? "مشخصه فنی (SPEC):" : "Specification:"}
-                    </Label>
-                    <div className="flex-1 min-w-0">
-                      <Select
-                        value={selectedSpecification}
-                        onValueChange={handleSelectSpecification}
-                        disabled={!selectedMaterialCategory || specificationOptions.length === 0}
-                      >
-                        <SelectTrigger className="w-full text-xs h-9 bg-background">
-                          <SelectValue
-                            placeholder={
-                              selectedMaterialCategory
-                                ? isRtl
-                                  ? "انتخاب استاندارد/مشخصه..."
-                                  : "Select Specification..."
-                                : isRtl
-                                  ? "ابتدا مرحله قبل را انتخاب کنید..."
-                                  : "Select previous step first..."
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {specificationOptions.map((opt) => (
-                            <SelectItem key={opt.name} value={opt.name} className="text-xs">
-                              {opt.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="w-14 sm:w-16 h-9 shrink-0 flex items-center justify-center font-mono font-bold text-xs rounded-lg border bg-muted/40 text-foreground shadow-2xs">
-                      {selectedSpecificationCode || "--"}
-                    </div>
-                  </div>
-
-                  {/* 3.3 Grade */}
-                  <div className="flex items-center gap-3">
-                    <Label className="min-w-[120px] max-w-[140px] shrink-0 text-xs font-medium text-foreground">
-                      {isRtl ? "گرید متریال:" : "Grade:"}
-                    </Label>
-                    <div className="flex-1 min-w-0">
-                      <Select
-                        value={selectedGrade}
-                        onValueChange={handleSelectGrade}
-                        disabled={!selectedSpecification || gradeOptions.length === 0}
-                      >
-                        <SelectTrigger className="w-full text-xs h-9 bg-background">
-                          <SelectValue
-                            placeholder={
-                              selectedSpecification
-                                ? isRtl
-                                  ? "انتخاب گرید..."
-                                  : "Select Grade..."
-                                : isRtl
-                                  ? "ابتدا مرحله قبل را انتخاب کنید..."
-                                  : "Select previous step first..."
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {gradeOptions.map((opt) => (
-                            <SelectItem key={opt.name} value={opt.name} className="text-xs">
-                              {opt.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="w-14 sm:w-16 h-9 shrink-0 flex items-center justify-center font-mono font-bold text-xs rounded-lg border bg-muted/40 text-foreground shadow-2xs">
-                      {selectedGradeCode || "--"}
-                    </div>
-                  </div>
-
-                  {/* 3.4 Note (Class) */}
-                  <div className="flex items-center gap-3">
-                    <Label className="min-w-[120px] max-w-[140px] shrink-0 text-xs font-medium text-foreground">
-                      {isRtl ? "کلاس کاری / یادداشت:" : "Note (Class):"}
-                    </Label>
-                    <div className="flex-1 min-w-0">
-                      <Select
-                        value={selectedClass}
-                        onValueChange={handleSelectClass}
-                        disabled={!selectedGrade || classOptions.length === 0}
-                      >
-                        <SelectTrigger className="w-full text-xs h-9 bg-background">
-                          <SelectValue
-                            placeholder={
-                              selectedGrade
-                                ? isRtl
-                                  ? "انتخاب کلاس کاری..."
-                                  : "Select Note (Class)..."
-                                : isRtl
-                                  ? "ابتدا مرحله قبل را انتخاب کنید..."
-                                  : "Select previous step first..."
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {classOptions.map((opt) => (
-                            <SelectItem key={opt.name} value={opt.name} className="text-xs">
-                              {opt.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="w-14 sm:w-16 h-9 shrink-0 flex items-center justify-center font-mono font-bold text-xs rounded-lg border bg-muted/40 text-foreground shadow-2xs">
-                      {selectedClassCode || "-"}
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             )}
           </Card>
         </div>
 
-        {/* Right Column: Raw Material Identity & Technical Specs Card (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col gap-4">
-          <Card className="p-5 sm:p-6 rounded-2xl border-border/50 bg-card shadow-xs flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-border/30 pb-3">
-              <span className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
-                <ShieldCheck className="size-4.5 text-primary" />
+        {/* Right Panel: Raw Material Identity & Technical Specs Card (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col gap-4 sticky top-20">
+          <Card className="p-4 rounded-2xl border-border/50 bg-card shadow-xs flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <ShieldCheck className="size-4 text-emerald-500" />
                 <span>{isRtl ? "شناسنامه و مشخصات فنی متریال" : "Raw Material Profile"}</span>
               </span>
-              <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20 font-semibold">
+              <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-semibold">
                 Raw Material
               </Badge>
             </div>
@@ -1228,7 +1158,7 @@ export function MaterialCodingView() {
                   </button>
                 </>
               ) : (
-                /* Default ESP Raw Material Graphic matching legacy window brand */
+                /* Default ESP Raw Material Graphic */
                 <div className="flex flex-col items-center justify-center gap-3 text-center">
                   <div className="relative size-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 via-primary/5 to-transparent border border-primary/30 shadow-xs">
                     <Atom className="size-8 text-primary animate-pulse" />

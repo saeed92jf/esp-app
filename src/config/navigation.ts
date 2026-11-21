@@ -16,6 +16,7 @@ import {
   Gauge,
   Factory,
   Warehouse,
+  Database,
 } from "@phosphor-icons/react";
 
 /**
@@ -358,6 +359,16 @@ export const NAVIGATION: NavGroup[] = [
         href: "/engineering/esp-coding",
         icon: TreeStructure,
         color: "emerald",
+        public: true,
+        free: false,
+      },
+      {
+        labelKey: "espMaterial",
+        title: "ESP Material",
+        titleFa: "ESP Material",
+        href: "/engineering/esp-material",
+        icon: Database,
+        color: "teal",
         public: true,
         free: false,
       },

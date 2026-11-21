@@ -132,6 +132,8 @@
       "assets": "ESP Asset",
       "espWarehouse": "ESP Warehouse",
       "warehouse": "ESP Warehouse",
+      "esp coding": "ESP Coding",
+      "esp material": "ESP Material",
       "directory": "ESP Directory",
       "همکاران": "ESP Directory",
       "راهنمای سازمانی": "ESP Directory",
@@ -716,6 +718,7 @@
       "customers": "ESP Customers",
       "directory": "ESP Directory",
       "espCoding": "ESP Coding",
+      "espMaterial": "ESP Material",
       "espAsset": "ESP Asset",
       "espWarehouse": "ESP Warehouse",
       "assets": "ESP Asset",
@@ -757,7 +760,8 @@
       "mediaLibrary": "A unified library for all your media files.",
       "standards": "API Standards",
       "Claud-Flow": "Claude Flow",
-      "espCoding": "Enterprise product and material coding management system"
+      "espCoding": "Centralized product and material specification coding system",
+      "espMaterial": "Comprehensive material master database, mechanical properties, and form classifications"
     }
   },
   "NotFound": {

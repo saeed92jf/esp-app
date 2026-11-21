@@ -28,13 +28,6 @@ export default function EspCodingLayout({ children }: LayoutProps) {
 
   const navItems = [
     {
-      id: "workspace",
-      label: t("workspace"),
-      href: "/engineering/esp-coding",
-      icon: LayoutDashboard,
-      isActive: pathname === "/engineering/esp-coding",
-    },
-    {
       id: "products",
       label: t("products"),
       href: "/engineering/esp-coding/products",
@@ -48,20 +41,6 @@ export default function EspCodingLayout({ children }: LayoutProps) {
       icon: Atom,
       isActive: pathname.startsWith("/engineering/esp-coding/material-coding"),
     },
-    {
-      id: "materials",
-      label: t("materials"),
-      href: "/engineering/esp-coding/materials",
-      icon: Database,
-      isActive: pathname.startsWith("/engineering/esp-coding/materials"),
-    },
-    {
-      id: "classification",
-      label: t("classification"),
-      href: "/engineering/esp-coding/classification",
-      icon: Layers,
-      isActive: pathname.startsWith("/engineering/esp-coding/classification"),
-    },
   ];
 
   return (
@@ -69,6 +48,7 @@ export default function EspCodingLayout({ children }: LayoutProps) {
       {/* ── 1. Top Unified Header (Stable Module Title: ESP Coding - NO subTag) ── */}
       <AppHeader
         tag="ESP Coding"
+        variant="panel"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
