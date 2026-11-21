@@ -6,12 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Binary,
   Layers,
-  Sparkles,
-  CheckCircle2,
-  AlertCircle,
   Copy,
   RotateCcw,
-  BookmarkCheck,
   Info,
   ImageIcon,
   Maximize2,
@@ -79,7 +75,6 @@ export function ProductCodingView() {
   // Preview Modal for Document / Drawing
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatedResult, setGeneratedResult] = useState<CodeGenerationResult | null>(null);
 
   // Load combinations on mount
@@ -480,80 +475,6 @@ export function ProductCodingView() {
     setSelectedThickness("");
   };
 
-  const handleReserve = async () => {
-    if (!generatedResult?.code) {
-      toast.error(isRtl ? "کد معتبری برای رزرو وجود ندارد" : "No valid code to reserve");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      await EspCodingClientService.registerProduct({
-        productCode: generatedResult.code,
-        action: "reserve",
-        productionCategory: selectedCategory,
-        internalProduct: selectedInternalProduct,
-        productType: selectedProductType,
-        shape: selectedShape,
-        type: selectedType,
-        liftHoleSize: selectedLiftSize,
-        thk: selectedThickness,
-        attributes: {
-          ESP_Code: "E",
-          Production_Code: activeCodes.catCode,
-          Internal_Product_Code: activeCodes.ipCode,
-          Product_Type_Code: activeCodes.ptCode,
-          Shape_Code: activeCodes.shapeCode,
-          Type_Code: activeCodes.typeCode,
-          Lift_Size_Code: activeCodes.liftCode,
-          Thk_Code: activeCodes.thkCode,
-        },
-      });
-      toast.success(t("reservedSuccess"));
-    } catch (err: any) {
-      toast.error(err.message || "Failed to reserve code");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleRegister = async () => {
-    if (!generatedResult?.code) {
-      toast.error(isRtl ? "کد معتبری برای ثبت وجود ندارد" : "No valid code to register");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      await EspCodingClientService.registerProduct({
-        productCode: generatedResult.code,
-        action: "register",
-        productionCategory: selectedCategory,
-        internalProduct: selectedInternalProduct,
-        productType: selectedProductType,
-        shape: selectedShape,
-        type: selectedType,
-        liftHoleSize: selectedLiftSize,
-        thk: selectedThickness,
-        attributes: {
-          ESP_Code: "E",
-          Production_Code: activeCodes.catCode,
-          Internal_Product_Code: activeCodes.ipCode,
-          Product_Type_Code: activeCodes.ptCode,
-          Shape_Code: activeCodes.shapeCode,
-          Type_Code: activeCodes.typeCode,
-          Lift_Size_Code: activeCodes.liftCode,
-          Thk_Code: activeCodes.thkCode,
-        },
-      });
-      toast.success(t("registeredSuccess"));
-    } catch (err: any) {
-      toast.error(err.message || "Failed to register product");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const matchingCount = getMatchingRecords().length;
 
   const comboConfig = [
@@ -653,7 +574,7 @@ export function ProductCodingView() {
   ];
 
   return (
-    <div className="flex flex-col gap-6 w-full animate-in fade-in duration-150">
+    <div className="flex flex-col gap-6 w-full max-w-5xl mx-auto animate-in fade-in duration-150">
       {/* Top Title & Reset Bar */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex flex-col gap-1">
@@ -682,7 +603,7 @@ export function ProductCodingView() {
 
       {/* Two Column Layout: Classification Cascades & Live Code Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Form: All 7 Comboboxes stacked under each other with titles beside them (7 cols) */}
+        {/* Left Form: Code Preview on top + 7 Comboboxes stacked under each other (7 cols) */}
         <div className="lg:col-span-7 flex flex-col gap-4">
           <Card className="p-5 sm:p-6 rounded-2xl border-border/50 bg-card shadow-xs flex flex-col gap-4">
             <div className="flex items-center justify-between border-b border-border/30 pb-3">
@@ -693,6 +614,54 @@ export function ProductCodingView() {
               <Badge variant="outline" className="text-[10px] font-mono">
                 {matchingCount} {isRtl ? "رکورد معتبر" : "Valid records"}
               </Badge>
+            </div>
+
+            {/* Live Product Code Preview (without buttons or segments) */}
+            <div className="p-3.5 sm:p-4 rounded-xl bg-background border border-border/60 shadow-2xs flex items-center justify-between gap-3 overflow-hidden">
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                  ProductCode
+                </span>
+                <div className="flex items-center gap-0.5 mt-1 overflow-x-auto py-1" dir="ltr">
+                  {(generatedResult?.code || "E---------").split("").map((char, idx) => (
+                    <div
+                      key={idx}
+                      className="relative h-9 w-6 sm:w-7 rounded-md bg-muted/30 border border-border/40 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs"
+                    >
+                      <AnimatePresence mode="popLayout" initial={false}>
+                        <motion.span
+                          key={`${idx}-${char}`}
+                          initial={{ y: 24, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          exit={{ y: -24, opacity: 0 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 450,
+                            damping: 28,
+                            delay: idx * 0.02,
+                          }}
+                          className={cn(
+                            "font-mono font-black text-base sm:text-lg select-none",
+                            char === "-" ? "text-muted-foreground/40" : "text-primary"
+                          )}
+                        >
+                          {char}
+                        </motion.span>
+                      </AnimatePresence>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleCopyCode}
+                className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+                title="Copy Code"
+              >
+                <Copy className="size-4" />
+              </Button>
             </div>
 
             {/* 7 Comboboxes stacked vertically with titles on the side */}
@@ -747,126 +716,8 @@ export function ProductCodingView() {
           </Card>
         </div>
 
-        {/* Right Panel: Live Code Generation, Segment Breakdown & Registration Actions (5 cols) */}
+        {/* Right Panel: Technical Drawing & Inspection Document (5 cols) */}
         <div className="lg:col-span-5 flex flex-col gap-4 sticky top-20">
-          <Card className="p-5 rounded-2xl border-primary/30 bg-primary/5 shadow-xs flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-primary/15 pb-3">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Sparkles className="size-4 text-primary" />
-                <span>{t("candidateCode")}</span>
-              </span>
-              <Badge variant="outline" className="text-[10px] font-mono bg-background text-primary border-primary/30">
-                v1.0 Active
-              </Badge>
-            </div>
-
-            {/* Monospace Code Display with Sliding Character Animations */}
-            <div className="p-4 rounded-xl bg-background border border-border/60 shadow-2xs flex items-center justify-between gap-3 overflow-hidden">
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                  ProductCode
-                </span>
-                <div className="flex items-center gap-0.5 mt-1 overflow-x-auto py-1" dir="ltr">
-                  {(generatedResult?.code || "E---------").split("").map((char, idx) => (
-                    <div
-                      key={idx}
-                      className="relative h-9 w-6 sm:w-7 rounded-md bg-muted/30 border border-border/40 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs"
-                    >
-                      <AnimatePresence mode="popLayout" initial={false}>
-                        <motion.span
-                          key={`${idx}-${char}`}
-                          initial={{ y: 24, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          exit={{ y: -24, opacity: 0 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 450,
-                            damping: 28,
-                            delay: idx * 0.02,
-                          }}
-                          className={cn(
-                            "font-mono font-black text-base sm:text-lg select-none",
-                            char === "-" ? "text-muted-foreground/40" : "text-primary"
-                          )}
-                        >
-                          {char}
-                        </motion.span>
-                      </AnimatePresence>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleCopyCode}
-                className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
-                title="Copy Code"
-              >
-                <Copy className="size-4" />
-              </Button>
-            </div>
-
-            {/* Collision / Uniqueness Alert */}
-            {generatedResult?.isDuplicate && (
-              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs flex items-start gap-2">
-                <AlertCircle className="size-4 shrink-0 mt-0.5" />
-                <span>
-                  {isRtl
-                    ? "هشدار: این کد قبلاً در پایگاه داده ثبت شده است. برای جلوگیری از تداخل، بررسی نمایید."
-                    : "Warning: This code already exists in the registered database."}
-                </span>
-              </div>
-            )}
-
-            {/* Segment Breakdown Pills */}
-            <div className="flex flex-col gap-2">
-              <Label className="text-xs font-semibold text-foreground">
-                {t("codeBreakdown")}
-              </Label>
-              <div className="flex flex-wrap gap-1.5">
-                {(generatedResult?.segments || []).map((seg) => (
-                  <div
-                    key={seg.segmentId}
-                    className="flex items-center px-2 py-1 rounded-md bg-background border border-border/50 text-[10px] shadow-2xs"
-                    title={`${seg.labelEn}: ${seg.rawValue}`}
-                  >
-                    <span className="text-muted-foreground me-1.5 font-medium">{isRtl ? seg.labelFa : seg.labelEn}:</span>
-                    <span className="font-mono font-bold text-foreground">
-                      {seg.formattedValue || "—"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Registration Actions Bar */}
-            <div className="flex flex-col gap-2 pt-2 border-t border-border/30">
-              <Button
-                type="button"
-                onClick={handleRegister}
-                disabled={isSubmitting || !generatedResult?.isValid}
-                className="w-full h-10 rounded-xl font-bold text-xs gap-2 cursor-pointer bg-primary text-primary-foreground shadow-xs"
-              >
-                <CheckCircle2 className="size-4" />
-                <span>{t("registerBtn")}</span>
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleReserve}
-                disabled={isSubmitting || !generatedResult?.isValid}
-                className="w-full h-9 rounded-xl font-semibold text-xs gap-2 cursor-pointer bg-background"
-              >
-                <BookmarkCheck className="size-3.5" />
-                <span>{t("reserveBtn")}</span>
-              </Button>
-            </div>
-          </Card>
-
-          {/* Technical Drawing & Inspection Document Card */}
           <Card className="p-4 rounded-2xl border-border/50 bg-card shadow-xs flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-foreground flex items-center gap-1.5">

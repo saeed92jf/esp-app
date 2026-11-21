@@ -157,7 +157,7 @@ export default function EspCodingLayout({ children }: LayoutProps) {
 
         {/* ── 3. Main Content Container (Rule F: Pure Opacity Fade, No Vertical Slide) ── */}
         <main className="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-8 animate-in fade-in duration-150 overflow-x-hidden">
-          <div className="max-w-[1700px] w-full mx-auto">
+          <div className="max-w-6xl w-full mx-auto">
             {children}
           </div>
         </main>
