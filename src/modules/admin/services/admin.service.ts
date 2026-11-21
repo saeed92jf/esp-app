@@ -19,6 +19,7 @@ export interface IAdminService {
   updateUserModules(id: string, modules: UserModuleAccess[]): Promise<User>;
   deleteUser(id: string): Promise<void>;
   searchUsers(query: string, filters?: UserQueryParams): Promise<User[]>;
+  importUsers(users: Partial<User>[]): Promise<{ success: boolean; total: number; created: number; updated: number; users: User[] }>;
 
   // Account Requests & HR / Manager Approvals
   getPendingRequests(params?: RequestQueryParams): Promise<PendingRequest[]>;

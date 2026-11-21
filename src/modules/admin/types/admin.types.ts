@@ -1,4 +1,5 @@
 import type { UserUploadedDocument, UserRole } from "@/types/auth";
+export type { UserRole };
 
 export interface UserModuleAccess {
   moduleId: string;
@@ -63,6 +64,7 @@ export interface User {
   educationDegree?: string;
   educationField?: string;
   jobTitle?: string;
+  jobTitleEn?: string;
   age?: number;
   maritalStatus?: 'single' | 'married';
   childrenCount?: number;

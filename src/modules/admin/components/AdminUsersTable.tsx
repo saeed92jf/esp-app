@@ -23,7 +23,8 @@ import {
   AlertCircle, KeyRound, Edit2, ShieldCheck, UserCheck, UserCog,
   Building, Calendar, Users,
   Building2, Briefcase, DollarSign, Clock, MapPin,
-  Heart, Shield, Layers, Trash2, Lock, Sparkles, Loader2, Send
+  Heart, Shield, Layers, Trash2, Lock, Sparkles, Loader2, Send,
+  Download, Upload, FileSpreadsheet, FileJson
 } from "lucide-react";
 import { useConfirm } from "@/hooks/use-confirm";
 import type { UserRole } from "@/types/auth";
@@ -38,6 +39,8 @@ import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { getLocalizedDocumentTitle } from "@/modules/profile/utils/document-helpers";
 import { addUserNotification } from "@/modules/dashboard/services/dashboard.service";
 import { resolveDegreeLabel } from "@/config/profile-options";
+import { exportPersonnelToExcel, exportPersonnelToJson } from "../utils/personnel-excel";
+import { AdminPersonnelImportModal } from "./AdminPersonnelImportModal";
 
 interface AdminUsersTableProps {
   users: User[];
@@ -737,6 +740,24 @@ export function AdminUsersTable({
     });
   }, [users, globalSearch, colFilters, sortState]);
 
+  // Personnel Export & Import Modals State
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isExportPopoverOpen, setIsExportPopoverOpen] = useState(false);
+
+  const handleExportExcel = () => {
+    setIsExportPopoverOpen(false);
+    const targetUsers = filteredUsers.length > 0 ? filteredUsers : users;
+    exportPersonnelToExcel(targetUsers);
+    toast.success(t("exportSuccess"));
+  };
+
+  const handleExportJson = () => {
+    setIsExportPopoverOpen(false);
+    const targetUsers = filteredUsers.length > 0 ? filteredUsers : users;
+    exportPersonnelToJson(targetUsers);
+    toast.success(t("exportSuccess"));
+  };
+
   const handleSelectAndGoHome = (user: User) => {
     setSelectedUser(user);
     setActiveTab('home');
@@ -1392,8 +1413,61 @@ export function AdminUsersTable({
 
         </div>
 
-        {/* Right Side: Filters Clear & Salary Masking */}
+        {/* Right Side: Export, Import, Filters Clear & Salary Masking */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* Export Dropdown */}
+          <Popover open={isExportPopoverOpen} onOpenChange={setIsExportPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 px-3 rounded-xl border-border/50 text-xs font-semibold gap-1.5 bg-background/80 hover:bg-background transition-colors cursor-pointer"
+                title={t("exportPersonnelDesc")}
+              >
+                <Download className="size-3.5 text-primary" />
+                <span className="hidden sm:inline">{t("exportPersonnel")}</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="end"
+              sideOffset={6}
+              className="w-56 p-2 rounded-2xl border border-border/60 bg-popover shadow-xl animate-in fade-in duration-150 z-50"
+            >
+              <div className="flex flex-col gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleExportExcel}
+                  className="w-full justify-start gap-2.5 text-xs h-9 rounded-xl hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium cursor-pointer"
+                >
+                  <FileSpreadsheet className="size-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>{t("exportExcel")}</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleExportJson}
+                  className="w-full justify-start gap-2.5 text-xs h-9 rounded-xl hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400 font-medium cursor-pointer"
+                >
+                  <FileJson className="size-4 text-blue-600 dark:text-blue-400" />
+                  <span>{t("exportJson")}</span>
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Import Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsImportModalOpen(true)}
+            className="h-9 px-3 rounded-xl border-primary/30 text-primary text-xs font-semibold gap-1.5 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer"
+            title={t("importPersonnelDesc")}
+          >
+            <Upload className="size-3.5" />
+            <span className="hidden sm:inline">{t("importPersonnel")}</span>
+          </Button>
+
           {activeFiltersCount > 0 && (
             <Button
               variant="outline"
@@ -3568,6 +3642,17 @@ export function AdminUsersTable({
           </div>
         </div>
       )}
+
+      {/* Personnel Import Modal */}
+      <AdminPersonnelImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        existingUsers={users}
+        onImportSuccess={(updatedUsers) => {
+          setUsers(updatedUsers);
+          if (onRefresh) onRefresh();
+        }}
+      />
     </div>
   );
 }

@@ -454,6 +454,31 @@ export class RealAdminService implements IAdminService {
     }
   }
 
+  async importUsers(users: Partial<User>[]): Promise<{ success: boolean; total: number; created: number; updated: number; users: User[] }> {
+    try {
+      const res = await this.http.post<any>("/admin/users/import", { users });
+      const raw = res?.data ?? res;
+      const rawList = Array.isArray(raw?.users)
+        ? raw.users
+        : Array.isArray(raw?.data)
+        ? raw.data
+        : Array.isArray(raw)
+        ? raw
+        : [];
+      const mapped = rawList.map((u: any) => this.mapAdminUser(u));
+      return {
+        success: Boolean(raw?.success ?? true),
+        total: raw?.total ?? mapped.length,
+        created: raw?.created ?? 0,
+        updated: raw?.updated ?? 0,
+        users: mapped,
+      };
+    } catch (err) {
+      console.error("RealAdminService.importUsers error:", err);
+      throw err;
+    }
+  }
+
   async getPendingRequests(params?: RequestQueryParams): Promise<PendingRequest[]> {
     try {
       const res = await this.http.get<any>("/admin/requests", { params });
