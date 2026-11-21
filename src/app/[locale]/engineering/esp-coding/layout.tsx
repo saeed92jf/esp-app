@@ -39,15 +39,8 @@ export default function EspCodingLayout({ children }: LayoutProps) {
       id: "material-coding",
       label: t("materialCoding"),
       href: "/engineering/esp-coding/material-coding",
-      icon: Atom,
+      icon: Layers,
       isActive: pathname.startsWith("/engineering/esp-coding/material-coding"),
-    },
-    {
-      id: "form-coding",
-      label: t("formCoding"),
-      href: "/engineering/esp-coding/form-coding",
-      icon: Shapes,
-      isActive: pathname.startsWith("/engineering/esp-coding/form-coding"),
     },
   ];
 
@@ -153,7 +146,7 @@ export default function EspCodingLayout({ children }: LayoutProps) {
 
         {/* ── 3. Main Content Container (Rule F: Pure Opacity Fade, No Vertical Slide) ── */}
         <main className="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-8 animate-in fade-in duration-150 overflow-x-hidden">
-          <div className="max-w-6xl w-full mx-auto">
+          <div className="w-full mx-auto max-w-7xl 2xl:max-w-[1720px]">
             {children}
           </div>
         </main>

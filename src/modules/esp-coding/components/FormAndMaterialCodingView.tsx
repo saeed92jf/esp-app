@@ -17,6 +17,9 @@ import {
   ShieldCheck,
   ArrowRight,
   Sparkles,
+  Link2,
+  Unlink,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,7 +77,12 @@ export function FormAndMaterialCodingView({
   const [filterMaterialByForm, setFilterMaterialByForm] = useState<boolean>(true);
 
   // Preview Image Modal
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewModal, setPreviewModal] = useState<{
+    isOpen: boolean;
+    src: string;
+    title: string;
+    subtitle?: string;
+  }>({ isOpen: false, src: "", title: "" });
 
   // ==========================================
   // PANEL A: FORM SELECTIONS
@@ -274,52 +282,58 @@ export function FormAndMaterialCodingView({
 
     if (gf === "Flat Form") {
       return {
-        dim1: "ضخامت (Thickness mm)",
-        dim2: "عرض (Width mm)",
-        dim3: isLengthMode ? "طول (Length mm)" : "کویل (Coil mm)",
+        dim1: isRtl ? "ضخامت ورق (mm)" : "Thickness (mm)",
+        dim2: isRtl ? "عرض ورق (mm)" : "Width (mm)",
+        dim3: isLengthMode
+          ? isRtl
+            ? "طول شاخه (mm)"
+            : "Length (mm)"
+          : isRtl
+          ? "طول کویل (mm)"
+          : "Coil (mm)",
         isFlat: true,
       };
     }
     if (gf === "Forge Form" && cf === "Standard Flange") {
       return {
-        dim1: "سایز اسمی (NPS inch)",
-        dim2: "نوع اتصال (Type / Schedule)",
-        dim3: "کلاس فشاری (Class / Face)",
+        dim1: isRtl ? "سایز اسمی (اینچ NPS)" : "Nominal Size (NPS inch)",
+        dim2: isRtl ? "نوع اتصال و رده (Type/Sch)" : "Connection Type & Sch",
+        dim3: isRtl ? "کلاس فشاری و پیشانی (Class/Face)" : "Pressure Class & Face",
         isFlat: false,
       };
     }
     if (gf === "Cylinder Form" && cf === "Pipe") {
       return {
-        dim1: "سایز اسمی لوله (NPS inch)",
-        dim2: "رده ضخامت (Schedule)",
-        dim3: "طول شاخه (Length mm)",
+        dim1: isRtl ? "سایز اسمی لوله (NPS)" : "Pipe Nominal Size (NPS)",
+        dim2: isRtl ? "رده ضخامت (Schedule)" : "Wall Schedule",
+        dim3: isRtl ? "طول شاخه لوله (mm)" : "Pipe Length (mm)",
         isFlat: false,
       };
     }
     if (gf === "Fitting Form") {
       return {
-        dim1: "سایز نامی (Nominal Size)",
-        dim2: "رده ضخامت (Schedule)",
-        dim3: "زاویه یا ابعاد (Angle / Dim)",
+        dim1: isRtl ? "سایز نامی اتصال" : "Nominal Size",
+        dim2: isRtl ? "رده ضخامت (Schedule)" : "Wall Schedule",
+        dim3: isRtl ? "زاویه یا ابعاد فرعی" : "Angle / Dimension",
         isFlat: false,
       };
     }
     if (gf === "Connection Form") {
       return {
-        dim1: "استاندارد (Standard)",
-        dim2: "سایز رزوه (Metric / Inch)",
-        dim3: "طول پیچ (Length mm)",
+        dim1: isRtl ? "استاندارد پیچ و مهره" : "Fastener Standard",
+        dim2: isRtl ? "سایز رزوه (Metric / Inch)" : "Thread Size",
+        dim3: isRtl ? "طول کارگیر پیچ (mm)" : "Bolt Length (mm)",
         isFlat: false,
       };
     }
 
     return {
-      dim1: "مشخصه اول (Dimension 1)",
-      dim2: "مشخصه دوم (Dimension 2)",
-      dim3: "مشخصه سوم (Dimension 3)",
+      dim1: isRtl ? "مشخصه اول ابعادی" : "Dimension 1",
+      dim2: isRtl ? "مشخصه دوم ابعادی" : "Dimension 2",
+      dim3: isRtl ? "مشخصه سوم ابعادی" : "Dimension 3",
       isFlat: false,
     };
-  }, [selectedGeneralForm, selectedCategoryForm, isLengthMode]);
+  }, [selectedGeneralForm, selectedCategoryForm, isLengthMode, isRtl]);
 
   // Code generation for Form dimensions
   const formDimensionCode = useMemo(() => {
@@ -567,6 +581,46 @@ export function FormAndMaterialCodingView({
   const compositeCode = useMemo(() => {
     return `${generatedFormCode} / ${generatedMaterialCode}`;
   }, [generatedFormCode, generatedMaterialCode]);
+
+  // Large Technical Image for Material
+  const materialPicture = useMemo(() => {
+    if (activeMaterial?.pic) return activeMaterial.pic;
+    const spec = (selectedSpecification || "").toUpperCase();
+    const cat = (selectedMaterialCategory || "").toUpperCase();
+    if (
+      cat.includes("CARBON") ||
+      spec.includes("516") ||
+      spec.includes("285") ||
+      spec.includes("36")
+    ) {
+      return "/coding-docs/Production Form/Plate.png";
+    }
+    if (
+      cat.includes("STAINLESS") ||
+      spec.includes("240") ||
+      spec.includes("304") ||
+      spec.includes("316")
+    ) {
+      return "/coding-docs/Production Form/Sheet.png";
+    }
+    if (
+      spec.includes("106") ||
+      spec.includes("333") ||
+      spec.includes("312") ||
+      cat.includes("PIPE")
+    ) {
+      return "/coding-docs/Production Form/Transfer Pipe.png";
+    }
+    if (
+      spec.includes("105") ||
+      spec.includes("350") ||
+      spec.includes("182") ||
+      cat.includes("FORGE")
+    ) {
+      return "/coding-docs/Production Form/BossForge.png";
+    }
+    return "/coding-docs/Production Form/Plate.png";
+  }, [activeMaterial, selectedSpecification, selectedMaterialCategory]);
 
   // Auto-Sync Material when Form changes
   useEffect(() => {
@@ -895,7 +949,7 @@ export function FormAndMaterialCodingView({
     {
       id: "gf",
       num: 1,
-      labelFa: "فرم عمومی (General Form)",
+      labelFa: "فرم عمومی",
       labelEn: "General Form",
       isCombo: true,
       value: selectedGeneralForm,
@@ -905,7 +959,7 @@ export function FormAndMaterialCodingView({
     {
       id: "cf",
       num: 2,
-      labelFa: "دسته‌بندی فرم (Category Form)",
+      labelFa: "دسته‌بندی فرم",
       labelEn: "Category Form",
       isCombo: true,
       value: selectedCategoryForm,
@@ -915,7 +969,7 @@ export function FormAndMaterialCodingView({
     {
       id: "sf",
       num: 3,
-      labelFa: "زیرفرم قطعه (Sub-Form)",
+      labelFa: "زیرفرم قطعه",
       labelEn: "Sub-Form",
       isCombo: true,
       value: selectedSubForm,
@@ -979,9 +1033,10 @@ export function FormAndMaterialCodingView({
         <button
           type="button"
           onClick={() => setIsLengthMode(!isLengthMode)}
-          className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 shrink-0 cursor-pointer"
+          className="text-[10px] font-bold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 shrink-0 cursor-pointer hover:bg-primary/20 transition-colors"
+          title={isRtl ? "تغییر حالت بین شاخه و کویل" : "Toggle Length/Coil"}
         >
-          {isLengthMode ? "Len." : "Coil"}
+          {isLengthMode ? (isRtl ? "شاخه" : "Len.") : (isRtl ? "کویل" : "Coil")}
         </button>
       ) : null,
     },
@@ -992,7 +1047,7 @@ export function FormAndMaterialCodingView({
     {
       id: "bm",
       num: 1,
-      labelFa: "ماده اصلی (Basic Material)",
+      labelFa: "ماده اصلی",
       labelEn: "Basic Material",
       value: selectedBasicMaterial,
       onChange: handleBasicMaterialChange,
@@ -1001,7 +1056,7 @@ export function FormAndMaterialCodingView({
     {
       id: "sm",
       num: 2,
-      labelFa: "زیرمجموعه متریال (Sub-Material)",
+      labelFa: "زیرمجموعه متریال",
       labelEn: "Sub-Material",
       value: selectedSubMaterial,
       onChange: handleSubMaterialChange,
@@ -1010,7 +1065,7 @@ export function FormAndMaterialCodingView({
     {
       id: "gm",
       num: 3,
-      labelFa: "دسته‌بندی متریال (Category)",
+      labelFa: "دسته‌بندی متریال",
       labelEn: "Material Category",
       value: selectedMaterialCategory,
       onChange: handleCategoryChange,
@@ -1019,7 +1074,7 @@ export function FormAndMaterialCodingView({
     {
       id: "spec",
       num: 4,
-      labelFa: "استاندارد (Specification)",
+      labelFa: "استاندارد مرجع",
       labelEn: "Specification",
       value: selectedSpecification,
       onChange: handleSpecChange,
@@ -1028,7 +1083,7 @@ export function FormAndMaterialCodingView({
     {
       id: "grade",
       num: 5,
-      labelFa: "گرید متریال (Grade)",
+      labelFa: "گرید متریال",
       labelEn: "Material Grade",
       value: selectedGrade,
       onChange: handleGradeChange,
@@ -1037,7 +1092,7 @@ export function FormAndMaterialCodingView({
     {
       id: "class",
       num: 6,
-      labelFa: "کلاس / یادداشت (Class / Note)",
+      labelFa: "کلاس / یادداشت",
       labelEn: "Class / Note",
       value: selectedClass,
       onChange: setSelectedClass,
@@ -1046,26 +1101,26 @@ export function FormAndMaterialCodingView({
   ];
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-[1650px] mx-auto px-2 sm:px-4 lg:px-6 py-2 animate-in fade-in duration-150">
-      {/* ── TOP TITLE & ACTION CONTROLS ── */}
+    <div className="flex flex-col gap-6 w-full max-w-[1680px] mx-auto px-2 sm:px-4 lg:px-6 py-2 animate-in fade-in duration-150">
+      {/* ── 1. TOP TITLE & ACTION CONTROLS ── */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex flex-col gap-1">
           <h1 className="text-lg sm:text-xl font-black text-foreground tracking-tight flex items-center gap-2">
             <Shapes className="size-5 text-primary" />
             <span>
               {isRtl
-                ? "کدگذاری جامع فرم و متریال (ESP Form & Material Coding)"
+                ? "کدگذاری یکپارچه فرم و متریال (Form & Material)"
                 : "Integrated Form & Material Coding"}
             </span>
           </h1>
           <p className="text-xs text-muted-foreground">
             {codingMode === "forward"
               ? isRtl
-                ? "انتخاب فرم و مشخصات قطعه به طور مستقیم متریال‌های مجاز را فیلتر می‌کند."
-                : "Selecting component form automatically filters valid materials side-by-side."
+                ? "فرم و ابعاد هندسی قطعه به طور مستقیم متریال‌های مجاز و مشخصات فنی را فیلتر و هماهنگ می‌کند."
+                : "Component geometry dynamically filters and synchronizes compatible engineering material grades."
               : isRtl
-                ? "حالت معکوس: وارد کردن کد فرم یا کد متریال و استخراج آنی مشخصات مهندسی"
-                : "Reverse mode: Enter Form or Material Code to instantly decode specifications"}
+                ? "حالت معکوس: ورود کد فرم یا کد متریال و رمزگشایی بلادرنگ مشخصات استاندارد و فیزیکی"
+                : "Reverse mode: Enter Form or Material Code to instantly decode specifications."}
           </p>
         </div>
 
@@ -1086,10 +1141,10 @@ export function FormAndMaterialCodingView({
             <span>
               {filterMaterialByForm
                 ? isRtl
-                  ? `فیلتر متریال بر اساس فرم فعال (${allowableMaterials.length})`
+                  ? `پیوند فعال: فیلتر متریال بر پایه فرم (${allowableMaterials.length} متریال مجاز)`
                   : `Form Filter Active (${allowableMaterials.length})`
                 : isRtl
-                ? "فیلتر متریال غیرفعال (تمام متریال‌ها)"
+                ? "پیوند غیرفعال (نمایش کلیه متریال‌ها)"
                 : "All Materials (Unfiltered)"}
             </span>
           </button>
@@ -1137,339 +1192,519 @@ export function FormAndMaterialCodingView({
         </div>
       </div>
 
-      {/* ── TWO COLUMN SIDE-BY-SIDE CARDS ("فقط کنار هم مثل product coding") ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        {/* ============================================================ */}
-        {/* ── CARD 1: FORM CODING (هندسه و فرم قطعه) ── */}
-        {/* ============================================================ */}
-        <Card className="p-5 sm:p-6 rounded-2xl border-border/50 bg-card shadow-xs flex flex-col gap-4">
-          <div className="flex items-center justify-between border-b border-border/30 pb-3">
-            <span className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
-              <Shapes className="size-4.5 text-primary" />
-              <span>{isRtl ? "کدگذاری فرم قطعه (Form Coding)" : "Form & Geometry Coding"}</span>
-            </span>
-            <Badge variant="outline" className="text-[10px] font-mono">
-              Ref: {formReference}
-            </Badge>
-          </div>
+      {/* ── 2. CONNECTED WORKFLOW BANNER (پیوند اتصال مستقیم فرم به متریال) ── */}
+      <div className="w-full p-2.5 sm:p-3 rounded-2xl bg-muted/40 border border-border/50 flex items-center justify-between gap-3 flex-wrap shadow-2xs">
+        <div className="flex items-center gap-2">
+          <span className="size-6 rounded-lg bg-primary/15 text-primary flex items-center justify-center font-black text-xs">
+            ۱
+          </span>
+          <span className="text-xs font-bold text-foreground">
+            {isRtl ? "هندسه و ابعاد فرم (Form & Geometry)" : "Component Form & Geometry"}
+          </span>
+        </div>
 
-          {/* Top Box: Live Form Code Preview (Character tiles like ProductCoding) */}
-          {codingMode === "reverse" ? (
-            <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 flex flex-col gap-2">
-              <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <Search className="size-3.5 text-primary" />
-                <span>{isRtl ? "ورود کد فرم جهت رمزگشایی:" : "Enter Form Code to Decode:"}</span>
-              </Label>
-              <Input
-                type="text"
-                value={reverseFormCodeInput}
-                onChange={(e) => handleReverseFormLookup(e.target.value)}
-                placeholder="R111-100150006000 or R211-041612..."
-                className="h-10 rounded-xl text-xs font-mono tracking-wider uppercase bg-background"
-                dir="ltr"
+        {/* Dynamic Interlocking Link Indicator */}
+        <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-background border border-border/60 shadow-2xs">
+          <div className="flex items-center gap-1">
+            <span className="relative flex h-2.5 w-2.5">
+              {filterMaterialByForm && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              )}
+              <span
+                className={cn(
+                  "relative inline-flex rounded-full h-2.5 w-2.5",
+                  filterMaterialByForm ? "bg-emerald-500" : "bg-muted-foreground"
+                )}
               />
-            </div>
-          ) : (
-            <div className="p-3.5 sm:p-4 rounded-xl bg-background border border-border/60 shadow-2xs flex items-center justify-between gap-3 overflow-hidden">
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                  Form Code Preview
-                </span>
-                <div className="flex items-center gap-0.5 mt-1 overflow-x-auto py-1" dir="ltr">
-                  {generatedFormCode.split("").map((char, idx) => (
-                    <div
-                      key={idx}
-                      className="relative h-9 w-5.5 sm:w-6.5 rounded-md bg-muted/30 border border-border/40 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs"
-                    >
-                      <AnimatePresence mode="popLayout" initial={false}>
-                        <motion.span
-                          key={`${idx}-${char}`}
-                          initial={{ y: 20, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          exit={{ y: -20, opacity: 0 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 450,
-                            damping: 28,
-                            delay: idx * 0.015,
-                          }}
-                          className={cn(
-                            "font-mono font-black text-sm sm:text-base select-none",
-                            char === "-" ? "text-muted-foreground/40" : "text-primary"
-                          )}
-                        >
-                          {char}
-                        </motion.span>
-                      </AnimatePresence>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => handleCopy(generatedFormCode, "Form Code")}
-                className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
-                title="Copy Code"
-              >
-                <Copy className="size-4" />
-              </Button>
-            </div>
-          )}
-
-          {/* Form 6 Rows Stacked Vertically */}
-          <div className="flex flex-col divide-y divide-border/25">
-            {formRowConfig.map((item) => {
-              const label = isRtl ? item.labelFa : item.labelEn;
-
-              return (
-                <div
-                  key={item.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 py-3 first:pt-0 last:pb-0"
-                >
-                  {/* Title beside the combobox */}
-                  <div className="flex items-center gap-2.5 sm:w-48 md:w-56 shrink-0">
-                    <span className="size-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs fa-num shrink-0">
-                      {item.num}
-                    </span>
-                    <Label className="text-xs sm:text-[13px] font-semibold text-foreground truncate cursor-pointer select-none">
-                      {label}
-                    </Label>
-                    {item.extraToggle}
-                  </div>
-
-                  {/* Combobox or Input */}
-                  <div className="flex-1 min-w-0 flex items-center">
-                    {item.isCombo ? (
-                      <Select value={item.value} onValueChange={item.onChange}>
-                        <SelectTrigger className="h-10 rounded-xl text-xs sm:text-[13px] bg-background w-full">
-                          <SelectValue placeholder="Select..." />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-64">
-                          {item.options.map((opt) => (
-                            <SelectItem key={opt.name} value={opt.name} className="text-xs sm:text-[13px]">
-                              <div className="flex items-center justify-between w-full gap-3">
-                                <span className="truncate">{opt.name}</span>
-                                {opt.code && (
-                                  <span className="font-mono text-[11px] text-muted-foreground shrink-0 ms-2">
-                                    ({opt.code})
-                                  </span>
-                                )}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Input
-                        type={item.isNumberInput ? "number" : "text"}
-                        step="0.1"
-                        value={item.value}
-                        onChange={(e) => item.onChange(e.target.value)}
-                        className="h-10 rounded-xl text-xs sm:text-[13px] font-mono bg-background w-full"
-                      />
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Form Drawing Thumbnail Footer */}
-          <div className="flex items-center justify-between pt-2 border-t border-border/25">
-            <span className="text-[11px] text-muted-foreground font-medium">
-              مدل فنی و تصویر سه‌بعدی قطعه:
-            </span>
-            <div
-              className="relative group w-20 h-14 rounded-lg bg-background border border-border/80 overflow-hidden flex items-center justify-center cursor-pointer hover:border-primary transition-all"
-              onClick={() => setPreviewImage(currentPicture)}
-              title="Click to enlarge"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={currentPicture}
-                alt={selectedSubForm}
-                className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform"
-                onError={(e) => {
-                  (e.target as HTMLElement).style.display = "none";
-                }}
-              />
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <Maximize2 className="size-3.5 text-white drop-shadow" />
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* ============================================================ */}
-        {/* ── CARD 2: MATERIAL CODING (جنس و مشخصات متریال) ── */}
-        {/* ============================================================ */}
-        <Card className="p-5 sm:p-6 rounded-2xl border-border/50 bg-card shadow-xs flex flex-col gap-4">
-          <div className="flex items-center justify-between border-b border-border/30 pb-3">
-            <span className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
-              <Atom className="size-4.5 text-emerald-500" />
-              <span>{isRtl ? "کدگذاری متریال (Material Coding)" : "Material Specifications"}</span>
-            </span>
-            <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
-              UNS: {activeMaterial?.uns || "K02700"}
-            </Badge>
-          </div>
-
-          {/* Top Box: Live Material Code Preview (Character tiles like ProductCoding) */}
-          {codingMode === "reverse" ? (
-            <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col gap-2">
-              <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <Search className="size-3.5 text-emerald-500" />
-                <span>{isRtl ? "ورود کد متریال جهت رمزگشایی:" : "Enter Material Code to Decode:"}</span>
-              </Label>
-              <Input
-                type="text"
-                value={reverseMatCodeInput}
-                onChange={(e) => handleReverseMaterialLookup(e.target.value)}
-                placeholder="M11-01010 or M1112000..."
-                className="h-10 rounded-xl text-xs font-mono tracking-wider uppercase bg-background"
-                dir="ltr"
-              />
-            </div>
-          ) : (
-            <div className="p-3.5 sm:p-4 rounded-xl bg-background border border-border/60 shadow-2xs flex items-center justify-between gap-3 overflow-hidden">
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                  Material Code Preview
-                </span>
-                <div className="flex items-center gap-0.5 mt-1 overflow-x-auto py-1" dir="ltr">
-                  {generatedMaterialCode.split("").map((char, idx) => (
-                    <div
-                      key={idx}
-                      className="relative h-9 w-5.5 sm:w-6.5 rounded-md bg-muted/30 border border-border/40 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs"
-                    >
-                      <AnimatePresence mode="popLayout" initial={false}>
-                        <motion.span
-                          key={`${idx}-${char}`}
-                          initial={{ y: 20, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          exit={{ y: -20, opacity: 0 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 450,
-                            damping: 28,
-                            delay: idx * 0.015,
-                          }}
-                          className={cn(
-                            "font-mono font-black text-sm sm:text-base select-none",
-                            char === "-" ? "text-muted-foreground/40" : "text-emerald-600 dark:text-emerald-400"
-                          )}
-                        >
-                          {char}
-                        </motion.span>
-                      </AnimatePresence>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => handleCopy(generatedMaterialCode, "Material Code")}
-                className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
-                title="Copy Code"
-              >
-                <Copy className="size-4" />
-              </Button>
-            </div>
-          )}
-
-          {/* Material 6 Rows Stacked Vertically */}
-          <div className="flex flex-col divide-y divide-border/25">
-            {materialRowConfig.map((item) => {
-              const label = isRtl ? item.labelFa : item.labelEn;
-
-              return (
-                <div
-                  key={item.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 py-3 first:pt-0 last:pb-0"
-                >
-                  {/* Title beside the combobox */}
-                  <div className="flex items-center gap-2.5 sm:w-48 md:w-56 shrink-0">
-                    <span className="size-6 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center text-xs fa-num shrink-0">
-                      {item.num}
-                    </span>
-                    <Label className="text-xs sm:text-[13px] font-semibold text-foreground truncate cursor-pointer select-none">
-                      {label}
-                    </Label>
-                  </div>
-
-                  {/* Combobox */}
-                  <div className="flex-1 min-w-0 flex items-center">
-                    <Select value={item.value} onValueChange={item.onChange}>
-                      <SelectTrigger className="h-10 rounded-xl text-xs sm:text-[13px] bg-background w-full">
-                        <SelectValue placeholder="Select..." />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-64">
-                        {item.options.map((opt) => (
-                          <SelectItem key={opt.name} value={opt.name} className="text-xs sm:text-[13px]">
-                            <div className="flex items-center justify-between w-full gap-3">
-                              <span className="truncate">{opt.name}</span>
-                              {opt.code && (
-                                <span className="font-mono text-[11px] text-muted-foreground shrink-0 ms-2">
-                                  ({opt.code})
-                                </span>
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Material Tech Specs Footer Strip */}
-          <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/25 text-[11px] text-muted-foreground flex-wrap">
-            <span className="flex items-center gap-1">
-              <span>چگالی:</span>
-              <strong className="font-mono text-foreground">{activeMaterial?.density || "7850"}</strong> kg/m³
-            </span>
-            <span className="flex items-center gap-1">
-              <span>استحکام:</span>
-              <strong className="font-mono text-foreground">{activeMaterial?.tensileMpa || "485"}</strong> MPa
-            </span>
-            <span className="flex items-center gap-1">
-              <span>تسلیم:</span>
-              <strong className="font-mono text-foreground">{activeMaterial?.yieldMpa || "260"}</strong> MPa
-            </span>
-            <span className="flex items-center gap-1">
-              <span>دما:</span>
-              <strong className="font-mono text-foreground">{activeMaterial?.minTemp || "-48"} to {activeMaterial?.maxTemp || "538"}°C</strong>
             </span>
           </div>
-        </Card>
+
+          <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+            <Link2 className="size-3.5 text-emerald-500" />
+            <span>
+              {filterMaterialByForm
+                ? isRtl
+                  ? `پیوند مستقیم فعال: هندسه «${selectedSubForm}» متریال‌های مجاز را فیلتر می‌کند (${allowableMaterials.length} متریال سازگار)`
+                  : `Form-to-Material Link Active: "${selectedSubForm}" filters ${allowableMaterials.length} materials`
+                : isRtl
+                ? "پیوند غیرفعال (متریال‌ها بدون فیلتر نمایش داده می‌شوند)"
+                : "Link Bypassed (All Materials Accessible)"}
+            </span>
+          </span>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setFilterMaterialByForm(!filterMaterialByForm)}
+            className="h-6 px-2 text-[10px] font-bold text-primary hover:bg-primary/10 rounded-lg cursor-pointer"
+          >
+            {filterMaterialByForm ? (isRtl ? "قطع پیوند" : "Disconnect") : (isRtl ? "برقراری پیوند" : "Connect")}
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="size-6 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-xs">
+            ۲
+          </span>
+          <span className="text-xs font-bold text-foreground">
+            {isRtl ? "جنس و مشخصات متریال (Material & Specs)" : "Material Specifications"}
+          </span>
+        </div>
       </div>
 
-      {/* ── 3. BOTTOM COMPOSITE CODE & WEIGHT ESTIMATION CARD (مینیمال و یکپارچه) ── */}
+      {/* ── 3. TWO CONNECTED CARDS (اتصال فیزیکی دو باکس به هم با عکس‌های بزرگ برای هردو) ── */}
+      <div className="relative w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-stretch">
+          {/* ============================================================ */}
+          {/* ── CARD 1: FORM CODING (هندسه و فرم قطعه) ── */}
+          {/* ============================================================ */}
+          <Card className="p-5 sm:p-6 rounded-2xl border-border/50 bg-card shadow-xs flex flex-col gap-4 relative overflow-hidden group">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-border/30 pb-3">
+              <span className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
+                <Shapes className="size-4.5 text-primary" />
+                <span>{isRtl ? "کدگذاری فرم قطعه (Form Coding)" : "Form & Geometry Coding"}</span>
+              </span>
+              <Badge variant="outline" className="text-[10px] font-mono px-2 py-0.5">
+                {isRtl ? "استاندارد مرجع:" : "Ref:"} {formReference}
+              </Badge>
+            </div>
+
+            {/* Live Form Code Preview (Character tiles) */}
+            {codingMode === "reverse" ? (
+              <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 flex flex-col gap-2">
+                <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Search className="size-3.5 text-primary" />
+                  <span>{isRtl ? "ورود کد فرم جهت رمزگشایی:" : "Enter Form Code to Decode:"}</span>
+                </Label>
+                <Input
+                  type="text"
+                  value={reverseFormCodeInput}
+                  onChange={(e) => handleReverseFormLookup(e.target.value)}
+                  placeholder={isRtl ? "کد فرم مانند R111-100150006000..." : "R111-100150006000 or R211-041612..."}
+                  className="h-10 rounded-xl text-xs font-mono tracking-wider uppercase bg-background"
+                  dir="ltr"
+                />
+              </div>
+            ) : (
+              <div className="p-3.5 sm:p-4 rounded-xl bg-background border border-border/60 shadow-2xs flex items-center justify-between gap-3 overflow-hidden">
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                    {isRtl ? "پیش‌نمایش کد فرم (Form Code)" : "Form Code Preview"}
+                  </span>
+                  <div className="flex items-center gap-0.5 mt-1 overflow-x-auto py-1" dir="ltr">
+                    {generatedFormCode.split("").map((char, idx) => (
+                      <div
+                        key={idx}
+                        className="relative h-9 w-5.5 sm:w-6.5 rounded-md bg-muted/30 border border-border/40 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs"
+                      >
+                        <AnimatePresence mode="popLayout" initial={false}>
+                          <motion.span
+                            key={`${idx}-${char}`}
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -20, opacity: 0 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 450,
+                              damping: 28,
+                              delay: idx * 0.015,
+                            }}
+                            className={cn(
+                              "font-mono font-black text-sm sm:text-base select-none",
+                              char === "-" ? "text-muted-foreground/40" : "text-primary"
+                            )}
+                          >
+                            {char}
+                          </motion.span>
+                        </AnimatePresence>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleCopy(generatedFormCode, isRtl ? "کد فرم" : "Form Code")}
+                  className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+                  title={isRtl ? "کپی کد فرم" : "Copy Form Code"}
+                >
+                  <Copy className="size-4" />
+                </Button>
+              </div>
+            )}
+
+            {/* Internal 2-Column Body: 6 Input Rows + Large 3D Drawing Showcase */}
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch">
+              {/* Left / Main: The 6 selection rows */}
+              <div className="xl:col-span-7 flex flex-col divide-y divide-border/25">
+                {formRowConfig.map((item) => {
+                  const label = isRtl ? item.labelFa : item.labelEn;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 py-2.5 first:pt-0 last:pb-0"
+                    >
+                      {/* Title beside combobox */}
+                      <div className="flex items-center gap-2 sm:w-44 shrink-0">
+                        <span className="size-5.5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
+                          {item.num}
+                        </span>
+                        <Label className="text-xs sm:text-[13px] font-semibold text-foreground truncate cursor-pointer select-none">
+                          {label}
+                        </Label>
+                        {item.extraToggle}
+                      </div>
+
+                      {/* Combobox or Input */}
+                      <div className="flex-1 min-w-0 flex items-center">
+                        {item.isCombo ? (
+                          <Select value={item.value} onValueChange={item.onChange}>
+                            <SelectTrigger className="h-9 rounded-xl text-xs sm:text-[13px] bg-background w-full">
+                              <SelectValue placeholder={isRtl ? "انتخاب کنید..." : "Select..."} />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-64">
+                              {item.options.map((opt) => (
+                                <SelectItem key={opt.name} value={opt.name} className="text-xs sm:text-[13px]">
+                                  <div className="flex items-center justify-between w-full gap-3">
+                                    <span className="truncate">{opt.name}</span>
+                                    {opt.code && (
+                                      <span className="font-mono text-[11px] text-muted-foreground shrink-0 ms-2">
+                                        ({opt.code})
+                                      </span>
+                                    )}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input
+                            type={item.isNumberInput ? "number" : "text"}
+                            step="0.1"
+                            value={item.value}
+                            onChange={(e) => item.onChange(e.target.value)}
+                            className="h-9 rounded-xl text-xs sm:text-[13px] font-mono bg-background w-full"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Right: Large 3D Form Image Showcase */}
+              <div className="xl:col-span-5 flex flex-col items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/60 hover:border-primary/50 transition-all duration-300">
+                <div className="w-full flex items-center justify-between text-[11px] font-semibold text-muted-foreground pb-2 border-b border-border/30">
+                  <span className="flex items-center gap-1.5 text-foreground font-bold">
+                    <Shapes className="size-3.5 text-primary" />
+                    <span>{isRtl ? "نقشه سه‌بعدی فرم قطعه" : "3D Form Model"}</span>
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-mono px-1.5 py-0 h-5">
+                    {formReference}
+                  </Badge>
+                </div>
+
+                {/* Large Image Box */}
+                <div
+                  className="relative group/img w-full h-52 sm:h-56 rounded-lg overflow-hidden flex items-center justify-center p-2 cursor-pointer bg-background/60 my-2"
+                  onClick={() =>
+                    setPreviewModal({
+                      isOpen: true,
+                      src: currentPicture,
+                      title: isRtl ? `نقشه سه‌بعدی فرم: ${selectedSubForm}` : `3D Form Model: ${selectedSubForm}`,
+                      subtitle: `${formReference} | Code: ${generatedFormCode}`,
+                    })
+                  }
+                  title={isRtl ? "کلیک جهت مشاهده با وضوح بالا" : "Click to view high-res"}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={currentPicture}
+                    alt={selectedSubForm}
+                    className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover/img:scale-105"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = "none";
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 flex flex-col items-center justify-center gap-1.5 transition-opacity duration-200">
+                    <Maximize2 className="size-5 text-white drop-shadow" />
+                    <span className="text-[11px] font-semibold text-white drop-shadow">
+                      {isRtl ? "بزرگنمایی نقشه فنی" : "View High-Res"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="w-full text-center text-[11px] font-medium text-muted-foreground truncate pt-1 border-t border-border/30">
+                  <span className="text-foreground font-bold">{selectedSubForm}</span>
+                  <span className="mx-1 text-muted-foreground/60">•</span>
+                  <span>{selectedGeneralForm}</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* ============================================================ */}
+          {/* ── CARD 2: MATERIAL CODING (جنس و مشخصات متریال) ── */}
+          {/* ============================================================ */}
+          <Card className="p-5 sm:p-6 rounded-2xl border-border/50 bg-card shadow-xs flex flex-col gap-4 relative overflow-hidden group">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-border/30 pb-3">
+              <span className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
+                <Atom className="size-4.5 text-emerald-500" />
+                <span>{isRtl ? "کدگذاری متریال (Material Coding)" : "Material Specifications"}</span>
+              </span>
+              <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 border-emerald-500/30 px-2 py-0.5">
+                {isRtl ? "کد بین‌المللی:" : "UNS:"} {activeMaterial?.uns || "K02700"}
+              </Badge>
+            </div>
+
+            {/* Live Material Code Preview (Character tiles) */}
+            {codingMode === "reverse" ? (
+              <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col gap-2">
+                <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Search className="size-3.5 text-emerald-500" />
+                  <span>{isRtl ? "ورود کد متریال جهت رمزگشایی:" : "Enter Material Code to Decode:"}</span>
+                </Label>
+                <Input
+                  type="text"
+                  value={reverseMatCodeInput}
+                  onChange={(e) => handleReverseMaterialLookup(e.target.value)}
+                  placeholder={isRtl ? "کد متریال مانند M11-01010..." : "M11-01010 or M1112000..."}
+                  className="h-10 rounded-xl text-xs font-mono tracking-wider uppercase bg-background"
+                  dir="ltr"
+                />
+              </div>
+            ) : (
+              <div className="p-3.5 sm:p-4 rounded-xl bg-background border border-border/60 shadow-2xs flex items-center justify-between gap-3 overflow-hidden">
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                    {isRtl ? "پیش‌نمایش کد متریال (Material Code)" : "Material Code Preview"}
+                  </span>
+                  <div className="flex items-center gap-0.5 mt-1 overflow-x-auto py-1" dir="ltr">
+                    {generatedMaterialCode.split("").map((char, idx) => (
+                      <div
+                        key={idx}
+                        className="relative h-9 w-5.5 sm:w-6.5 rounded-md bg-muted/30 border border-border/40 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs"
+                      >
+                        <AnimatePresence mode="popLayout" initial={false}>
+                          <motion.span
+                            key={`${idx}-${char}`}
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -20, opacity: 0 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 450,
+                              damping: 28,
+                              delay: idx * 0.015,
+                            }}
+                            className={cn(
+                              "font-mono font-black text-sm sm:text-base select-none",
+                              char === "-" ? "text-muted-foreground/40" : "text-emerald-600 dark:text-emerald-400"
+                            )}
+                          >
+                            {char}
+                          </motion.span>
+                        </AnimatePresence>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleCopy(generatedMaterialCode, isRtl ? "کد متریال" : "Material Code")}
+                  className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+                  title={isRtl ? "کپی کد متریال" : "Copy Material Code"}
+                >
+                  <Copy className="size-4" />
+                </Button>
+              </div>
+            )}
+
+            {/* Internal 2-Column Body: 6 Input Rows + Large Material Photo Showcase */}
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch">
+              {/* Left / Main: The 6 selection rows */}
+              <div className="xl:col-span-7 flex flex-col divide-y divide-border/25">
+                {materialRowConfig.map((item) => {
+                  const label = isRtl ? item.labelFa : item.labelEn;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 py-2.5 first:pt-0 last:pb-0"
+                    >
+                      {/* Title beside combobox */}
+                      <div className="flex items-center gap-2 sm:w-44 shrink-0">
+                        <span className="size-5.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
+                          {item.num}
+                        </span>
+                        <Label className="text-xs sm:text-[13px] font-semibold text-foreground truncate cursor-pointer select-none">
+                          {label}
+                        </Label>
+                      </div>
+
+                      {/* Combobox */}
+                      <div className="flex-1 min-w-0 flex items-center">
+                        <Select value={item.value} onValueChange={item.onChange}>
+                          <SelectTrigger className="h-9 rounded-xl text-xs sm:text-[13px] bg-background w-full">
+                            <SelectValue placeholder={isRtl ? "انتخاب کنید..." : "Select..."} />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-64">
+                            {item.options.map((opt) => (
+                              <SelectItem key={opt.name} value={opt.name} className="text-xs sm:text-[13px]">
+                                <div className="flex items-center justify-between w-full gap-3">
+                                  <span className="truncate">{opt.name}</span>
+                                  {opt.code && (
+                                    <span className="font-mono text-[11px] text-muted-foreground shrink-0 ms-2">
+                                      ({opt.code})
+                                    </span>
+                                  )}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Right: Large Material Specimen Photo Showcase */}
+              <div className="xl:col-span-5 flex flex-col items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/60 hover:border-emerald-500/50 transition-all duration-300">
+                <div className="w-full flex items-center justify-between text-[11px] font-semibold text-muted-foreground pb-2 border-b border-border/30">
+                  <span className="flex items-center gap-1.5 text-foreground font-bold">
+                    <Atom className="size-3.5 text-emerald-500" />
+                    <span>{isRtl ? "تصویر فنی و متالورژیکی" : "Material Specimen"}</span>
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 border-emerald-500/30 px-1.5 py-0 h-5">
+                    UNS: {activeMaterial?.uns || "K02700"}
+                  </Badge>
+                </div>
+
+                {/* Large Image Box */}
+                <div
+                  className="relative group/img w-full h-52 sm:h-56 rounded-lg overflow-hidden flex items-center justify-center p-2 cursor-pointer bg-background/60 my-2"
+                  onClick={() =>
+                    setPreviewModal({
+                      isOpen: true,
+                      src: materialPicture,
+                      title: isRtl
+                        ? `تصویر متریال: ${selectedSpecification} ${selectedGrade}`
+                        : `Material Specimen: ${selectedSpecification} ${selectedGrade}`,
+                      subtitle: `${selectedMaterialCategory} | UNS: ${activeMaterial?.uns || "K02700"} | Code: ${generatedMaterialCode}`,
+                    })
+                  }
+                  title={isRtl ? "کلیک جهت مشاهده با وضوح بالا" : "Click to view high-res"}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={materialPicture}
+                    alt={`${selectedSpecification} ${selectedGrade}`}
+                    className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover/img:scale-105"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = "none";
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 flex flex-col items-center justify-center gap-1.5 transition-opacity duration-200">
+                    <Maximize2 className="size-5 text-white drop-shadow" />
+                    <span className="text-[11px] font-semibold text-white drop-shadow">
+                      {isRtl ? "بزرگنمایی تصویر متریال" : "View High-Res"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="w-full text-center text-[11px] font-medium text-muted-foreground truncate pt-1 border-t border-border/30">
+                  <span className="text-foreground font-bold">{selectedSpecification} {selectedGrade}</span>
+                  <span className="mx-1 text-muted-foreground/60">•</span>
+                  <span>{selectedMaterialCategory}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Material Tech Specs Footer Strip */}
+            <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/25 text-[11px] text-muted-foreground flex-wrap">
+              <span className="flex items-center gap-1">
+                <span>{isRtl ? "چگالی:" : "Density:"}</span>
+                <strong className="font-mono text-foreground">{activeMaterial?.density || "7850"}</strong> kg/m³
+              </span>
+              <span className="flex items-center gap-1">
+                <span>{isRtl ? "استحکام کششی:" : "Tensile:"}</span>
+                <strong className="font-mono text-foreground">{activeMaterial?.tensileMpa || "485"}</strong> MPa
+              </span>
+              <span className="flex items-center gap-1">
+                <span>{isRtl ? "استحکام تسلیم:" : "Yield:"}</span>
+                <strong className="font-mono text-foreground">{activeMaterial?.yieldMpa || "260"}</strong> MPa
+              </span>
+              <span className="flex items-center gap-1">
+                <span>{isRtl ? "محدوده دمای کاری:" : "Temp Range:"}</span>
+                <strong className="font-mono text-foreground">
+                  {activeMaterial?.minTemp || "-48"} {isRtl ? "تا" : "to"} {activeMaterial?.maxTemp || "538"}°C
+                </strong>
+              </span>
+            </div>
+          </Card>
+        </div>
+
+        {/* Central Interlocking Bridge Connector (اتصال فیزیکی دو باکس به هم روی دسکتاپ) */}
+        <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none items-center justify-center">
+          <div className="pointer-events-auto flex flex-col items-center gap-1 p-2 rounded-2xl bg-card/95 backdrop-blur-md border border-border shadow-xl">
+            <button
+              type="button"
+              onClick={() => setFilterMaterialByForm(!filterMaterialByForm)}
+              className={cn(
+                "size-10 rounded-xl flex items-center justify-center transition-all duration-300 shadow-md cursor-pointer",
+                filterMaterialByForm
+                  ? "bg-gradient-to-br from-primary to-emerald-500 text-white shadow-primary/25 hover:scale-105"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              )}
+              title={
+                filterMaterialByForm
+                  ? isRtl
+                    ? "پیوند فعال است - کلیک برای قطع فیلتر"
+                    : "Filter active - Click to bypass"
+                  : isRtl
+                  ? "پیوند غیرفعال است - کلیک برای اتصال فیلتر"
+                  : "Filter bypassed - Click to activate"
+              }
+            >
+              <ArrowRight
+                className={cn("size-5 transition-transform duration-300", isRtl ? "rotate-180" : "")}
+              />
+            </button>
+            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+              {filterMaterialByForm ? (isRtl ? "متصل" : "LINK") : (isRtl ? "قطع" : "OFF")}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 4. BOTTOM COMPOSITE CODE & WEIGHT ESTIMATION CARD (یکپارچه و مینیمال) ── */}
       <Card className="p-4 sm:p-5 rounded-2xl border-border/50 bg-card shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Left: Composite Master Code */}
         <div className="flex items-center gap-3 w-full md:w-auto">
           <div className="flex flex-col gap-0.5">
             <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-              {isRtl ? "کد کامل ماده اولیه (Composite Code)" : "Composite Raw Material Code"}
+              {isRtl ? "کد کامل و یکپارچه ماده اولیه (Composite Code)" : "Composite Raw Material Code"}
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="font-mono text-sm sm:text-base font-extrabold text-foreground bg-muted/60 px-3 py-1.5 rounded-xl border border-border/60">
                 {compositeCode}
               </span>
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 rounded-xl text-xs gap-1 cursor-pointer"
-                onClick={() => handleCopy(compositeCode, "Composite Code")}
+                className="h-8 rounded-xl text-xs gap-1.5 cursor-pointer"
+                onClick={() => handleCopy(compositeCode, isRtl ? "کد کامل ماده اولیه" : "Composite Code")}
               >
                 <Copy className="size-3.5" />
-                <span>{isRtl ? "کپی" : "Copy"}</span>
+                <span>{isRtl ? "کپی کد کامل" : "Copy"}</span>
               </Button>
             </div>
           </div>
@@ -1492,13 +1727,19 @@ export function FormAndMaterialCodingView({
 
           <div className="flex items-center gap-2">
             <Select value={selectedUnit} onValueChange={setSelectedUnit}>
-              <SelectTrigger className="h-8 w-20 text-xs font-medium rounded-lg">
+              <SelectTrigger className="h-8 w-24 text-xs font-medium rounded-lg">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {["Kg", "pcs", "Sheet", "m", "m²"].map((u) => (
-                  <SelectItem key={u} value={u} className="text-xs">
-                    {u}
+                {[
+                  { value: "Kg", label: isRtl ? "Kg (کیلوگرم)" : "Kg" },
+                  { value: "pcs", label: isRtl ? "pcs (عدد)" : "pcs" },
+                  { value: "Sheet", label: isRtl ? "Sheet (ورق)" : "Sheet" },
+                  { value: "m", label: isRtl ? "m (متر)" : "m" },
+                  { value: "m²", label: isRtl ? "m² (متر مربع)" : "m²" },
+                ].map((u) => (
+                  <SelectItem key={u.value} value={u.value} className="text-xs">
+                    {u.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -1507,7 +1748,7 @@ export function FormAndMaterialCodingView({
 
           <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-xl border border-primary/20">
             <span className="text-[11px] text-primary font-semibold">
-              {isRtl ? "وزن کل:" : "Total Weight:"}
+              {isRtl ? "وزن کل برآوردشده:" : "Total Weight:"}
             </span>
             <span className="font-mono text-sm font-extrabold text-primary">
               {totalWeight.toLocaleString()}
@@ -1517,22 +1758,30 @@ export function FormAndMaterialCodingView({
         </div>
       </Card>
 
-      {/* ── IMAGE ZOOM MODAL ── */}
-      <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
-        <DialogContent className="max-w-2xl p-4">
+      {/* ── 5. HIGH-RESOLUTION IMAGE ZOOM MODAL ── */}
+      <Dialog
+        open={previewModal.isOpen}
+        onOpenChange={(open) => setPreviewModal((prev) => ({ ...prev, isOpen: open }))}
+      >
+        <DialogContent className="max-w-3xl p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="text-sm font-bold flex items-center gap-2">
-              <Shapes className="size-4 text-primary" />
-              <span>{selectedSubForm} — مدل و نقشه فنی</span>
+            <DialogTitle className="text-sm sm:text-base font-bold flex items-center gap-2">
+              <Shapes className="size-4.5 text-primary" />
+              <span>{previewModal.title}</span>
             </DialogTitle>
+            {previewModal.subtitle && (
+              <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                {previewModal.subtitle}
+              </p>
+            )}
           </DialogHeader>
-          <div className="w-full aspect-16/10 bg-background rounded-lg overflow-hidden flex items-center justify-center p-4 border border-border">
-            {previewImage && (
+          <div className="w-full aspect-16/10 bg-muted/20 rounded-xl overflow-hidden flex items-center justify-center p-4 border border-border shadow-inner">
+            {previewModal.src && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={previewImage}
-                alt={selectedSubForm}
-                className="max-w-full max-h-full object-contain"
+                src={previewModal.src}
+                alt={previewModal.title}
+                className="max-w-full max-h-full object-contain drop-shadow"
               />
             )}
           </div>
