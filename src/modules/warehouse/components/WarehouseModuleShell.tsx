@@ -210,9 +210,9 @@ export function WarehouseModuleShell({ initialTab }: WarehouseModuleShellProps =
           </TooltipProvider>
         </aside>
 
-        {/* ── 3. Main Content Container (Jump-Free Pure Fade Transition) ── */}
+        {/* ── 3. Main Content Container (Jump-Free Pure Fade Transition & Spacious Width) ── */}
         <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 animate-in fade-in duration-150">
-          <div className="max-w-7xl mx-auto space-y-6">
+          <div className="max-w-[1700px] w-full mx-auto space-y-6">
             {/* Content Heading */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/40">
               <div className="flex items-center gap-3">
