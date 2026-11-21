@@ -115,6 +115,7 @@ export interface MaterialCodingCombination {
   gradeCode: string;
   classVal: string;
   classCode: string;
+  form?: string;
   standardGroup?: string;
   uns?: string;
   nominalComposition?: string;

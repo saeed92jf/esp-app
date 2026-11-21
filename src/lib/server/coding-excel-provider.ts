@@ -483,6 +483,7 @@ export class CodingExcelProvider {
         gradeCode,
         classVal,
         classCode,
+        form: r.form,
         standardGroup: r.standardGroup,
         uns: r.uns,
         nominalComposition: r.nominalComposition,
