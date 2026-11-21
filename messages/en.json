@@ -3202,8 +3202,9 @@
     "subtitle": "Centralized Enterprise Product & Material Coding Management System",
     "nav": {
       "workspace": "Workspace",
-      "products": "Products",
-      "materials": "Materials",
+      "products": "Product Coding",
+      "materialCoding": "Material Coding",
+      "materials": "Material Master",
       "classification": "Classification",
       "formulaDesigner": "Formula Designer",
       "approvals": "Approvals",

@@ -8,6 +8,7 @@ import {
   Layers,
   Database,
   LayoutDashboard,
+  Atom,
 } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -39,6 +40,13 @@ export default function EspCodingLayout({ children }: LayoutProps) {
       href: "/engineering/esp-coding/products",
       icon: Binary,
       isActive: pathname.startsWith("/engineering/esp-coding/products"),
+    },
+    {
+      id: "material-coding",
+      label: t("materialCoding"),
+      href: "/engineering/esp-coding/material-coding",
+      icon: Atom,
+      isActive: pathname.startsWith("/engineering/esp-coding/material-coding"),
     },
     {
       id: "materials",

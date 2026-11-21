@@ -100,3 +100,29 @@ export interface ProductMaterialRelation {
   unit?: string;
   technicalNotes?: string;
 }
+
+export interface MaterialCodingCombination {
+  matId: string;
+  bm: string;
+  bmCode: string;
+  sm: string;
+  smCode: string;
+  gm: string;
+  gmCode: string;
+  spec: string;
+  specCode: string;
+  grade: string;
+  gradeCode: string;
+  classVal: string;
+  classCode: string;
+  standardGroup?: string;
+  uns?: string;
+  nominalComposition?: string;
+  tensileMpa?: string;
+  yieldMpa?: string;
+  density?: string;
+  minTemp?: string;
+  maxTemp?: string;
+  pic?: string;
+  materialCode: string;
+}

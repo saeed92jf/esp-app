@@ -394,10 +394,10 @@ export const NAVIGATION: NavGroup[] = [
     ],
   },
   {
-    id: "projectManagement",
-    labelKey: "projectManagement",
-    title: "ESP Projects",
-    titleFa: "ESP Projects",
+    id: "Operations",
+    labelKey: "Operations",
+    title: "ESP Operations",
+    titleFa: "ESP Operations",
     icon: Kanban,
     color: "amber",
     items: [

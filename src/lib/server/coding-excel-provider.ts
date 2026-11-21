@@ -2,7 +2,7 @@
 import fs from "fs";
 import path from "path";
 import * as xlsx from "xlsx";
-import { ProductionTreeSourceRecord, MaterialMasterRecord, MaterialFormRecord, ProductTreeCombination } from "@/modules/esp-coding/types";
+import { ProductionTreeSourceRecord, MaterialMasterRecord, MaterialFormRecord, ProductTreeCombination, MaterialCodingCombination } from "@/modules/esp-coding/types";
 
 /**
  * RULE: The authoritative Coding.xlsx is bundled inside the project at:
@@ -439,6 +439,56 @@ export class CodingExcelProvider {
       picLookup,
       combinations,
     };
+  }
+
+  public static getMaterialHierarchyOptions(): {
+    combinations: MaterialCodingCombination[];
+  } {
+    const data = this.loadWorkbook().materials;
+    const combinations: MaterialCodingCombination[] = data.map((r) => {
+      const bm = String(r.basicMaterial || "").trim();
+      const bmCode = String(r.basicMaterialCode || "").trim();
+      const sm = String(r.subMaterial || "").trim();
+      const smCode = String(r.subMaterialCode || "").trim();
+      const gm = String(r.groupMat || "").trim();
+      const gmCode = String(r.groupMatCode1 || "").trim();
+      const spec = String(r.spec || "").trim();
+      const specCode = String(r.specCode || "").trim().padStart(2, "0");
+      const grade = String(r.grade || "").trim();
+      const gradeCode = String(r.gradeCode || "").trim().padStart(2, "0");
+      const classVal = String(r.classVal || "").trim();
+      const classCode = String(r.classCode || "").trim();
+
+      const materialCode = `M${bmCode}${smCode}${gmCode}${specCode}${gradeCode}${classCode}`;
+
+      return {
+        matId: r.matId,
+        bm,
+        bmCode,
+        sm,
+        smCode,
+        gm,
+        gmCode,
+        spec,
+        specCode,
+        grade,
+        gradeCode,
+        classVal,
+        classCode,
+        standardGroup: r.standardGroup,
+        uns: r.uns,
+        nominalComposition: r.nominalComposition,
+        tensileMpa: r.tensileMpa,
+        yieldMpa: r.yieldMpa,
+        density: r.density,
+        minTemp: r.minTemp,
+        maxTemp: r.maxTemp,
+        pic: r.pic,
+        materialCode,
+      };
+    });
+
+    return { combinations };
   }
 
   public static clearCache(): void {

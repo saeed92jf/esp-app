@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import {
   Database,
   Search,
@@ -264,6 +265,12 @@ export function MaterialMasterView() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button asChild size="sm" className="h-8 rounded-xl text-xs gap-1.5 font-bold shadow-xs">
+            <Link href="/engineering/esp-coding/material-coding">
+              <Atom className="size-3.5" />
+              <span>{isRtl ? "کدینگ هوشمند متریال" : "Material Coding"}</span>
+            </Link>
+          </Button>
           {(search || activeFormFilter) && (
             <Button
               type="button"

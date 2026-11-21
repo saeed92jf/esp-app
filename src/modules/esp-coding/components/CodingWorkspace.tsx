@@ -14,6 +14,7 @@ import {
   Sparkles,
   ArrowRight,
   ArrowLeft,
+  Atom,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,6 +98,12 @@ export function CodingWorkspace() {
               <Link href="/engineering/esp-coding/products">
                 <PlusCircle className="size-4" />
                 <span>{t("workspace.startNewCoding")}</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="default" className="rounded-xl gap-2 font-semibold">
+              <Link href="/engineering/esp-coding/material-coding">
+                <Atom className="size-4 text-primary" />
+                <span>{isRtl ? "کدینگ هوشمند متریال" : "Material Coding"}</span>
               </Link>
             </Button>
             <Button asChild variant="outline" size="default" className="rounded-xl gap-2 font-semibold">

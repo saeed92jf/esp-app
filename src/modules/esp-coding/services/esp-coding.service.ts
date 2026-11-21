@@ -98,6 +98,16 @@ export class EspCodingClientService {
     return res.json();
   }
 
+  public static async getMaterialHierarchyOptions(): Promise<{
+    available: boolean;
+    options?: { combinations: any[] };
+    error?: string;
+  }> {
+    const res = await fetch(`${this.BASE_URL}/material-hierarchy`);
+    if (!res.ok) throw new Error("Failed to fetch material hierarchy options");
+    return res.json();
+  }
+
   public static async getProducts(params?: {
     source?: "registered" | "catalog" | "both";
     search?: string;
