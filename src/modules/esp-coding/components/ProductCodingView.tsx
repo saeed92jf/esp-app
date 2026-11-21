@@ -11,8 +11,12 @@ import {
   Info,
   ImageIcon,
   Maximize2,
+  Search,
+  SlidersHorizontal,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -76,6 +80,11 @@ export function ProductCodingView() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const [generatedResult, setGeneratedResult] = useState<CodeGenerationResult | null>(null);
+
+  // Reverse Mode State
+  const [codingMode, setCodingMode] = useState<"forward" | "reverse">("forward");
+  const [reverseCodeInput, setReverseCodeInput] = useState<string>("");
+  const [reverseMatchStatus, setReverseMatchStatus] = useState<"idle" | "matched" | "not_found">("idle");
 
   // Load combinations on mount
   useEffect(() => {
@@ -464,6 +473,61 @@ export function ProductCodingView() {
     }
   };
 
+  const combinationsWithCodes = useMemo(() => {
+    return combinations.map((c) => {
+      const pt = String(c.ptCode || "").padStart(2, "0");
+      const ty = String(c.typeCode || "").padStart(2, "0");
+      const lf = String(c.liftCode || "").padStart(2, "0");
+      const code = `E${c.catCode || ""}${c.ipCode || ""}${pt}${c.shapeCode || ""}${ty}${lf}${c.thkCode || ""}`.toUpperCase();
+      return { combo: c, code };
+    });
+  }, [combinations]);
+
+  const handleReverseLookup = (rawCode: string) => {
+    const clean = rawCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    setReverseCodeInput(clean);
+
+    if (!clean) {
+      setReverseMatchStatus("idle");
+      return;
+    }
+
+    // Exact match lookup
+    const found = combinationsWithCodes.find((item) => item.code === clean);
+    if (found) {
+      const c = found.combo;
+      setSelectedCategory(c.cat);
+      setSelectedInternalProduct(c.ip);
+      setSelectedProductType(c.pt);
+      setSelectedShape(c.shape);
+      setSelectedType(c.type);
+      setSelectedLiftSize(c.lift);
+      setSelectedThickness(c.thk);
+      setReverseMatchStatus("matched");
+      toast.success(isRtl ? `قطعه شناسایی شد: ${c.cat} • ${c.pt}` : `Product identified: ${c.cat} • ${c.pt}`);
+      return;
+    }
+
+    // Prefix progressive match
+    if (clean.length >= 2) {
+      const prefixMatches = combinationsWithCodes.filter((item) => item.code.startsWith(clean));
+      if (prefixMatches.length > 0) {
+        const first = prefixMatches[0].combo;
+        if (clean.length >= 2) setSelectedCategory(first.cat);
+        if (clean.length >= 3) setSelectedInternalProduct(first.ip);
+        if (clean.length >= 5) setSelectedProductType(first.pt);
+        if (clean.length >= 6) setSelectedShape(first.shape);
+        if (clean.length >= 8) setSelectedType(first.type);
+        if (clean.length >= 10) setSelectedLiftSize(first.lift);
+        if (clean.length >= 11) setSelectedThickness(first.thk);
+        setReverseMatchStatus(clean.length >= 10 ? "matched" : "idle");
+        return;
+      }
+    }
+
+    setReverseMatchStatus("not_found");
+  };
+
   const handleReset = () => {
     const firstCat = combinations[0]?.cat || "";
     setSelectedCategory(firstCat);
@@ -473,6 +537,8 @@ export function ProductCodingView() {
     setSelectedType("");
     setSelectedLiftSize("");
     setSelectedThickness("");
+    setReverseCodeInput("");
+    setReverseMatchStatus("idle");
   };
 
   const matchingCount = getMatchingRecords().length;
@@ -575,7 +641,7 @@ export function ProductCodingView() {
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-5xl mx-auto animate-in fade-in duration-150">
-      {/* Top Title & Reset Bar */}
+      {/* Top Title & Mode Selector Bar */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex flex-col gap-1">
           <h1 className="text-lg sm:text-xl font-black text-foreground tracking-tight flex items-center gap-2">
@@ -583,22 +649,63 @@ export function ProductCodingView() {
             <span>{t("title")}</span>
           </h1>
           <p className="text-xs text-muted-foreground">
-            {isRtl
-              ? "انتخاب مشخصات، فیلتر به هم وابسته کومبوباکس‌ها و صدور آنی کد محصول"
-              : "Interdependent cascading specification filters & real-time product code generation"}
+            {codingMode === "forward"
+              ? isRtl
+                ? "انتخاب مشخصات، فیلتر به هم وابسته کومبوباکس‌ها و صدور آنی کد محصول"
+                : "Interdependent cascading specification filters & real-time product code generation"
+              : isRtl
+                ? "حالت معکوس: وارد کردن کد محصول و استخراج آنی مشخصات و نقشه مهندسی قطعه"
+                : "Reverse mode: Enter product code to instantly decode specifications & engineering drawing"}
           </p>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleReset}
-          className="rounded-xl gap-1.5 text-xs cursor-pointer"
-        >
-          <RotateCcw className="size-3.5" />
-          <span>{isRtl ? "تنظیم مجدد فرم" : "Reset Form"}</span>
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Mode Switcher Pills */}
+          <div className="flex items-center p-1 rounded-xl bg-muted/60 border border-border/50 text-xs font-semibold shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setCodingMode("forward")}
+              className={cn(
+                "px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 select-none",
+                codingMode === "forward"
+                  ? "bg-background text-foreground shadow-xs font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <SlidersHorizontal className="size-3.5" />
+              <span>{isRtl ? "تولید با مشخصات" : "Forward (Specs)"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCodingMode("reverse");
+                if (generatedResult?.code && generatedResult.code !== "E---------") {
+                  handleReverseLookup(generatedResult.code);
+                }
+              }}
+              className={cn(
+                "px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 select-none",
+                codingMode === "reverse"
+                  ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Search className="size-3.5" />
+              <span>{isRtl ? "رمزگشایی با کد (حالت معکوس)" : "Reverse Lookup"}</span>
+            </button>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleReset}
+            className="rounded-xl gap-1.5 text-xs cursor-pointer h-8"
+          >
+            <RotateCcw className="size-3.5" />
+            <span>{isRtl ? "تنظیم مجدد" : "Reset"}</span>
+          </Button>
+        </div>
       </div>
 
       {/* Two Column Layout: Classification Cascades & Live Code Summary */}
@@ -616,53 +723,126 @@ export function ProductCodingView() {
               </Badge>
             </div>
 
-            {/* Live Product Code Preview (without buttons or segments) */}
-            <div className="p-3.5 sm:p-4 rounded-xl bg-background border border-border/60 shadow-2xs flex items-center justify-between gap-3 overflow-hidden">
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                  ProductCode
-                </span>
-                <div className="flex items-center gap-0.5 mt-1 overflow-x-auto py-1" dir="ltr">
-                  {(generatedResult?.code || "E---------").split("").map((char, idx) => (
-                    <div
-                      key={idx}
-                      className="relative h-9 w-6 sm:w-7 rounded-md bg-muted/30 border border-border/40 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs"
+            {/* Reverse Mode: Interactive Code Input and Instant Decoder */}
+            {codingMode === "reverse" ? (
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 shadow-2xs flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Search className="size-4 text-primary" />
+                    <span>{isRtl ? "ورود کد محصول جهت استخراج قطعه" : "Enter Product Code to Decode"}</span>
+                  </span>
+                  {reverseMatchStatus === "matched" && (
+                    <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-emerald-500/30 font-semibold gap-1">
+                      <Check className="size-3" />
+                      <span>{isRtl ? "قطعه شناسایی شد" : "Product Identified"}</span>
+                    </Badge>
+                  )}
+                  {reverseMatchStatus === "not_found" && (
+                    <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-600 border-amber-500/30 font-semibold">
+                      {isRtl ? "کد در پایگاه داده یافت نشد" : "Code Not Found"}
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      type="text"
+                      value={reverseCodeInput}
+                      onChange={(e) => handleReverseLookup(e.target.value)}
+                      placeholder={isRtl ? "کد محصول را وارد یا الصاق کنید (مثال: E1101101011)..." : "Enter or paste product code (e.g. E1101101011)..."}
+                      className="h-11 rounded-xl text-sm font-mono tracking-wider uppercase ps-3 pe-8 bg-background border-primary/30"
+                      dir="ltr"
+                    />
+                    {reverseCodeInput && (
+                      <button
+                        type="button"
+                        onClick={() => handleReverseLookup("")}
+                        className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer text-xs"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => handleReverseLookup(reverseCodeInput)}
+                    className="h-11 rounded-xl px-4 text-xs font-bold gap-1.5 cursor-pointer bg-primary text-primary-foreground"
+                  >
+                    <Search className="size-3.5" />
+                    <span>{isRtl ? "استخراج" : "Decode"}</span>
+                  </Button>
+                </div>
+
+                {/* Quick Test Samples */}
+                <div className="flex items-center gap-1.5 flex-wrap pt-1 text-[11px]">
+                  <span className="text-muted-foreground text-[10px]">{isRtl ? "نمونه‌های سریع:" : "Quick samples:"}</span>
+                  {[
+                    { code: "E1101101011", label: "Sieve Tray" },
+                    { code: "E2101101011", label: "Mist Eliminator" },
+                    { code: "E4101101021", label: "Strainer" },
+                    { code: "E3101101011", label: "Reactor Internal" },
+                  ].map((s) => (
+                    <button
+                      key={s.code}
+                      type="button"
+                      onClick={() => handleReverseLookup(s.code)}
+                      className="px-2 py-0.5 rounded-md bg-background border border-border/60 hover:border-primary/50 text-[10px] font-mono text-foreground hover:text-primary transition-colors cursor-pointer"
                     >
-                      <AnimatePresence mode="popLayout" initial={false}>
-                        <motion.span
-                          key={`${idx}-${char}`}
-                          initial={{ y: 24, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          exit={{ y: -24, opacity: 0 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 450,
-                            damping: 28,
-                            delay: idx * 0.02,
-                          }}
-                          className={cn(
-                            "font-mono font-black text-base sm:text-lg select-none",
-                            char === "-" ? "text-muted-foreground/40" : "text-primary"
-                          )}
-                        >
-                          {char}
-                        </motion.span>
-                      </AnimatePresence>
-                    </div>
+                      {s.code} ({s.label})
+                    </button>
                   ))}
                 </div>
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleCopyCode}
-                className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
-                title="Copy Code"
-              >
-                <Copy className="size-4" />
-              </Button>
-            </div>
+            ) : (
+              /* Forward Mode: Live Product Code Preview (without buttons or segments) */
+              <div className="p-3.5 sm:p-4 rounded-xl bg-background border border-border/60 shadow-2xs flex items-center justify-between gap-3 overflow-hidden">
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                    ProductCode
+                  </span>
+                  <div className="flex items-center gap-0.5 mt-1 overflow-x-auto py-1" dir="ltr">
+                    {(generatedResult?.code || "E---------").split("").map((char, idx) => (
+                      <div
+                        key={idx}
+                        className="relative h-9 w-6 sm:w-7 rounded-md bg-muted/30 border border-border/40 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs"
+                      >
+                        <AnimatePresence mode="popLayout" initial={false}>
+                          <motion.span
+                            key={`${idx}-${char}`}
+                            initial={{ y: 24, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -24, opacity: 0 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 450,
+                              damping: 28,
+                              delay: idx * 0.02,
+                            }}
+                            className={cn(
+                              "font-mono font-black text-base sm:text-lg select-none",
+                              char === "-" ? "text-muted-foreground/40" : "text-primary"
+                            )}
+                          >
+                            {char}
+                          </motion.span>
+                        </AnimatePresence>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopyCode}
+                  className="size-8 p-0 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+                  title="Copy Code"
+                >
+                  <Copy className="size-4" />
+                </Button>
+              </div>
+            )}
 
             {/* 7 Comboboxes stacked vertically with titles on the side */}
             <div className="flex flex-col divide-y divide-border/25">
