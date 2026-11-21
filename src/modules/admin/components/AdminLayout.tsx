@@ -34,7 +34,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
     <div className="flex flex-col flex-1 min-h-full bg-background font-sans w-full relative">
       {/* Top Header */}
       <AppHeader
-        tag="Admin"
+        tag="ESP Admin"
         onToggleMenu={() => setSidebarOpen((prev) => !prev)}
         isMenuOpen={sidebarOpen}
         logoHref="/"

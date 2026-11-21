@@ -49,7 +49,7 @@ export function DashboardHeader({
 
   return (
     <AppHeader
-      tag="Dashboard"
+      tag="ESP Dashboard"
       onToggleMenu={toggle}
       isMenuOpen={isOpen}
       logoHref="/"

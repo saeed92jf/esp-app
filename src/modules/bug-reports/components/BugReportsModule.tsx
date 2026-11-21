@@ -235,7 +235,7 @@ export function BugReportsModule({
     <div className="flex flex-col flex-1 min-h-screen bg-panel dark:bg-background font-sans w-full relative">
       {/* Top Header - Designed identically to Profile Manager */}
       <AppHeader
-        tag={isRtl ? "مرکز پشتیبانی و باگ‌ها" : "Issue Center"}
+        tag="ESP Support"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"

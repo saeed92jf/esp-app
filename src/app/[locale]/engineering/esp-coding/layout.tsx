@@ -59,7 +59,7 @@ export default function EspCodingLayout({ children }: LayoutProps) {
       {/* Global Persistent AppHeader adhering to GEMINI.md Rules 5 & 6 */}
       <AppHeader
         variant="panel"
-        tag={isRtl ? "کدگذاری قطعات و متریال" : "ESP Coding"}
+        tag="ESP Coding"
       />
 
       {/* Main Sub-Navigation Bar adhering to GEMINI.md Rules A, B, C, F */}

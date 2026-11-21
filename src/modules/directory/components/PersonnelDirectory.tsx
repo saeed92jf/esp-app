@@ -207,7 +207,7 @@ export function PersonnelDirectory({ initialTab }: { initialTab?: "directory" | 
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
       {/* ── 1. Dedicated Header with Profile-Style Menu Controller ── */}
       <AppHeader
-        tag="directory"
+        tag="ESP Directory"
         variant="panel"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}

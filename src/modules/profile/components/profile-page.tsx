@@ -6191,7 +6191,7 @@ export function ProfilePage({
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
       {/* Top Header */}
       <AppHeader
-        tag="Account"
+        tag="ESP Profile"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"

@@ -754,7 +754,7 @@ export function CommunityPage() {
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
       {/* ── Top Header ── */}
       <AppHeader
-        tag="Community"
+        tag="ESP Community"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"

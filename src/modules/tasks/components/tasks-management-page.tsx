@@ -1165,9 +1165,9 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
 
   return (
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
-      {/* ── 1. Top Unified Header (AppHeader with tag="tasks") ── */}
+      {/* ── 1. Top Unified Header (AppHeader with tag="ESP Tasks") ── */}
       <AppHeader
-        tag="tasks"
+        tag="ESP Tasks"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"

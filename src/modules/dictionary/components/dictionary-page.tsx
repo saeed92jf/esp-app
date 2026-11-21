@@ -1297,9 +1297,9 @@ export function DictionaryPage() {
 
   return (
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
-      {/* 1. App Header with Tag = "dictionary" */}
+      {/* 1. App Header with Tag = "ESP Dictionary" */}
       <AppHeader
-        tag="dictionary"
+        tag="ESP Dictionary"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
