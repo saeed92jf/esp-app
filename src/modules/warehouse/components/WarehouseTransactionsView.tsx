@@ -32,7 +32,7 @@ import {
 import { cn } from "@/lib/utils";
 import { formatLocaleNumber } from "@/lib/format-number";
 import { WarehouseTransaction, MovementType } from "../types/warehouse.types";
-import { MOCK_WAREHOUSE_TRANSACTIONS } from "../data/mock-warehouse";
+import { MOCK_WAREHOUSE_TRANSACTIONS } from "../data/warehouse-data";
 
 export function WarehouseTransactionsView() {
   const locale = useLocale();

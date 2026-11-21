@@ -15,7 +15,6 @@ function getWarehouseData(): any[] {
 
   const candidatePaths = [
     "C:\\ESP_DATA\\live\\data\\warehouse_items.json",
-    path.join(process.cwd(), "src", "data", "mock", "warehouse_items.json"),
     "C:\\Users\\s.jalili\\Repositories\\ESP-Web-Backend\\app\\data\\warehouse_items.json",
   ];
 

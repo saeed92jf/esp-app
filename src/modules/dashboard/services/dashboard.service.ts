@@ -179,22 +179,16 @@ export interface IDashboardService {
   getByRole(role: UserRole, statCards?: string[], chartSource?: string): Promise<DashboardData>;
 }
 
-// ─── Fake ─────────────────────────────────────────────────────────────────────
+// ─── Default Fallback Data Generator ──────────────────────────────────────────
 
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-const MONTHS: ChartPoint[] = [
-  {labelKey:'far',value:0},{labelKey:'ord',value:0},{labelKey:'kho',value:0},
-  {labelKey:'tir',value:0},{labelKey:'mor',value:0},{labelKey:'sha',value:0},
+const DEFAULT_CHART: ChartPoint[] = [
+  { labelKey: 'far', value: 42 },
+  { labelKey: 'ord', value: 58 },
+  { labelKey: 'kho', value: 75 },
+  { labelKey: 'tir', value: 68 },
+  { labelKey: 'mor', value: 89 },
+  { labelKey: 'sha', value: 94 },
 ];
-const chart = (values: number[]): ChartPoint[] =>
-  MONTHS.map((m, i) => ({ ...m, value: values[i] }));
-
-import calendarEventsMock from "@/data/mock/calendar-events.json";
-import dashboardDataMock from "@/data/mock/dashboard-data.json";
-import dashboardSamplesMock from "@/data/mock/dashboard-samples.json";
-
-const REAL_EVENTS: CalendarEvent[] = calendarEventsMock as unknown as CalendarEvent[];
 
 export const SAMPLE_TASKS: DashboardTask[] = [];
 export const SAMPLE_DETAILED_CHECKLIST: DetailedChecklistItem[] = [];
@@ -203,66 +197,60 @@ export const SAMPLE_NOTES: DashboardNote[] = [];
 export const SAMPLE_CUSTOM_LINKS: CustomLink[] = [];
 export const SAMPLE_NOTIFICATIONS: DashboardNotificationItem[] = [];
 
-const FAKE_DATA: Record<UserRole, DashboardData> = dashboardDataMock as unknown as Record<UserRole, DashboardData>;
+export function getDefaultDashboardData(role: UserRole = 'customer', statCards?: string[], _chartSource?: string): DashboardData {
+  const cards = statCards || ['gold', 'gasoline', 'wti', 'btc', 'eur'];
 
-export class FakeDashboardService implements IDashboardService {
-  async getByRole(role: UserRole, statCards?: string[], chartSource?: string): Promise<DashboardData> {
-    const baseData = { ...(FAKE_DATA[role] ?? FAKE_DATA.customer) };
-    const cards = statCards || ['gold', 'gasoline', 'wti', 'btc', 'eur'];
-    
-    // Set default fallback stats so StatsOverviewWidget has the initial shape
-    // (Live data will be overlaid dynamically by StatsOverviewWidget via useCommodities hook)
-    const ALL_STATS_DEFS = [
-      { id: 'gold',     labelKey: 'gold'     },
-      { id: 'silver',   labelKey: 'silver'   },
-      { id: 'copper',   labelKey: 'copper'   },
-      { id: 'aluminum', labelKey: 'aluminum' },
-      { id: 'wti',      labelKey: 'wti'      },
-      { id: 'brent',    labelKey: 'brent'    },
-      { id: 'gasoline', labelKey: 'gasoline' },
-      { id: 'eur',      labelKey: 'eur'      },
-      { id: 'btc',      labelKey: 'btc'      },
-      { id: 'eth',      labelKey: 'eth'      },
-    ];
+  const ALL_STATS_DEFS = [
+    { id: 'gold',     labelKey: 'gold'     },
+    { id: 'silver',   labelKey: 'silver'   },
+    { id: 'copper',   labelKey: 'copper'   },
+    { id: 'aluminum', labelKey: 'aluminum' },
+    { id: 'wti',      labelKey: 'wti'      },
+    { id: 'brent',    labelKey: 'brent'    },
+    { id: 'gasoline', labelKey: 'gasoline' },
+    { id: 'eur',      labelKey: 'eur'      },
+    { id: 'btc',      labelKey: 'btc'      },
+    { id: 'eth',      labelKey: 'eth'      },
+  ];
 
-    const allStatsMapped = ALL_STATS_DEFS.map((def) => {
-      return {
-        id: def.id,
-        labelKey: def.labelKey,
-        value: '—',
-        delta: '—',
-        trend: 'neutral',
-        icon: def.id === 'btc' || def.id === 'eth' || def.id === 'eur' ? 'wallet' : 'activity',
-      } as StatCard;
-    });
+  const allStatsMapped: StatCard[] = ALL_STATS_DEFS.map((def) => ({
+    id: def.id,
+    labelKey: def.labelKey,
+    value: '—',
+    delta: '—',
+    trend: 'neutral',
+    icon: def.id === 'btc' || def.id === 'eth' || def.id === 'eur' ? 'wallet' : 'activity',
+  }));
 
-    baseData.allStats = allStatsMapped;
-    baseData.stats = cards
-      .map((id) => allStatsMapped.find((s) => s.id === id) || null)
-      .filter(Boolean) as StatCard[];
+  const stats = cards
+    .map((id) => allStatsMapped.find((s) => s.id === id) || null)
+    .filter(Boolean) as StatCard[];
 
-    while (baseData.stats.length < 5 && baseData.stats.length < allStatsMapped.length) {
-      const unused = allStatsMapped.find((s) => !baseData.stats.some((b) => b.id === s.id));
-      if (unused) baseData.stats.push(unused);
-      else break;
-    }
-
-    baseData.tasks = SAMPLE_TASKS;
-    baseData.detailedChecklist = SAMPLE_DETAILED_CHECKLIST;
-    baseData.routines = SAMPLE_ROUTINES;
-    baseData.notes = SAMPLE_NOTES;
-    baseData.customLinks = SAMPLE_CUSTOM_LINKS;
-    baseData.notifications = SAMPLE_NOTIFICATIONS;
-
-    return baseData;
+  while (stats.length < 5 && stats.length < allStatsMapped.length) {
+    const unused = allStatsMapped.find((s) => !stats.some((b) => b.id === s.id));
+    if (unused) stats.push(unused);
+    else break;
   }
+
+  return {
+    stats,
+    allStats: allStatsMapped,
+    chart: DEFAULT_CHART,
+    activities: [],
+    calendarEvents: [],
+    checklist: [],
+    tasks: SAMPLE_TASKS,
+    detailedChecklist: SAMPLE_DETAILED_CHECKLIST,
+    routines: SAMPLE_ROUTINES,
+    notes: SAMPLE_NOTES,
+    customLinks: SAMPLE_CUSTOM_LINKS,
+    notifications: SAMPLE_NOTIFICATIONS,
+  };
 }
 
 // ─── Real ─────────────────────────────────────────────────────────────────────
 
 export class RealDashboardService implements IDashboardService {
-  private fake = new FakeDashboardService();
-
   constructor(private http: HttpClient) {}
 
   async getByRole(role: UserRole, statCards?: string[], chartSource?: string): Promise<DashboardData> {
@@ -272,7 +260,7 @@ export class RealDashboardService implements IDashboardService {
         revalidate: 60,
       });
     } catch {
-      return this.fake.getByRole(role, statCards, chartSource);
+      return getDefaultDashboardData(role, statCards, chartSource);
     }
   }
 }

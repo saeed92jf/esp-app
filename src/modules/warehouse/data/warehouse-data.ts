@@ -1,4 +1,4 @@
-// src/modules/warehouse/data/mock-warehouse.ts
+// src/modules/warehouse/data/warehouse-data.ts
 // Real Raw-Material Data extracted from Excel report
 import {
   WarehouseItem,

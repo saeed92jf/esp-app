@@ -1,6 +1,4 @@
 // src/lib/server/admin-store.ts
-import adminUsersMock from "@/data/mock/admin-users.json";
-import adminRequestsMock from "@/data/mock/admin-requests.json";
 import type {
   User,
   PendingRequest,

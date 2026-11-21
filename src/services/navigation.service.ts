@@ -23,20 +23,6 @@ export interface INavigationService {
   getNavigation(locale?: string): Promise<NavigationResult>;
 }
 
-// ─── Fake ─────────────────────────────────────────────────────────────────────
-
-export class FakeNavigationService implements INavigationService {
-  async getNavigation(): Promise<NavigationResult> {
-    // منو از config استاتیک می‌آید — در real server از CMS یا DB می‌آید
-    const publicItems = NAVIGATION.flatMap((g) => g.items.filter((i) => i.public));
-    const defaultQuickAccess = NAVIGATION.flatMap((g) => g.items.slice(0, 1))
-      .slice(0, 5)
-      .map((i) => i.href);
-
-    return { groups: NAVIGATION, publicItems, defaultQuickAccess };
-  }
-}
-
 // ─── Real ─────────────────────────────────────────────────────────────────────
 
 export class RealNavigationService implements INavigationService {

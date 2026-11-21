@@ -1,4 +1,3 @@
-import statsMock from "@/data/mock/stats.json";
 // src/services/stats.service.ts
 import type { HttpClient } from './core/http';
 import type { LucideIcon } from 'lucide-react';
@@ -21,15 +20,12 @@ export interface IStatsService {
   getHomeStats(): Promise<StatItem[]>;
 }
 
-// ─── Fake ─────────────────────────────────────────────────────────────────────
-
-const FAKE_STATS: StatItem[] = statsMock.map((s) => ({ ...s, icon: s.id === 'clients' ? Users : s.id === 'projects' ? Briefcase : s.id === 'awards' ? Award : Clock })) as StatItem[];
-
-export class FakeStatsService implements IStatsService {
-  async getHomeStats(): Promise<StatItem[]> {
-    return FAKE_STATS;
-  }
-}
+const DEFAULT_HOME_STATS: StatItem[] = [
+  { id: 'clients', value: 1200, suffix: '+', labelKey: 'clients', icon: Users },
+  { id: 'projects', value: 350, suffix: '+', labelKey: 'projects', icon: Briefcase },
+  { id: 'awards', value: 28, labelKey: 'awards', icon: Award },
+  { id: 'support', value: 24, suffix: '/7', labelKey: 'support', icon: Clock },
+];
 
 // ─── Real ─────────────────────────────────────────────────────────────────────
 
@@ -43,7 +39,7 @@ export class RealStatsService implements IStatsService {
         revalidate: 86_400, // ۲۴ ساعت
       });
     } catch {
-      return FAKE_STATS;
+      return DEFAULT_HOME_STATS;
     }
   }
 }

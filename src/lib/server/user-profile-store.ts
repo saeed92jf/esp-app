@@ -1,8 +1,6 @@
 // src/lib/server/user-profile-store.ts
 import fs from "fs";
 import path from "path";
-import initialProfileMock from "@/data/mock/profile.json";
-import initialAuthUsersMock from "@/data/mock/auth-users.json";
 import type { UserProfile } from "@/modules/profile/types/profile";
 import type { User } from "@/types/auth";
 
@@ -13,54 +11,84 @@ declare global {
   var __espServerAuthUsers: any[] | undefined;
 }
 
-const PROFILE_FILE_PATH = path.resolve(process.cwd(), "src/data/mock/profile.json");
-const AUTH_USERS_FILE_PATH = path.resolve(process.cwd(), "src/data/mock/auth-users.json");
+const LIVE_PROFILES_PATH = "C:\\ESP_DATA\\live\\data\\user_profiles.json";
+const BACKEND_PROFILES_PATH = path.resolve(process.cwd(), "../ESP-Web-Backend/app/data/user_profiles.json");
+const LIVE_ADMIN_USERS_PATH = "C:\\ESP_DATA\\live\\data\\admin_users.json";
+const BACKEND_ADMIN_USERS_PATH = path.resolve(process.cwd(), "../ESP-Web-Backend/app/data/admin_users.json");
+
+function resolveProfilesPath(): string {
+  if (fs.existsSync(LIVE_PROFILES_PATH)) return LIVE_PROFILES_PATH;
+  if (fs.existsSync(BACKEND_PROFILES_PATH)) return BACKEND_PROFILES_PATH;
+  return LIVE_PROFILES_PATH;
+}
+
+function resolveAdminUsersPath(): string {
+  if (fs.existsSync(LIVE_ADMIN_USERS_PATH)) return LIVE_ADMIN_USERS_PATH;
+  if (fs.existsSync(BACKEND_ADMIN_USERS_PATH)) return BACKEND_ADMIN_USERS_PATH;
+  return LIVE_ADMIN_USERS_PATH;
+}
 
 // Initialize in-memory per-user map
 if (!globalThis.__espServerUserProfiles) {
   globalThis.__espServerUserProfiles = {};
+  const pPath = resolveProfilesPath();
   try {
-    if (fs.existsSync(PROFILE_FILE_PATH)) {
-      const raw = fs.readFileSync(PROFILE_FILE_PATH, "utf8");
+    if (fs.existsSync(pPath)) {
+      const raw = fs.readFileSync(pPath, "utf8");
       const seed = JSON.parse(raw);
-      if (seed && seed.userId) {
-        globalThis.__espServerUserProfiles[seed.userId.toLowerCase()] = seed;
+      if (seed && typeof seed === "object") {
+        if (Array.isArray(seed)) {
+          for (const item of seed) {
+            if (item?.userId) globalThis.__espServerUserProfiles[item.userId.toLowerCase()] = item;
+          }
+        } else {
+          globalThis.__espServerUserProfiles = seed;
+        }
       }
-      globalThis.__espServerUserProfiles["u-saeed"] = seed;
     }
-  } catch {
-    globalThis.__espServerUserProfiles["u-saeed"] = initialProfileMock as unknown as UserProfile;
+  } catch (err) {
+    console.error("Failed to load server user profiles:", err);
   }
 }
 
 if (!globalThis.__espServerAuthUsers) {
+  globalThis.__espServerAuthUsers = [];
+  const uPath = resolveAdminUsersPath();
   try {
-    if (fs.existsSync(AUTH_USERS_FILE_PATH)) {
-      const raw = fs.readFileSync(AUTH_USERS_FILE_PATH, "utf8");
-      globalThis.__espServerAuthUsers = JSON.parse(raw);
-    } else {
-      globalThis.__espServerAuthUsers = initialAuthUsersMock as any[];
+    if (fs.existsSync(uPath)) {
+      const raw = fs.readFileSync(uPath, "utf8");
+      const users = JSON.parse(raw);
+      if (Array.isArray(users)) {
+        globalThis.__espServerAuthUsers = users.map((u: any) => ({
+          user: u,
+          email: u.email,
+          mobile: u.phone,
+        }));
+      }
     }
-  } catch {
-    globalThis.__espServerAuthUsers = initialAuthUsersMock as any[];
+  } catch (err) {
+    console.error("Failed to load server auth users:", err);
   }
 }
 
 function persistProfileToDisk(profile: UserProfile) {
-  // STRICT SECURITY: Only persist to profile.json if it is specifically u-saeed (Saeed Jalili)
   const uid = (profile.userId || "").toLowerCase();
-  const email = (profile.personal?.email || "").toLowerCase();
-  const isSaeed = uid === "u-saeed" || email.includes("jalili");
+  if (!uid) return;
 
-  if (!isSaeed) {
-    // Other users' profiles must NEVER overwrite src/data/mock/profile.json!
-    return;
+  if (globalThis.__espServerUserProfiles) {
+    globalThis.__espServerUserProfiles[uid] = profile;
+    if (profile.personal?.email) {
+      globalThis.__espServerUserProfiles[profile.personal.email.toLowerCase()] = profile;
+    }
   }
 
   try {
+    const pPath = resolveProfilesPath();
+    const dir = path.dirname(pPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(
-      PROFILE_FILE_PATH,
-      JSON.stringify(profile, null, 2),
+      pPath,
+      JSON.stringify(globalThis.__espServerUserProfiles || {}, null, 2),
       "utf8"
     );
   } catch (err) {
@@ -71,8 +99,11 @@ function persistProfileToDisk(profile: UserProfile) {
 function persistAuthUsersToDisk() {
   try {
     if (globalThis.__espServerAuthUsers) {
+      const uPath = resolveAdminUsersPath();
+      const dir = path.dirname(uPath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
       fs.writeFileSync(
-        AUTH_USERS_FILE_PATH,
+        uPath,
         JSON.stringify(globalThis.__espServerAuthUsers, null, 2),
         "utf8"
       );

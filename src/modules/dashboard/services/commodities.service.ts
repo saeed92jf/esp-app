@@ -1,7 +1,4 @@
-import commoditiesMock from "@/data/mock/commodities.json";
 import { HttpClient } from '@/services/core/http';
-
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export interface CommodityItem {
   id: string;
@@ -28,15 +25,6 @@ export interface CommodityItem {
 
 export interface ICommoditiesService {
   getCommodities(): Promise<CommodityItem[]>;
-}
-
-export const FAKE_COMMODITIES: CommodityItem[] = commoditiesMock as unknown as CommodityItem[];
-
-export class FakeCommoditiesService implements ICommoditiesService {
-  async getCommodities(): Promise<CommodityItem[]> {
-    await wait(600);
-    return FAKE_COMMODITIES;
-  }
 }
 
 export class RealCommoditiesService implements ICommoditiesService {

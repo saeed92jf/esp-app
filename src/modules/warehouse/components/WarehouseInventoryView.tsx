@@ -58,7 +58,7 @@ import {
 import { cn } from "@/lib/utils";
 import { formatLocaleNumber } from "@/lib/format-number";
 import { WarehouseItem, StockStatus } from "../types/warehouse.types";
-import { WAREHOUSE_CATEGORIES, INITIAL_WAREHOUSE_ITEMS } from "../data/mock-warehouse";
+import { WAREHOUSE_CATEGORIES, INITIAL_WAREHOUSE_ITEMS } from "../data/warehouse-data";
 import { WarehouseService } from "../services/warehouse.service";
 import { WarehouseStockEntryModal } from "./WarehouseStockEntryModal";
 

@@ -28,7 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 import { formatLocaleNumber } from "@/lib/format-number";
 import { WarehouseBay } from "../types/warehouse.types";
-import { MOCK_WAREHOUSE_BAYS } from "../data/mock-warehouse";
+import { MOCK_WAREHOUSE_BAYS } from "../data/warehouse-data";
 
 export function WarehouseLocationsView() {
   const locale = useLocale();

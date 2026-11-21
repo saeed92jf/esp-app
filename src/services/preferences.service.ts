@@ -1,4 +1,3 @@
-import preferencesMock from "@/data/mock/preferences.json";
 // src/services/preferences.service.ts
 // ─────────────────────────────────────────────────────────────────────────────
 // User personal preferences service (quick-access cards, favorite apps, theme, primary-color).
@@ -20,7 +19,8 @@ export interface UserPreferences {
 }
 
 const DEFAULT_PREFS: UserPreferences = {
-  ...(preferencesMock as unknown as UserPreferences),
+  primaryColor: "#0284c7",
+  theme: "system",
   quickAccessHrefs: [
     "/ESP-Flow",
     "/tasks",
@@ -65,44 +65,6 @@ export function getUserStorageKey(userId?: string): string {
 export interface IPreferencesService {
   get(userId?: string): Promise<UserPreferences>;
   update(patch: Partial<UserPreferences>, userId?: string): Promise<UserPreferences>;
-}
-
-// ─── Fake ─────────────────────────────────────────────────────────────────────
-
-export class FakePreferencesService implements IPreferencesService {
-  async get(userId?: string): Promise<UserPreferences> {
-    if (typeof window === 'undefined') return DEFAULT_PREFS;
-    try {
-      const key = getUserStorageKey(userId);
-      const raw = localStorage.getItem(key);
-      return raw ? { ...DEFAULT_PREFS, ...JSON.parse(raw) } : DEFAULT_PREFS;
-    } catch {
-      return DEFAULT_PREFS;
-    }
-  }
-
-  async update(patch: Partial<UserPreferences>, userId?: string): Promise<UserPreferences> {
-    const current = await this.get(userId);
-    const updated = { ...current, ...patch };
-    if (typeof window !== 'undefined') {
-      try {
-        const key = getUserStorageKey(userId);
-        localStorage.setItem(key, JSON.stringify(updated));
-        window.dispatchEvent(new CustomEvent('esp:user-preferences-updated', { detail: updated }));
-
-        if (patch.primaryColor) {
-          const raw = localStorage.getItem('esp-auth-user') || localStorage.getItem('esp_auth_user');
-          if (raw) {
-            const user = JSON.parse(raw);
-            user.primaryColor = patch.primaryColor;
-            localStorage.setItem('esp-auth-user', JSON.stringify(user));
-            localStorage.setItem('esp_auth_user', JSON.stringify(user));
-          }
-        }
-      } catch {}
-    }
-    return updated;
-  }
 }
 
 // ─── Real ─────────────────────────────────────────────────────────────────────

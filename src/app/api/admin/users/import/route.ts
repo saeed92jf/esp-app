@@ -10,7 +10,6 @@ export const revalidate = 0;
 
 const LIVE_DATA_PATH = "C:\\ESP_DATA\\live\\data\\admin_users.json";
 const BACKEND_DATA_PATH = path.resolve(process.cwd(), "../ESP-Web-Backend/app/data/admin_users.json");
-const FRONTEND_MOCK_PATH = path.resolve(process.cwd(), "src/data/mock/admin-users.json");
 
 function readDiskUsers(): User[] {
   // 1. Try Live Production Path
@@ -27,10 +26,10 @@ function readDiskUsers(): User[] {
     return [...globalThis.__espServerAdminUsers];
   }
 
-  // 3. Try Frontend Mock
+  // 3. Try Backend Data Path
   try {
-    if (fs.existsSync(FRONTEND_MOCK_PATH)) {
-      const raw = fs.readFileSync(FRONTEND_MOCK_PATH, "utf-8");
+    if (fs.existsSync(BACKEND_DATA_PATH)) {
+      const raw = fs.readFileSync(BACKEND_DATA_PATH, "utf-8");
       const list = JSON.parse(raw);
       if (Array.isArray(list) && list.length > 0) return list;
     }
@@ -51,10 +50,7 @@ function persistDiskUsers(users: User[]): void {
     console.warn("Failed to write to live data path:", err);
   }
 
-  // 2. Frontend Mock
-  try {
-    fs.writeFileSync(FRONTEND_MOCK_PATH, content, "utf-8");
-  } catch {}
+
 
   // 3. Backend Data
   try {

@@ -89,7 +89,7 @@ export function isEnglishQuery(text: string): boolean {
   return /[a-zA-Z]/.test(text) && !isPersianQuery(text);
 }
 
-export class FakeSearchService implements ISearchService {
+export class UniversalSearchService implements ISearchService {
   /**
    * Generates fast, high-quality Google-style autocomplete suggestions (language-aware)
    */
@@ -384,11 +384,11 @@ export class FakeSearchService implements ISearchService {
 }
 
 export class RealSearchService implements ISearchService {
-  private fake = new FakeSearchService();
+  private engine = new UniversalSearchService();
 
   async getSuggestions(query: string, locale = "fa"): Promise<SearchSuggestion[]> {
     // In real mode, tries backend or falls back to robust local suggestion index
-    return this.fake.getSuggestions(query, locale);
+    return this.engine.getSuggestions(query, locale);
   }
 
   async search(
@@ -397,8 +397,8 @@ export class RealSearchService implements ISearchService {
     locale = "fa"
   ): Promise<SearchResponse> {
     // Real implementation with fast fallback
-    return this.fake.search(query, category, locale);
+    return this.engine.search(query, category, locale);
   }
 }
 
-export const universalSearchService = new FakeSearchService();
+export const universalSearchService = new UniversalSearchService();

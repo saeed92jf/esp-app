@@ -62,7 +62,6 @@ export async function GET() {
   try {
     // 1. Resolve path to admin_users.json and user_profiles.json
     const possibleUserPaths = [
-      path.join(process.cwd(), "src", "data", "mock", "admin-users.json"),
       "C:\\ESP_DATA\\live\\data\\admin_users.json",
       path.join(process.cwd(), "..", "ESP-Web-Backend", "app", "data", "admin_users.json"),
     ];

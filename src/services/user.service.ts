@@ -31,46 +31,6 @@ export interface IUserService {
   uploadAvatar(file: File): Promise<{ url: string }>;
 }
 
-// ─── Fake ─────────────────────────────────────────────────────────────────────
-
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-export class FakeUserService implements IUserService {
-  async getProfile(): Promise<User> {
-    await wait(300);
-    if (typeof window === 'undefined') throw new ApiError('UNAUTHORIZED', 'Not authenticated', 401);
-    const raw = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem('esp_auth_user');
-    if (!raw) throw new ApiError('UNAUTHORIZED', 'کاربر یافت نشد.', 401);
-    return JSON.parse(raw) as User;
-  }
-
-  async updateProfile(payload: UpdateProfilePayload): Promise<User> {
-    await wait(500);
-    const current = await this.getProfile();
-    const updated: User = { ...current, ...payload };
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updated));
-        localStorage.setItem('esp_auth_user', JSON.stringify(updated));
-        if (payload.primaryColor) {
-          localStorage.setItem('esp-global-primary-color', payload.primaryColor);
-        }
-      } catch {}
-    }
-    return updated;
-  }
-
-  async changePassword(): Promise<void> {
-    await wait(500);
-    // در fake mode هیچ چیزی واقعاً عوض نمی‌شود
-  }
-
-  async uploadAvatar(file: File): Promise<{ url: string }> {
-    await wait(800);
-    return { url: URL.createObjectURL(file) };
-  }
-}
-
 // ─── Real ─────────────────────────────────────────────────────────────────────
 
 export class RealUserService implements IUserService {

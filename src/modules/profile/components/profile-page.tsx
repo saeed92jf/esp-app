@@ -3,7 +3,6 @@
 import { DocumentUploadSection } from "./document-upload-section";
 import { ProfileRequestsSection } from "./profile-requests-section";
 import { DocumentCategory } from "@/types/auth";
-import authUsersMockData from "@/data/mock/auth-users.json";
 
 import React, { useState, useEffect, useTransition, useRef, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
@@ -1027,7 +1026,7 @@ export function ProfilePage({
           const rawDemo = localStorage.getItem("esp_demo_users_override");
           let demoUsers = rawDemo ? JSON.parse(rawDemo) : [];
           if (!Array.isArray(demoUsers) || demoUsers.length === 0) {
-            demoUsers = Array.isArray(authUsersMockData) ? [...authUsersMockData] : [];
+            demoUsers = [];
           }
           demoUsers = demoUsers.map((item: any) => {
             if (item.user?.id === user.id || (user.id === "u-saeed" && (item.email === "saeed@demo.com" || item.mobile === "09120000000"))) {
