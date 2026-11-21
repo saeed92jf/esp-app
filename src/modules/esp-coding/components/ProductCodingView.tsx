@@ -85,6 +85,7 @@ export function ProductCodingView() {
   const [codingMode, setCodingMode] = useState<"forward" | "reverse">("forward");
   const [reverseCodeInput, setReverseCodeInput] = useState<string>("");
   const [reverseMatchStatus, setReverseMatchStatus] = useState<"idle" | "matched" | "not_found">("idle");
+  const [matchedCombination, setMatchedCombination] = useState<ProductTreeCombination | null>(null);
 
   // Load combinations on mount
   useEffect(() => {
@@ -489,6 +490,7 @@ export function ProductCodingView() {
 
     if (!clean) {
       setReverseMatchStatus("idle");
+      setMatchedCombination(null);
       return;
     }
 
@@ -496,6 +498,7 @@ export function ProductCodingView() {
     const found = combinationsWithCodes.find((item) => item.code === clean);
     if (found) {
       const c = found.combo;
+      setMatchedCombination(c);
       setSelectedCategory(c.cat);
       setSelectedInternalProduct(c.ip);
       setSelectedProductType(c.pt);
@@ -513,6 +516,7 @@ export function ProductCodingView() {
       const prefixMatches = combinationsWithCodes.filter((item) => item.code.startsWith(clean));
       if (prefixMatches.length > 0) {
         const first = prefixMatches[0].combo;
+        setMatchedCombination(first);
         if (clean.length >= 2) setSelectedCategory(first.cat);
         if (clean.length >= 3) setSelectedInternalProduct(first.ip);
         if (clean.length >= 5) setSelectedProductType(first.pt);
@@ -525,6 +529,7 @@ export function ProductCodingView() {
       }
     }
 
+    setMatchedCombination(null);
     setReverseMatchStatus("not_found");
   };
 
@@ -539,6 +544,7 @@ export function ProductCodingView() {
     setSelectedThickness("");
     setReverseCodeInput("");
     setReverseMatchStatus("idle");
+    setMatchedCombination(null);
   };
 
   const matchingCount = getMatchingRecords().length;
@@ -844,55 +850,158 @@ export function ProductCodingView() {
               </div>
             )}
 
-            {/* 7 Comboboxes stacked vertically with titles on the side */}
-            <div className="flex flex-col divide-y divide-border/25">
-              {comboConfig.map((item) => {
-                const label = isRtl ? item.labelFa : item.labelEn;
-                const placeholder = isRtl ? item.placeholderFa : item.placeholderEn;
+            {codingMode === "forward" ? (
+              /* Forward Mode: 7 Comboboxes stacked vertically */
+              <div className="flex flex-col divide-y divide-border/25">
+                {comboConfig.map((item) => {
+                  const label = isRtl ? item.labelFa : item.labelEn;
+                  const placeholder = isRtl ? item.placeholderFa : item.placeholderEn;
 
-                return (
-                  <div
-                    key={item.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 py-3 first:pt-0 last:pb-0"
-                  >
-                    {/* Title beside the combobox */}
-                    <div className="flex items-center gap-2.5 sm:w-48 md:w-56 lg:w-64 shrink-0">
-                      <span className="size-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs fa-num shrink-0">
-                        {item.num}
-                      </span>
-                      <Label className="text-xs sm:text-[13px] font-semibold text-foreground truncate cursor-pointer select-none">
-                        {label}
-                      </Label>
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 py-3 first:pt-0 last:pb-0"
+                    >
+                      {/* Title beside the combobox */}
+                      <div className="flex items-center gap-2.5 sm:w-48 md:w-56 lg:w-64 shrink-0">
+                        <span className="size-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs fa-num shrink-0">
+                          {item.num}
+                        </span>
+                        <Label className="text-xs sm:text-[13px] font-semibold text-foreground truncate cursor-pointer select-none">
+                          {label}
+                        </Label>
+                      </div>
+
+                      {/* Combobox */}
+                      <div className="flex-1 min-w-0 flex items-center">
+                        <Select
+                          value={item.value}
+                          onValueChange={(val) => setFieldAndValidate(item.id, val)}
+                          disabled={item.disabled}
+                        >
+                          <SelectTrigger className="h-10 rounded-xl text-xs sm:text-[13px] bg-background w-full">
+                            <SelectValue placeholder={placeholder} />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-64">
+                            {item.options.map((opt) => (
+                              <SelectItem key={opt.name} value={opt.name} className="text-xs sm:text-[13px]">
+                                <div className="flex items-center justify-between w-full gap-3">
+                                  <span className="truncate">{opt.name}</span>
+                                  <span className="font-mono text-[11px] text-muted-foreground shrink-0 ms-2">
+                                    ({opt.code})
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-
-                    {/* Combobox */}
-                    <div className="flex-1 min-w-0 flex items-center">
-                      <Select
-                        value={item.value}
-                        onValueChange={(val) => setFieldAndValidate(item.id, val)}
-                        disabled={item.disabled}
+                  );
+                })}
+              </div>
+            ) : (
+              /* Reverse Mode: Decoded Specifications View (NO comboboxes) */
+              <div className="flex flex-col gap-3">
+                {matchedCombination || selectedCategory ? (
+                  <div className="flex flex-col divide-y divide-border/25 rounded-xl border border-border/50 bg-background/50 overflow-hidden shadow-2xs">
+                    {[
+                      {
+                        num: 1,
+                        label: isRtl ? "رده تولید (Category)" : "Production Category",
+                        val: matchedCombination?.cat || selectedCategory,
+                        code: matchedCombination?.catCode || activeCodes.catCode,
+                      },
+                      {
+                        num: 2,
+                        label: isRtl ? "محصول داخلی (Internal Product)" : "Internal Product",
+                        val: matchedCombination?.ip || selectedInternalProduct,
+                        code: matchedCombination?.ipCode || activeCodes.ipCode,
+                      },
+                      {
+                        num: 3,
+                        label: isRtl ? "نوع محصول (Product Type)" : "Product Type",
+                        val: matchedCombination?.pt || selectedProductType,
+                        code: matchedCombination?.ptCode || activeCodes.ptCode,
+                      },
+                      {
+                        num: 4,
+                        label:
+                          (matchedCombination?.p1 && matchedCombination.p1 !== "--" ? matchedCombination.p1 : "") ||
+                          dynamicTitles.p1 ||
+                          (isRtl ? "شکل هندسی (Shape)" : "Shape"),
+                        val: matchedCombination?.shape || selectedShape,
+                        code: matchedCombination?.shapeCode || activeCodes.shapeCode,
+                      },
+                      {
+                        num: 5,
+                        label:
+                          (matchedCombination?.p2 && matchedCombination.p2 !== "--" ? matchedCombination.p2 : "") ||
+                          dynamicTitles.p2 ||
+                          (isRtl ? "تیپ ساختار (Type)" : "Type"),
+                        val: matchedCombination?.type || selectedType,
+                        code: matchedCombination?.typeCode || activeCodes.typeCode,
+                      },
+                      {
+                        num: 6,
+                        label:
+                          (matchedCombination?.p3 && matchedCombination.p3 !== "--" ? matchedCombination.p3 : "") ||
+                          dynamicTitles.p3 ||
+                          (isRtl ? "سایز سوراخکاری / لیفت (Lift)" : "Lift / Hole Size"),
+                        val: matchedCombination?.lift || selectedLiftSize,
+                        code: matchedCombination?.liftCode || activeCodes.liftCode,
+                      },
+                      {
+                        num: 7,
+                        label:
+                          (matchedCombination?.p4 && matchedCombination.p4 !== "--" ? matchedCombination.p4 : "") ||
+                          dynamicTitles.p4 ||
+                          (isRtl ? "ضخامت متریال (Thickness)" : "Thickness (mm)"),
+                        val: matchedCombination?.thk || selectedThickness,
+                        code: matchedCombination?.thkCode || activeCodes.thkCode,
+                      },
+                    ].map((row) => (
+                      <div
+                        key={row.num}
+                        className="flex items-center justify-between gap-4 p-3 hover:bg-muted/20 transition-colors"
                       >
-                        <SelectTrigger className="h-10 rounded-xl text-xs sm:text-[13px] bg-background w-full">
-                          <SelectValue placeholder={placeholder} />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-64">
-                          {item.options.map((opt) => (
-                            <SelectItem key={opt.name} value={opt.name} className="text-xs sm:text-[13px]">
-                              <div className="flex items-center justify-between w-full gap-3">
-                                <span className="truncate">{opt.name}</span>
-                                <span className="font-mono text-[11px] text-muted-foreground shrink-0 ms-2">
-                                  ({opt.code})
-                                </span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                        <div className="flex items-center gap-2.5">
+                          <span className="size-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs fa-num shrink-0">
+                            {row.num}
+                          </span>
+                          <span className="text-xs sm:text-[13px] font-semibold text-muted-foreground">
+                            {row.label}:
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs sm:text-[13px] font-bold text-foreground">
+                            {row.val || "—"}
+                          </span>
+                          {row.code && (
+                            <Badge variant="outline" className="font-mono text-[11px] bg-muted/40">
+                              {row.code}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                );
-              })}
-            </div>
+                ) : (
+                  <div className="p-8 rounded-xl border border-dashed border-border/60 flex flex-col items-center justify-center text-center gap-2 bg-muted/5">
+                    <Search className="size-8 text-muted-foreground/40" />
+                    <span className="text-xs font-semibold text-foreground">
+                      {isRtl ? "در انتظار ورود کد محصول" : "Waiting for Product Code"}
+                    </span>
+                    <p className="text-[11px] text-muted-foreground max-w-sm">
+                      {isRtl
+                        ? "کد محصول را در کادر بالا وارد نمایید تا مشخصات فنی و نقشه قطعه به صورت خودکار استخراج شود."
+                        : "Enter or paste product code above to automatically decode technical specifications and drawing."}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </Card>
         </div>
 
