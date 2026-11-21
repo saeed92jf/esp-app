@@ -441,6 +441,14 @@ export const NAVIGATION: NavGroup[] = [
         public: true,
         free: true,
       },
+      {
+        labelKey: "community",
+        href: "/community",
+        icon: ChatCircleDots,
+        color: "indigo",
+        public: true,
+        free: true,
+      },
     ],
   },
   {
@@ -454,22 +462,6 @@ export const NAVIGATION: NavGroup[] = [
         href: "/directory",
         icon: AddressBook,
         color: "sky",
-        public: true,
-        free: true,
-      },
-    ],
-  },
-  {
-    id: "community",
-    labelKey: "community",
-    icon: ChatCircleDots,
-    color: "indigo",
-    items: [
-      {
-        labelKey: "community",
-        href: "/community",
-        icon: ChatCircleDots,
-        color: "indigo",
         public: true,
         free: true,
       },
