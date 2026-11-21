@@ -5,6 +5,7 @@ export * from "./services/esp-coding.service";
 export * from "./components/CodingWorkspace";
 export * from "./components/ProductCodingView";
 export * from "./components/MaterialCodingView";
+export * from "./components/FormCodingView";
 export * from "./components/MaterialMasterView";
 export * from "./components/MaterialFormClassificationView";
 export * from "./components/FormulaDesignerStudio";

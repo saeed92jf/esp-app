@@ -10,7 +10,15 @@ import { ProductionTreeSourceRecord, MaterialMasterRecord, MaterialFormRecord, P
  * This prevents dependency on a local Desktop path that breaks on other machines.
  * To update the data, replace the file at that path.
  */
-const EXCEL_PATH = path.join(process.cwd(), "src", "lib", "server", "data", "Coding.xlsx");
+const getExcelPath = (): string => {
+  const p1 = path.join(process.cwd(), "src", "lib", "server", "data", "Coding.xlsx");
+  if (fs.existsSync(p1)) return p1;
+  const p2 = path.join(process.cwd(), "esp-app", "src", "lib", "server", "data", "Coding.xlsx");
+  if (fs.existsSync(p2)) return p2;
+  return p1;
+};
+
+const EXCEL_PATH = getExcelPath();
 
 interface CachedData {
   productionTree: ProductionTreeSourceRecord[];
@@ -484,6 +492,7 @@ export class CodingExcelProvider {
         minTemp: r.minTemp,
         maxTemp: r.maxTemp,
         pic: r.pic,
+        refMaterial: r.refMaterial,
         materialCode,
       };
     });
@@ -580,5 +589,14 @@ export class CodingExcelProvider {
         .toLowerCase();
       return terms.every((t) => target.includes(t));
     });
+  }
+
+  public static getFormHierarchyOptions(): {
+    forms: MaterialFormRecord[];
+    materials: MaterialCodingCombination[];
+  } {
+    const forms = this.loadWorkbook().materialForms;
+    const materials = this.getMaterialHierarchyOptions().combinations;
+    return { forms, materials };
   }
 }

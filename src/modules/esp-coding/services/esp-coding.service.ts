@@ -108,6 +108,17 @@ export class EspCodingClientService {
     return res.json();
   }
 
+  public static async getFormHierarchyOptions(): Promise<{
+    available: boolean;
+    forms?: MaterialFormRecord[];
+    materials?: any[];
+    error?: string;
+  }> {
+    const res = await fetch(`${this.BASE_URL}/form-hierarchy`);
+    if (!res.ok) throw new Error("Failed to fetch form hierarchy options");
+    return res.json();
+  }
+
   public static async getProducts(params?: {
     source?: "registered" | "catalog" | "both";
     search?: string;

@@ -124,5 +124,6 @@ export interface MaterialCodingCombination {
   minTemp?: string;
   maxTemp?: string;
   pic?: string;
+  refMaterial?: string;
   materialCode: string;
 }
