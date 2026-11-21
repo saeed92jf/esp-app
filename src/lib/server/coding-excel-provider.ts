@@ -421,6 +421,10 @@ export class CodingExcelProvider {
       liftCode: String(r.liftSizeCode || "").trim(),
       thk: String(r.thk || "").trim(),
       thkCode: String(r.thkCode || "").trim(),
+      p1: String(r.p1 || "").trim(),
+      p2: String(r.p2 || "").trim(),
+      p3: String(r.p3 || "").trim(),
+      p4: String(r.p4 || "").trim(),
       pic: r.pic || "",
     }));
 

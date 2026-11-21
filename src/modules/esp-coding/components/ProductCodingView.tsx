@@ -15,7 +15,6 @@ import {
   Info,
   ImageIcon,
   Maximize2,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -122,107 +121,109 @@ export function ProductCodingView() {
     });
   };
 
-  // Derive available options for each of the 7 combo boxes
+  // Derive available options strictly cascading from top to bottom
   const categoryOptions = useMemo(() => {
-    const records = getMatchingRecords("cat");
     const map = new Map<string, string>();
-    records.forEach((r) => {
+    combinations.forEach((r) => {
       if (r.cat && !map.has(r.cat)) map.set(r.cat, r.catCode);
     });
     return Array.from(map.entries())
       .map(([name, code]) => ({ name, code }))
       .sort((a, b) => naturalCompare(a.name, b.name));
-  }, [
-    combinations,
-    selectedInternalProduct,
-    selectedProductType,
-    selectedShape,
-    selectedType,
-    selectedLiftSize,
-    selectedThickness,
-  ]);
+  }, [combinations]);
 
   const internalProductOptions = useMemo(() => {
-    const records = getMatchingRecords("ip");
+    if (!selectedCategory) return [];
     const map = new Map<string, string>();
-    records.forEach((r) => {
-      if (r.ip && !map.has(r.ip)) map.set(r.ip, r.ipCode);
+    combinations.forEach((r) => {
+      if (r.cat === selectedCategory && r.ip && !map.has(r.ip)) {
+        map.set(r.ip, r.ipCode);
+      }
     });
     return Array.from(map.entries())
       .map(([name, code]) => ({ name, code }))
       .sort((a, b) => naturalCompare(a.name, b.name));
-  }, [
-    combinations,
-    selectedCategory,
-    selectedProductType,
-    selectedShape,
-    selectedType,
-    selectedLiftSize,
-    selectedThickness,
-  ]);
+  }, [combinations, selectedCategory]);
 
   const productTypeOptions = useMemo(() => {
-    const records = getMatchingRecords("pt");
+    if (!selectedCategory || !selectedInternalProduct) return [];
     const map = new Map<string, string>();
-    records.forEach((r) => {
-      if (r.pt && !map.has(r.pt)) map.set(r.pt, r.ptCode);
+    combinations.forEach((r) => {
+      if (
+        r.cat === selectedCategory &&
+        r.ip === selectedInternalProduct &&
+        r.pt &&
+        !map.has(r.pt)
+      ) {
+        map.set(r.pt, r.ptCode);
+      }
     });
     return Array.from(map.entries())
       .map(([name, code]) => ({ name, code }))
       .sort((a, b) => naturalCompare(a.name, b.name));
-  }, [
-    combinations,
-    selectedCategory,
-    selectedInternalProduct,
-    selectedShape,
-    selectedType,
-    selectedLiftSize,
-    selectedThickness,
-  ]);
+  }, [combinations, selectedCategory, selectedInternalProduct]);
 
   const shapeOptions = useMemo(() => {
-    const records = getMatchingRecords("shape");
+    if (!selectedCategory || !selectedInternalProduct || !selectedProductType) return [];
     const map = new Map<string, string>();
-    records.forEach((r) => {
-      if (r.shape && !map.has(r.shape)) map.set(r.shape, r.shapeCode);
+    combinations.forEach((r) => {
+      if (
+        r.cat === selectedCategory &&
+        r.ip === selectedInternalProduct &&
+        r.pt === selectedProductType &&
+        r.shape &&
+        !map.has(r.shape)
+      ) {
+        map.set(r.shape, r.shapeCode);
+      }
     });
     return Array.from(map.entries())
       .map(([name, code]) => ({ name, code }))
       .sort((a, b) => naturalCompare(a.name, b.name));
-  }, [
-    combinations,
-    selectedCategory,
-    selectedInternalProduct,
-    selectedProductType,
-    selectedType,
-    selectedLiftSize,
-    selectedThickness,
-  ]);
+  }, [combinations, selectedCategory, selectedInternalProduct, selectedProductType]);
 
   const typeOptions = useMemo(() => {
-    const records = getMatchingRecords("type");
+    if (!selectedCategory || !selectedInternalProduct || !selectedProductType || !selectedShape) return [];
     const map = new Map<string, string>();
-    records.forEach((r) => {
-      if (r.type && !map.has(r.type)) map.set(r.type, r.typeCode);
+    combinations.forEach((r) => {
+      if (
+        r.cat === selectedCategory &&
+        r.ip === selectedInternalProduct &&
+        r.pt === selectedProductType &&
+        r.shape === selectedShape &&
+        r.type &&
+        !map.has(r.type)
+      ) {
+        map.set(r.type, r.typeCode);
+      }
     });
     return Array.from(map.entries())
       .map(([name, code]) => ({ name, code }))
       .sort((a, b) => naturalCompare(a.name, b.name));
-  }, [
-    combinations,
-    selectedCategory,
-    selectedInternalProduct,
-    selectedProductType,
-    selectedShape,
-    selectedLiftSize,
-    selectedThickness,
-  ]);
+  }, [combinations, selectedCategory, selectedInternalProduct, selectedProductType, selectedShape]);
 
   const liftSizeOptions = useMemo(() => {
-    const records = getMatchingRecords("lift");
+    if (
+      !selectedCategory ||
+      !selectedInternalProduct ||
+      !selectedProductType ||
+      !selectedShape ||
+      !selectedType
+    )
+      return [];
     const map = new Map<string, string>();
-    records.forEach((r) => {
-      if (r.lift && !map.has(r.lift)) map.set(r.lift, r.liftCode);
+    combinations.forEach((r) => {
+      if (
+        r.cat === selectedCategory &&
+        r.ip === selectedInternalProduct &&
+        r.pt === selectedProductType &&
+        r.shape === selectedShape &&
+        r.type === selectedType &&
+        r.lift &&
+        !map.has(r.lift)
+      ) {
+        map.set(r.lift, r.liftCode);
+      }
     });
     return Array.from(map.entries())
       .map(([name, code]) => ({ name, code }))
@@ -234,14 +235,32 @@ export function ProductCodingView() {
     selectedProductType,
     selectedShape,
     selectedType,
-    selectedThickness,
   ]);
 
   const thicknessOptions = useMemo(() => {
-    const records = getMatchingRecords("thk");
+    if (
+      !selectedCategory ||
+      !selectedInternalProduct ||
+      !selectedProductType ||
+      !selectedShape ||
+      !selectedType ||
+      !selectedLiftSize
+    )
+      return [];
     const map = new Map<string, string>();
-    records.forEach((r) => {
-      if (r.thk && !map.has(r.thk)) map.set(r.thk, r.thkCode);
+    combinations.forEach((r) => {
+      if (
+        r.cat === selectedCategory &&
+        r.ip === selectedInternalProduct &&
+        r.pt === selectedProductType &&
+        r.shape === selectedShape &&
+        r.type === selectedType &&
+        r.lift === selectedLiftSize &&
+        r.thk &&
+        !map.has(r.thk)
+      ) {
+        map.set(r.thk, r.thkCode);
+      }
     });
     return Array.from(map.entries())
       .map(([name, code]) => ({ name, code }))
@@ -256,87 +275,102 @@ export function ProductCodingView() {
     selectedLiftSize,
   ]);
 
-  // Set any field and validate that downstream selections remain valid
+  // Dynamic titles for comboboxes 4-7 based on P1-P4 of matching records
+  const dynamicTitles = useMemo(() => {
+    const clean = (val?: string) => {
+      if (!val) return "";
+      const s = val.trim();
+      return s && s !== "--" ? s : "";
+    };
+
+    // Find candidate record based on current selections (most specific to least specific)
+    const matching = combinations.filter((r) => {
+      if (selectedCategory && r.cat !== selectedCategory) return false;
+      if (selectedInternalProduct && r.ip !== selectedInternalProduct) return false;
+      if (selectedProductType && r.pt !== selectedProductType) return false;
+      if (selectedShape && r.shape !== selectedShape) return false;
+      if (selectedType && r.type !== selectedType) return false;
+      if (selectedLiftSize && r.lift !== selectedLiftSize) return false;
+      if (selectedThickness && r.thk !== selectedThickness) return false;
+      return true;
+    });
+
+    const candidate =
+      matching.find((r) => r.p1 || r.p2 || r.p3 || r.p4) ||
+      combinations.find(
+        (r) =>
+          (!selectedCategory || r.cat === selectedCategory) &&
+          (!selectedInternalProduct || r.ip === selectedInternalProduct) &&
+          (!selectedProductType || r.pt === selectedProductType) &&
+          (r.p1 || r.p2 || r.p3 || r.p4)
+      ) ||
+      combinations.find(
+        (r) =>
+          (!selectedCategory || r.cat === selectedCategory) &&
+          (!selectedInternalProduct || r.ip === selectedInternalProduct) &&
+          (r.p1 || r.p2 || r.p3 || r.p4)
+      ) ||
+      combinations.find((r) => (!selectedCategory || r.cat === selectedCategory) && (r.p1 || r.p2 || r.p3 || r.p4)) ||
+      combinations[0];
+
+    return {
+      p1: clean(candidate?.p1),
+      p2: clean(candidate?.p2),
+      p3: clean(candidate?.p3),
+      p4: clean(candidate?.p4),
+    };
+  }, [
+    combinations,
+    selectedCategory,
+    selectedInternalProduct,
+    selectedProductType,
+    selectedShape,
+    selectedType,
+    selectedLiftSize,
+    selectedThickness,
+  ]);
+
+  // Set any field and strictly reset all downstream selections
   const setFieldAndValidate = (
     field: "cat" | "ip" | "pt" | "shape" | "type" | "lift" | "thk",
     value: string
   ) => {
-    let nextCat = field === "cat" ? value : selectedCategory;
-    let nextIp = field === "ip" ? value : selectedInternalProduct;
-    let nextPt = field === "pt" ? value : selectedProductType;
-    let nextShape = field === "shape" ? value : selectedShape;
-    let nextType = field === "type" ? value : selectedType;
-    let nextLift = field === "lift" ? value : selectedLiftSize;
-    let nextThk = field === "thk" ? value : selectedThickness;
-
-    // Validate downstream fields
-    if (nextIp) {
-      const valid = combinations.some((r) => (!nextCat || r.cat === nextCat) && r.ip === nextIp);
-      if (!valid) nextIp = "";
+    if (field === "cat") {
+      setSelectedCategory(value);
+      setSelectedInternalProduct("");
+      setSelectedProductType("");
+      setSelectedShape("");
+      setSelectedType("");
+      setSelectedLiftSize("");
+      setSelectedThickness("");
+    } else if (field === "ip") {
+      setSelectedInternalProduct(value);
+      setSelectedProductType("");
+      setSelectedShape("");
+      setSelectedType("");
+      setSelectedLiftSize("");
+      setSelectedThickness("");
+    } else if (field === "pt") {
+      setSelectedProductType(value);
+      setSelectedShape("");
+      setSelectedType("");
+      setSelectedLiftSize("");
+      setSelectedThickness("");
+    } else if (field === "shape") {
+      setSelectedShape(value);
+      setSelectedType("");
+      setSelectedLiftSize("");
+      setSelectedThickness("");
+    } else if (field === "type") {
+      setSelectedType(value);
+      setSelectedLiftSize("");
+      setSelectedThickness("");
+    } else if (field === "lift") {
+      setSelectedLiftSize(value);
+      setSelectedThickness("");
+    } else if (field === "thk") {
+      setSelectedThickness(value);
     }
-    if (nextPt) {
-      const valid = combinations.some(
-        (r) =>
-          (!nextCat || r.cat === nextCat) &&
-          (!nextIp || r.ip === nextIp) &&
-          r.pt === nextPt
-      );
-      if (!valid) nextPt = "";
-    }
-    if (nextShape) {
-      const valid = combinations.some(
-        (r) =>
-          (!nextCat || r.cat === nextCat) &&
-          (!nextIp || r.ip === nextIp) &&
-          (!nextPt || r.pt === nextPt) &&
-          r.shape === nextShape
-      );
-      if (!valid) nextShape = "";
-    }
-    if (nextType) {
-      const valid = combinations.some(
-        (r) =>
-          (!nextCat || r.cat === nextCat) &&
-          (!nextIp || r.ip === nextIp) &&
-          (!nextPt || r.pt === nextPt) &&
-          (!nextShape || r.shape === nextShape) &&
-          r.type === nextType
-      );
-      if (!valid) nextType = "";
-    }
-    if (nextLift) {
-      const valid = combinations.some(
-        (r) =>
-          (!nextCat || r.cat === nextCat) &&
-          (!nextIp || r.ip === nextIp) &&
-          (!nextPt || r.pt === nextPt) &&
-          (!nextShape || r.shape === nextShape) &&
-          (!nextType || r.type === nextType) &&
-          r.lift === nextLift
-      );
-      if (!valid) nextLift = "";
-    }
-    if (nextThk) {
-      const valid = combinations.some(
-        (r) =>
-          (!nextCat || r.cat === nextCat) &&
-          (!nextIp || r.ip === nextIp) &&
-          (!nextPt || r.pt === nextPt) &&
-          (!nextShape || r.shape === nextShape) &&
-          (!nextType || r.type === nextType) &&
-          (!nextLift || r.lift === nextLift) &&
-          r.thk === nextThk
-      );
-      if (!valid) nextThk = "";
-    }
-
-    setSelectedCategory(nextCat);
-    setSelectedInternalProduct(nextIp);
-    setSelectedProductType(nextPt);
-    setSelectedShape(nextShape);
-    setSelectedType(nextType);
-    setSelectedLiftSize(nextLift);
-    setSelectedThickness(nextThk);
   };
 
   // Active matching drawing / image from production tree
@@ -532,6 +566,7 @@ export function ProductCodingView() {
       options: categoryOptions,
       placeholderFa: "انتخاب رده تولید...",
       placeholderEn: "Select Category...",
+      disabled: false,
     },
     {
       id: "ip" as const,
@@ -540,8 +575,9 @@ export function ProductCodingView() {
       labelEn: "Internal Product",
       value: selectedInternalProduct,
       options: internalProductOptions,
-      placeholderFa: "انتخاب محصول داخلی...",
-      placeholderEn: "Select Internal Product...",
+      placeholderFa: selectedCategory ? "انتخاب محصول داخلی..." : "ابتدا رده تولید را انتخاب کنید...",
+      placeholderEn: selectedCategory ? "Select Internal Product..." : "Select Category first...",
+      disabled: !selectedCategory || internalProductOptions.length === 0,
     },
     {
       id: "pt" as const,
@@ -550,48 +586,69 @@ export function ProductCodingView() {
       labelEn: "Product Type",
       value: selectedProductType,
       options: productTypeOptions,
-      placeholderFa: "انتخاب نوع محصول...",
-      placeholderEn: "Select Product Type...",
+      placeholderFa: selectedInternalProduct ? "انتخاب نوع محصول..." : "ابتدا محصول داخلی را انتخاب کنید...",
+      placeholderEn: selectedInternalProduct ? "Select Product Type..." : "Select Internal Product first...",
+      disabled: !selectedInternalProduct || productTypeOptions.length === 0,
     },
     {
       id: "shape" as const,
       num: 4,
-      labelFa: "شکل هندسی (Shape)",
-      labelEn: "Shape",
+      labelFa: dynamicTitles.p1 || "شکل هندسی (Shape)",
+      labelEn: dynamicTitles.p1 || "Shape",
       value: selectedShape,
       options: shapeOptions,
-      placeholderFa: "انتخاب شکل هندسی...",
-      placeholderEn: "Select Shape...",
+      placeholderFa: selectedProductType
+        ? dynamicTitles.p1 ? `انتخاب ${dynamicTitles.p1}...` : "انتخاب شکل هندسی..."
+        : "ابتدا نوع محصول را انتخاب کنید...",
+      placeholderEn: selectedProductType
+        ? dynamicTitles.p1 ? `Select ${dynamicTitles.p1}...` : "Select Shape..."
+        : "Select Product Type first...",
+      disabled: !selectedProductType || shapeOptions.length === 0,
     },
     {
       id: "type" as const,
       num: 5,
-      labelFa: "تیپ ساختار (Type)",
-      labelEn: "Type",
+      labelFa: dynamicTitles.p2 || "تیپ ساختار (Type)",
+      labelEn: dynamicTitles.p2 || "Type",
       value: selectedType,
       options: typeOptions,
-      placeholderFa: "انتخاب تیپ ساختار...",
-      placeholderEn: "Select Type...",
+      placeholderFa: selectedShape
+        ? dynamicTitles.p2 ? `انتخاب ${dynamicTitles.p2}...` : "انتخاب تیپ..."
+        : "ابتدا مرحله قبل را انتخاب کنید...",
+      placeholderEn: selectedShape
+        ? dynamicTitles.p2 ? `Select ${dynamicTitles.p2}...` : "Select Type..."
+        : "Select previous step first...",
+      disabled: !selectedShape || typeOptions.length === 0,
     },
     {
       id: "lift" as const,
       num: 6,
-      labelFa: "سایز سوراخکاری / لیفت (Lift)",
-      labelEn: "Lift / Hole Size",
+      labelFa: dynamicTitles.p3 || "سایز سوراخکاری / لیفت (Lift)",
+      labelEn: dynamicTitles.p3 || "Lift / Hole Size",
       value: selectedLiftSize,
       options: liftSizeOptions,
-      placeholderFa: "انتخاب سایز لیفت / سوراخکاری...",
-      placeholderEn: "Select Lift / Hole Size...",
+      placeholderFa: selectedType
+        ? dynamicTitles.p3 ? `انتخاب ${dynamicTitles.p3}...` : "انتخاب سایز/لیفت..."
+        : "ابتدا مرحله قبل را انتخاب کنید...",
+      placeholderEn: selectedType
+        ? dynamicTitles.p3 ? `Select ${dynamicTitles.p3}...` : "Select Lift / Hole Size..."
+        : "Select previous step first...",
+      disabled: !selectedType || liftSizeOptions.length === 0,
     },
     {
       id: "thk" as const,
       num: 7,
-      labelFa: "ضخامت متریال (Thickness)",
-      labelEn: "Thickness (mm)",
+      labelFa: dynamicTitles.p4 || "ضخامت متریال (Thickness)",
+      labelEn: dynamicTitles.p4 || "Thickness (mm)",
       value: selectedThickness,
       options: thicknessOptions,
-      placeholderFa: "انتخاب ضخامت متریال...",
-      placeholderEn: "Select Thickness...",
+      placeholderFa: selectedLiftSize
+        ? dynamicTitles.p4 ? `انتخاب ${dynamicTitles.p4}...` : "انتخاب ضخامت..."
+        : "ابتدا مرحله قبل را انتخاب کنید...",
+      placeholderEn: selectedLiftSize
+        ? dynamicTitles.p4 ? `Select ${dynamicTitles.p4}...` : "Select Thickness..."
+        : "Select previous step first...",
+      disabled: !selectedLiftSize || thicknessOptions.length === 0,
     },
   ];
 
@@ -641,7 +698,6 @@ export function ProductCodingView() {
             {/* 7 Comboboxes stacked vertically with titles on the side */}
             <div className="flex flex-col divide-y divide-border/25">
               {comboConfig.map((item) => {
-                const isSelected = Boolean(item.value);
                 const label = isRtl ? item.labelFa : item.labelEn;
                 const placeholder = isRtl ? item.placeholderFa : item.placeholderEn;
 
@@ -661,11 +717,11 @@ export function ProductCodingView() {
                     </div>
 
                     {/* Combobox */}
-                    <div className="flex-1 min-w-0 flex items-center gap-2">
+                    <div className="flex-1 min-w-0 flex items-center">
                       <Select
                         value={item.value}
                         onValueChange={(val) => setFieldAndValidate(item.id, val)}
-                        disabled={item.options.length === 0}
+                        disabled={item.disabled}
                       >
                         <SelectTrigger className="h-10 rounded-xl text-xs sm:text-[13px] bg-background w-full">
                           <SelectValue placeholder={placeholder} />
@@ -683,19 +739,6 @@ export function ProductCodingView() {
                           ))}
                         </SelectContent>
                       </Select>
-
-                      {isSelected && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setFieldAndValidate(item.id, "")}
-                          className="size-9 rounded-xl text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
-                          title={isRtl ? "پاک کردن انتخاب" : "Clear selection"}
-                        >
-                          <X className="size-4" />
-                        </Button>
-                      )}
                     </div>
                   </div>
                 );
