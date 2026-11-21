@@ -3,6 +3,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { AppHeader } from "@/components/layout/app-header";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -18,39 +19,85 @@ import { WarehouseLocationsView } from "./WarehouseLocationsView";
 import { WarehouseTransactionsView } from "./WarehouseTransactionsView";
 import { WarehouseReceiptsView } from "./WarehouseReceiptsView";
 
-export function WarehouseModuleShell() {
+export interface WarehouseModuleShellProps {
+  initialTab?: WarehouseTab;
+}
+
+export function WarehouseModuleShell({ initialTab }: WarehouseModuleShellProps = {}) {
   const locale = useLocale();
   const isRtl = locale === "fa";
   const t = useTranslations("Warehouse");
+  const router = useRouter();
+  const pathname = usePathname();
 
-  const [activeTab, setActiveTab] = useState<WarehouseTab>("inventory");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const activeTab = useMemo<WarehouseTab>(() => {
+    if (initialTab && ["inventory", "locations", "transactions", "receipts"].includes(initialTab)) {
+      return initialTab;
+    }
+    const parts = pathname.split("/").filter(Boolean);
+    const warehouseIdx = parts.indexOf("warehouse");
+    if (warehouseIdx !== -1 && parts[warehouseIdx + 1]) {
+      const seg = parts[warehouseIdx + 1];
+      if (["inventory", "locations", "transactions", "receipts"].includes(seg)) {
+        return seg as WarehouseTab;
+      }
+    }
+    return "inventory";
+  }, [initialTab, pathname]);
 
   const navItems = useMemo(
     () => [
       {
         id: "inventory" as WarehouseTab,
         label: t("nav.inventory"),
+        description: isRtl
+          ? "مدیریت موجودی قطعات، اقلام خام، پالت‌بندی و مشخصات فنی اقلام انبار"
+          : "Stock levels, raw materials, pallet tracking, and technical specifications",
         icon: Package,
       },
       {
         id: "locations" as WarehouseTab,
         label: t("nav.locations"),
+        description: isRtl
+          ? "مدیریت سالن‌ها، زون‌های ذخیره‌سازی، قفسه‌بندی و ضریب اشغال انبار"
+          : "Warehouse bays, storage zones, rack systems, and occupancy metrics",
         icon: MapPin,
       },
       {
         id: "transactions" as WarehouseTab,
         label: t("nav.transactions"),
+        description: isRtl
+          ? "رهگیری تراکنش‌های ورود، خروج، انتقالات داخلی و حواله‌های مصرف خط تولید"
+          : "Track inbound, outbound, internal transfers, and production consumption",
         icon: ArrowLeftRight,
       },
       {
         id: "receipts" as WarehouseTab,
         label: t("nav.receipts"),
+        description: isRtl
+          ? "ثبت و مدیریت اسناد انبارداری، رسید کالا (MRV) و حواله‌های خروج به کارگاه (SIO)"
+          : "Manage warehouse vouchers, material receipt vouchers (MRV), and store issue orders (SIO)",
         icon: FileText,
       },
     ],
-    [t]
+    [t, isRtl]
   );
+
+  const activeNavItem = useMemo(
+    () => navItems.find((item) => item.id === activeTab) || navItems[0],
+    [navItems, activeTab]
+  );
+  const ActiveIcon = activeNavItem.icon;
+
+  const handleTabClick = (tabId: WarehouseTab) => {
+    if (tabId === activeTab) return;
+    router.push(`/warehouse/${tabId}`);
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  };
 
   const renderActiveView = () => {
     switch (activeTab) {
@@ -68,10 +115,9 @@ export function WarehouseModuleShell() {
 
   return (
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
-      {/* ── 1. Top Unified Header (Stable Title: ESP Warehouse) ── */}
+      {/* ── 1. Top Unified Header (Stable Module Title: ESP Warehouse - NO subTag) ── */}
       <AppHeader
-        tag={t("title")}
-        subTag={t("subtitle")}
+        tag="ESP Warehouse"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
@@ -112,12 +158,7 @@ export function WarehouseModuleShell() {
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => {
-                      setActiveTab(item.id);
-                      if (typeof window !== "undefined" && window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
+                    onClick={() => handleTabClick(item.id)}
                     className={cn(
                       "group relative flex items-center rounded-full outline-none cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0",
                       sidebarOpen ? "w-full h-[42px]" : "w-[42px] h-[42px]",
@@ -172,6 +213,23 @@ export function WarehouseModuleShell() {
         {/* ── 3. Main Content Container (Jump-Free Pure Fade Transition) ── */}
         <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 animate-in fade-in duration-150">
           <div className="max-w-7xl mx-auto space-y-6">
+            {/* Content Heading */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/40">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <ActiveIcon className="size-5" />
+                </div>
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                    {activeNavItem.label}
+                  </h1>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                    {activeNavItem.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {renderActiveView()}
           </div>
         </main>

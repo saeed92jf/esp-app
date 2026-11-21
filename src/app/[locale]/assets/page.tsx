@@ -28,7 +28,7 @@ export default async function AssetsPage({ params }: Props) {
 
   return (
     <Suspense fallback={<ModulePageSkeleton />}>
-      <AssetsModuleShell />
+      <AssetsModuleShell initialTab="directory" />
     </Suspense>
   );
 }

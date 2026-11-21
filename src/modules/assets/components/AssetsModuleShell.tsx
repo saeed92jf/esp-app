@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { AppHeader } from "@/components/layout/app-header";
 import { AssetsPageContainer } from "./AssetsPageContainer";
 import { AssetCategoriesView } from "./AssetCategoriesView";
@@ -14,32 +15,82 @@ import {
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-type AssetTab = "directory" | "categories" | "locations";
+export type AssetTab = "directory" | "categories" | "locations";
 
-export function AssetsModuleShell() {
+export interface AssetsModuleShellProps {
+  initialTab?: AssetTab;
+}
+
+export function AssetsModuleShell({ initialTab }: AssetsModuleShellProps = {}) {
   const locale = useLocale();
   const isRtl = locale === "fa";
   const t = useTranslations("Assets");
-  const [activeTab, setActiveTab] = useState<AssetTab>("directory");
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const navItems = useMemo(() => [
-    { 
-      id: "directory" as AssetTab, 
-      label: t("nav.machinery"), 
-      icon: Gauge 
-    },
-    { 
-      id: "categories" as AssetTab, 
-      label: t("nav.categories"), 
-      icon: Layers 
-    },
-    { 
-      id: "locations" as AssetTab, 
-      label: t("nav.locations"), 
-      icon: MapPin 
-    },
-  ], [t]);
+  const activeTab = useMemo<AssetTab>(() => {
+    if (initialTab) {
+      if ((initialTab as string) === "machinery") return "directory";
+      if (["directory", "categories", "locations"].includes(initialTab)) {
+        return initialTab;
+      }
+    }
+    const parts = pathname.split("/").filter(Boolean);
+    const assetsIdx = parts.indexOf("assets");
+    if (assetsIdx !== -1 && parts[assetsIdx + 1]) {
+      const seg = parts[assetsIdx + 1];
+      if (seg === "machinery" || seg === "directory") return "directory";
+      if (seg === "categories") return "categories";
+      if (seg === "locations") return "locations";
+    }
+    return "directory";
+  }, [initialTab, pathname]);
+
+  const navItems = useMemo(
+    () => [
+      { 
+        id: "directory" as AssetTab, 
+        label: t("nav.machinery"), 
+        description: isRtl
+          ? "شناسنامه ماشین‌آلات صنعتی، مشخصات فنی، موقعیت استقرار و سوابق نگهداری"
+          : "Industrial machinery registry, technical specifications, and maintenance lifecycle",
+        icon: Gauge 
+      },
+      { 
+        id: "categories" as AssetTab, 
+        label: t("nav.categories"), 
+        description: isRtl
+          ? "گروه‌بندی تخصصی ماشین‌آلات، پارامترهای مهندسی و بازه‌های استاندارد فنی"
+          : "Equipment classification, engineering parameters, and operational thresholds",
+        icon: Layers 
+      },
+      { 
+        id: "locations" as AssetTab, 
+        label: t("nav.locations"), 
+        description: isRtl
+          ? "جانمایی و موقعیت استقرار تجهیزات در سالن‌ها، خطوط تولید و کارگاه‌ها"
+          : "Physical plant zones, production lines, and workshop bays layout",
+        icon: MapPin 
+      },
+    ],
+    [t, isRtl]
+  );
+
+  const activeNavItem = useMemo(
+    () => navItems.find((item) => item.id === activeTab) || navItems[0],
+    [navItems, activeTab]
+  );
+  const ActiveIcon = activeNavItem.icon;
+
+  const handleTabClick = (tabId: AssetTab) => {
+    if (tabId === activeTab) return;
+    router.push(`/assets/${tabId}`);
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  };
 
   const renderActiveView = () => {
     switch (activeTab) {
@@ -55,10 +106,9 @@ export function AssetsModuleShell() {
 
   return (
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
-      {/* ── 1. Top Unified Header (Stable Title: ESP Asset) ── */}
+      {/* ── 1. Top Unified Header (Stable Module Title: ESP Asset - NO subTag) ── */}
       <AppHeader
         tag="ESP Asset"
-        subTag={isRtl ? "مدیریت تجهیزات و ماشین‌آلات صنعتی کارخانه" : "Industrial Assets & Machinery Registry"}
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
@@ -99,12 +149,7 @@ export function AssetsModuleShell() {
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => {
-                      setActiveTab(item.id);
-                      if (typeof window !== "undefined" && window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
+                    onClick={() => handleTabClick(item.id)}
                     className={cn(
                       "group relative flex items-center rounded-full outline-none cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0",
                       sidebarOpen ? "w-full h-[42px]" : "w-[42px] h-[42px]",
@@ -154,6 +199,23 @@ export function AssetsModuleShell() {
         {/* ── 3. Main Content Container (Jump-Free Pure Fade Transition) ── */}
         <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 animate-in fade-in duration-150">
           <div className="max-w-7xl mx-auto space-y-6">
+            {/* Content Heading */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border/40">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <ActiveIcon className="size-5" />
+                </div>
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                    {activeNavItem.label}
+                  </h1>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                    {activeNavItem.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {renderActiveView()}
           </div>
         </main>

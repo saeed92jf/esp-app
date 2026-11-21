@@ -28,7 +28,7 @@ export default async function WarehousePage({ params }: Props) {
 
   return (
     <Suspense fallback={<ModulePageSkeleton />}>
-      <WarehouseModuleShell />
+      <WarehouseModuleShell initialTab="inventory" />
     </Suspense>
   );
 }
