@@ -80,9 +80,9 @@ export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTa
 
   return (
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
-      {/* ── 1. Top Unified Header (Stable Title: ESP Atlas - NO subTag) ── */}
+      {/* ── 1. Top Unified Header (Stable Title: ESP Customers - NO subTag) ── */}
       <AppHeader
-        tag="ESP Atlas"
+        tag="ESP Customers"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"

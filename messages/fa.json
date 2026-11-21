@@ -126,7 +126,7 @@
       "reports": "Reports",
       "sitemap": "ESP Sitemap",
       "community": "ESP Community",
-      "customers": "ESP Atlas",
+      "customers": "ESP Customers",
       "factory": "ESP Factory",
       "espAsset": "ESP Asset",
       "assets": "ESP Asset",
@@ -134,7 +134,8 @@
       "warehouse": "ESP Warehouse",
       "directory": "ESP Directory",
       "همکاران": "ESP Directory",
-      "راهنمای سازمانی": "ESP Directory"
+      "راهنمای سازمانی": "ESP Directory",
+      "atlas": "ESP Customers"
     }
   },
   "Home": {
@@ -676,7 +677,9 @@
       "language": "زبان",
       "factory": "ESP Factory",
       "customers": "ESP Customers",
-      "organization": "ESP Organization"
+      "organization": "ESP Organization",
+      "projects": "ESP Projects",
+      "media": "ESP Media"
     },
     "items": {
       "dashboard": "ESP Dashboard",
@@ -710,7 +713,7 @@
       "mediaLibrary": "ESP Library",
       "standards": "ESP Standards",
       "Claud-Flow": "Claude Flow",
-      "customers": "ESP Atlas",
+      "customers": "ESP Customers",
       "directory": "ESP Directory",
       "espCoding": "ESP Coding",
       "espAsset": "ESP Asset",
@@ -727,7 +730,7 @@
       "espWarehouse": "انبارداری و مدیریت قطعات کارخانه، پالت‌بندی، موجودی و لجستیک (ESP Warehouse)",
       "assets": "شناسنامه ماشین‌آلات صنعتی، مشخصات فنی و موقعیت استقرار تجهیزات (ESP Asset)",
       "warehouse": "انبارداری و مدیریت قطعات کارخانه، پالت‌بندی، موجودی و لجستیک (ESP Warehouse)",
-      "customers": "بانک اطلاعات جامع مجتمع‌های پتروشیمی، پالایشگاهی، هلدینگ‌ها و لایسنسورها (ESP Atlas)",
+      "customers": "بانک اطلاعات جامع مجتمع‌های پتروشیمی، پالایشگاهی، هلدینگ‌ها و لایسنسورها (ESP Customers)",
       "projects": "تعریف، سازمان‌دهی و پیگیری پروژه‌های مهندسی.",
       "tasks": "مدیریت کارها، بردهای کانبان و رهگیری وظایف.",
       "dictionary": "مرجع واژگان تخصصی مهندسی، متریال و استانداردها.",

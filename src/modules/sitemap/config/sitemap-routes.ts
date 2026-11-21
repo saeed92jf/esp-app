@@ -233,8 +233,8 @@ const NAV_ITEM_METADATA: Record<
     renderType: "CSR",
   },
   "/customers": {
-    titleEn: "ESP Atlas",
-    titleFa: "ESP Atlas (بانک اطلاعات جامع مشتریان و هلدینگ‌ها)",
+    titleEn: "ESP Customers",
+    titleFa: "ESP Customers (بانک اطلاعات جامع مشتریان و هلدینگ‌ها)",
     descEn: "Comprehensive enterprise directory of petrochemical, refinery, gas, and steel clients.",
     descFa: "بانک جامع اطلاعات کارفرمایان صنایع نفت، گاز، پتروشیمی، پالایشگاهی و فولاد.",
     renderType: "CSR",

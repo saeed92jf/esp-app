@@ -215,7 +215,7 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
                               className="size-5 shrink-0 text-zinc-700 dark:text-zinc-400 group-hover:text-foreground transition-colors"
                             />
                           )}
-                          <span>{tSections(group.labelKey)}</span>
+                          <span>{group.title || tSections(group.labelKey)}</span>
                         </span>
                         <ChevronDown
                           className={cn(
@@ -272,7 +272,7 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
                                       />
                                     )}
                                     <span className="relative z-10 transition-colors">
-                                      {tItems(item.labelKey)}
+                                      {item.title || tItems(item.labelKey)}
                                     </span>
                                   </span>
                                 </Link>

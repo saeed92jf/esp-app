@@ -124,7 +124,7 @@ export function DashboardMenuSidebar() {
                 <AccordionTrigger className="segmented-item relative flex items-center justify-between px-4 py-3.5 text-sm font-semibold hover:no-underline outline-none cursor-pointer">
                   <span className="relative z-10 flex items-center gap-3">
                     {GroupIcon && <GroupIcon className="size-4.5 shrink-0 text-muted-foreground" />}
-                    <span>{tSections(group.labelKey)}</span>
+                    <span>{group.title || tSections(group.labelKey)}</span>
                   </span>
                 </AccordionTrigger>
 
@@ -150,7 +150,7 @@ export function DashboardMenuSidebar() {
                                 <ItemIcon className="relative z-10 size-4.5 shrink-0" />
                               )}
                               <span className="relative z-10 text-sm font-medium">
-                                {tItems(item.labelKey)}
+                                {item.title || tItems(item.labelKey)}
                               </span>
                             </Link>
                           </li>

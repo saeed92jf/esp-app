@@ -84,8 +84,8 @@ const MODULE_REGISTRY: Record<string, ModuleConfig> = {
   "/customers": {
     icon: Buildings,
     color: "teal",
-    badgeFa: "اطلس جامع صنایع و لایسنسورها (ESP Atlas)",
-    badgeEn: "ESP Atlas - Clients & Licensors",
+    badgeFa: "اطلس جامع صنایع و لایسنسورها (ESP Customers)",
+    badgeEn: "ESP Customers - Clients & Licensors",
     sitelinks: [
       { labelFa: "مشتریان و صنایع", labelEn: "Clients & Complexes", href: "/customers" },
       { labelFa: "دایرکتوری لایسنسورها", labelEn: "Licensors Directory", href: "/customers?tab=licensors" },

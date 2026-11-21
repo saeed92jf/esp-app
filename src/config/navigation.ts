@@ -291,6 +291,8 @@ export function resolveNavIconGradient(color?: NavColor): string {
 
 export interface NavItem {
   labelKey: string;
+  title?: string;
+  titleFa?: string;
   href: string;
   icon?: PhosphorIcon;
   /** Optional semantic color token for this nav item. */
@@ -311,6 +313,8 @@ export interface NavItem {
 export interface NavGroup {
   id: string;
   labelKey: string;
+  title?: string;
+  titleFa?: string;
   icon?: PhosphorIcon;
   /** Default color applied to items that don't specify their own color. */
   color?: NavColor;
@@ -322,11 +326,15 @@ export const NAVIGATION: NavGroup[] = [
   {
     id: "engineering",
     labelKey: "engineering",
+    title: "ESP Engineering",
+    titleFa: "ESP Engineering",
     icon: Cpu,
     color: "violet",
     items: [
       {
         labelKey: "ESP-Flow",
+        title: "ESP Flow",
+        titleFa: "ESP Flow",
         href: "/ESP-Flow",
         icon: TreeStructure,
         color: "violet",
@@ -335,6 +343,8 @@ export const NAVIGATION: NavGroup[] = [
       },
       {
         labelKey: "datasheetAI",
+        title: "ESP Datasheet",
+        titleFa: "ESP Datasheet",
         href: "/datasheet-ai",
         icon: FileMagnifyingGlass,
         color: "cyan",
@@ -343,6 +353,8 @@ export const NAVIGATION: NavGroup[] = [
       },
       {
         labelKey: "espCoding",
+        title: "ESP Coding",
+        titleFa: "ESP Coding",
         href: "/engineering/esp-coding",
         icon: TreeStructure,
         color: "emerald",
@@ -354,11 +366,15 @@ export const NAVIGATION: NavGroup[] = [
   {
     id: "factory",
     labelKey: "factory",
+    title: "ESP Factory",
+    titleFa: "ESP Factory",
     icon: Factory,
     color: "amber",
     items: [
       {
         labelKey: "espAsset",
+        title: "ESP Asset",
+        titleFa: "ESP Asset",
         href: "/assets",
         icon: Gauge,
         color: "cyan",
@@ -367,6 +383,8 @@ export const NAVIGATION: NavGroup[] = [
       },
       {
         labelKey: "espWarehouse",
+        title: "ESP Warehouse",
+        titleFa: "ESP Warehouse",
         href: "/warehouse",
         icon: Warehouse,
         color: "amber",
@@ -378,17 +396,23 @@ export const NAVIGATION: NavGroup[] = [
   {
     id: "projectManagement",
     labelKey: "projectManagement",
+    title: "ESP Projects",
+    titleFa: "ESP Projects",
     icon: Kanban,
     color: "amber",
     items: [
       {
         labelKey: "projects",
+        title: "ESP Projects",
+        titleFa: "ESP Projects",
         href: "/projects",
         icon: Kanban,
         color: "blue",
       },
       {
         labelKey: "tasks",
+        title: "ESP Tasks",
+        titleFa: "ESP Tasks",
         href: "/tasks",
         icon: ListChecks,
         color: "sky",
@@ -398,11 +422,15 @@ export const NAVIGATION: NavGroup[] = [
   {
     id: "customers",
     labelKey: "customers",
+    title: "ESP Customers",
+    titleFa: "ESP Customers",
     icon: Buildings,
     color: "teal",
     items: [
       {
         labelKey: "customers",
+        title: "ESP Customers",
+        titleFa: "ESP Customers",
         href: "/customers",
         icon: Buildings,
         color: "teal",
@@ -414,11 +442,15 @@ export const NAVIGATION: NavGroup[] = [
   {
     id: "knowledge",
     labelKey: "knowledge",
+    title: "ESP Media",
+    titleFa: "ESP Media",
     icon: BookOpenText,
     color: "emerald",
     items: [
       {
         labelKey: "dictionary",
+        title: "ESP Dictionary",
+        titleFa: "ESP Dictionary",
         href: "/dictionary",
         icon: BookOpenText,
         color: "emerald",
@@ -427,6 +459,8 @@ export const NAVIGATION: NavGroup[] = [
       },
       {
         labelKey: "didYouKnow",
+        title: "ESP Insights",
+        titleFa: "ESP Insights",
         href: "/did-you-know",
         icon: Lightbulb,
         color: "amber",
@@ -435,6 +469,8 @@ export const NAVIGATION: NavGroup[] = [
       },
       {
         labelKey: "videos",
+        title: "ESP Videos",
+        titleFa: "ESP Videos",
         href: "/aparat",
         icon: VideoCamera,
         color: "rose",
@@ -443,6 +479,8 @@ export const NAVIGATION: NavGroup[] = [
       },
       {
         labelKey: "community",
+        title: "ESP Community",
+        titleFa: "ESP Community",
         href: "/community",
         icon: ChatCircleDots,
         color: "indigo",
@@ -454,11 +492,15 @@ export const NAVIGATION: NavGroup[] = [
   {
     id: "organization",
     labelKey: "organization",
+    title: "ESP Organization",
+    titleFa: "ESP Organization",
     icon: Users,
     color: "sky",
     items: [
       {
         labelKey: "directory",
+        title: "ESP Directory",
+        titleFa: "ESP Directory",
         href: "/directory",
         icon: AddressBook,
         color: "sky",
@@ -469,7 +511,6 @@ export const NAVIGATION: NavGroup[] = [
   },
 ];
 
-/** Primary navigation derived from the `main` group (top bar). */
 export const PRIMARY_NAV: NavItem[] =
   NAVIGATION.find((group) => group.id === "main")?.items ?? [];
 
