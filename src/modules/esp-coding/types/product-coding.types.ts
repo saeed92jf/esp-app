@@ -49,6 +49,24 @@ export interface ProductionTreeSourceRecord {
   hydraulic?: boolean;
 }
 
+export interface ProductTreeCombination {
+  cat: string;
+  catCode: string;
+  ip: string;
+  ipCode: string;
+  pt: string;
+  ptCode: string;
+  shape: string;
+  shapeCode: string;
+  type: string;
+  typeCode: string;
+  lift: string;
+  liftCode: string;
+  thk: string;
+  thkCode: string;
+  pic?: string;
+}
+
 export interface DynamicAttributeDefinition {
   key: string; // e.g. "P1", "P2", "P3", "P4", "Parameter"
   labelEn: string;

@@ -2,7 +2,7 @@
 import fs from "fs";
 import path from "path";
 import * as xlsx from "xlsx";
-import { ProductionTreeSourceRecord, MaterialMasterRecord, MaterialFormRecord } from "@/modules/esp-coding/types";
+import { ProductionTreeSourceRecord, MaterialMasterRecord, MaterialFormRecord, ProductTreeCombination } from "@/modules/esp-coding/types";
 
 /**
  * RULE: The authoritative Coding.xlsx is bundled inside the project at:
@@ -325,6 +325,7 @@ export class CodingExcelProvider {
     liftSizes: Array<{ id: string; name: string; code: string }>;
     thicknesses: Array<{ id: string; name: string; code: string }>;
     picLookup: Record<string, string>;
+    combinations: ProductTreeCombination[];
   } {
     const data = this.loadWorkbook().productionTree;
 
@@ -405,6 +406,24 @@ export class CodingExcelProvider {
       }
     });
 
+    const combinations = data.map((r) => ({
+      cat: String(r.productionCategory || "").trim(),
+      catCode: String(r.productionCode || "").trim(),
+      ip: String(r.internalProduct || "").trim(),
+      ipCode: String(r.internalProductCode || "").trim(),
+      pt: String(r.productType || "").trim(),
+      ptCode: String(r.productTypeCode || "").trim(),
+      shape: String(r.shape || "").trim(),
+      shapeCode: String(r.shapeCode || "").trim(),
+      type: String(r.type || "").trim(),
+      typeCode: String(r.typeCode || "").trim(),
+      lift: String(r.liftHoleSize || "").trim(),
+      liftCode: String(r.liftSizeCode || "").trim(),
+      thk: String(r.thk || "").trim(),
+      thkCode: String(r.thkCode || "").trim(),
+      pic: r.pic || "",
+    }));
+
     return {
       categories: Array.from(catMap.values()),
       internalProducts: Array.from(intProdMap.values()),
@@ -414,7 +433,12 @@ export class CodingExcelProvider {
       liftSizes: Array.from(liftMap.values()),
       thicknesses: Array.from(thkMap.values()),
       picLookup,
+      combinations,
     };
+  }
+
+  public static clearCache(): void {
+    memoryCache = null;
   }
 
   public static getMaterials(filter?: {

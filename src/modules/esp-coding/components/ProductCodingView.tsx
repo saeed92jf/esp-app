@@ -8,18 +8,16 @@ import {
   Layers,
   Sparkles,
   CheckCircle2,
-  Clock,
   AlertCircle,
   Copy,
   RotateCcw,
-  PlusCircle,
   BookmarkCheck,
   Info,
   ImageIcon,
   Maximize2,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -39,34 +37,38 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { EspCodingClientService } from "../services/esp-coding.service";
-import { CodeGenerationResult } from "../types";
+import { CodeGenerationResult, ProductTreeCombination } from "../types";
+
+function naturalCompare(a: string, b: string): number {
+  const numA = parseFloat(a);
+  const numB = parseFloat(b);
+  if (!isNaN(numA) && !isNaN(numB)) {
+    return numA - numB;
+  }
+  return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
+}
+
+function normalizePicUrl(val: any): string {
+  if (!val || typeof val !== "string") return "";
+  const trimmed = val.trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("/coding-docs/")) return trimmed;
+  const m = trimmed.match(/Document[\/\\](.+)$/i);
+  if (m) {
+    return "/coding-docs/" + m[1].replace(/\\/g, "/");
+  }
+  return trimmed;
+}
 
 export function ProductCodingView() {
   const t = useTranslations("espCoding.products");
   const locale = useLocale();
   const isRtl = locale === "fa";
 
-  const [options, setOptions] = useState<{
-    categories: Array<{ id: string; name: string; code: string }>;
-    internalProducts: Array<{ id: string; name: string; code: string; categoryId: string }>;
-    productTypes: Array<{ id: string; name: string; code: string; internalProductId: string }>;
-    shapes: Array<{ id: string; name: string; code: string }>;
-    types: Array<{ id: string; name: string; code: string }>;
-    liftSizes: Array<{ id: string; name: string; code: string }>;
-    thicknesses: Array<{ id: string; name: string; code: string }>;
-    picLookup?: Record<string, string>;
-  }>({
-    categories: [],
-    internalProducts: [],
-    productTypes: [],
-    shapes: [],
-    types: [],
-    liftSizes: [],
-    thicknesses: [],
-    picLookup: {},
-  });
+  const [combinations, setCombinations] = useState<ProductTreeCombination[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Selected State
+  // Selected State for all 7 levels
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedInternalProduct, setSelectedInternalProduct] = useState<string>("");
   const [selectedProductType, setSelectedProductType] = useState<string>("");
@@ -78,28 +80,21 @@ export function ProductCodingView() {
   // Preview Modal for Document / Drawing
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  // Dynamic Parameters (P1-P4)
-  const [p1Value, setP1Value] = useState("");
-  const [p2Value, setP2Value] = useState("");
-  const [p3Value, setP3Value] = useState("");
-  const [p4Value, setP4Value] = useState("");
-  const [parameterValue, setParameterValue] = useState("");
-
-  const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatedResult, setGeneratedResult] = useState<CodeGenerationResult | null>(null);
 
-  // Load hierarchy options on mount
+  // Load combinations on mount
   useEffect(() => {
     async function init() {
       try {
         setLoading(true);
         const res = await EspCodingClientService.getHierarchyOptions();
         if (res.available && res.options) {
-          setOptions(res.options);
-          // Set sensible defaults from first item
-          if (res.options.categories.length > 0) {
-            setSelectedCategory(res.options.categories[0].name);
+          if (Array.isArray(res.options.combinations)) {
+            setCombinations(res.options.combinations);
+            if (res.options.combinations.length > 0) {
+              setSelectedCategory(res.options.combinations[0].cat);
+            }
           }
         }
       } catch (err) {
@@ -111,68 +106,311 @@ export function ProductCodingView() {
     init();
   }, []);
 
-  // Filtered dropdowns based on cascades
-  const filteredInternalProducts = useMemo(() => {
-    const catObj = options.categories.find((c) => c.name === selectedCategory);
-    if (!catObj) return options.internalProducts;
-    return options.internalProducts.filter((ip) => ip.categoryId === catObj.id);
-  }, [selectedCategory, options]);
+  // Filter combinations based on active selections, ignoring a specified field
+  const getMatchingRecords = (
+    ignoreField?: "cat" | "ip" | "pt" | "shape" | "type" | "lift" | "thk"
+  ) => {
+    return combinations.filter((r) => {
+      if (ignoreField !== "cat" && selectedCategory && r.cat !== selectedCategory) return false;
+      if (ignoreField !== "ip" && selectedInternalProduct && r.ip !== selectedInternalProduct) return false;
+      if (ignoreField !== "pt" && selectedProductType && r.pt !== selectedProductType) return false;
+      if (ignoreField !== "shape" && selectedShape && r.shape !== selectedShape) return false;
+      if (ignoreField !== "type" && selectedType && r.type !== selectedType) return false;
+      if (ignoreField !== "lift" && selectedLiftSize && r.lift !== selectedLiftSize) return false;
+      if (ignoreField !== "thk" && selectedThickness && r.thk !== selectedThickness) return false;
+      return true;
+    });
+  };
 
-  const filteredProductTypes = useMemo(() => {
-    const ipObj = options.internalProducts.find((ip) => ip.name === selectedInternalProduct);
-    if (!ipObj) return options.productTypes;
-    return options.productTypes.filter((pt) => pt.internalProductId === ipObj.id);
-  }, [selectedInternalProduct, options]);
+  // Derive available options for each of the 7 combo boxes
+  const categoryOptions = useMemo(() => {
+    const records = getMatchingRecords("cat");
+    const map = new Map<string, string>();
+    records.forEach((r) => {
+      if (r.cat && !map.has(r.cat)) map.set(r.cat, r.catCode);
+    });
+    return Array.from(map.entries())
+      .map(([name, code]) => ({ name, code }))
+      .sort((a, b) => naturalCompare(a.name, b.name));
+  }, [
+    combinations,
+    selectedInternalProduct,
+    selectedProductType,
+    selectedShape,
+    selectedType,
+    selectedLiftSize,
+    selectedThickness,
+  ]);
+
+  const internalProductOptions = useMemo(() => {
+    const records = getMatchingRecords("ip");
+    const map = new Map<string, string>();
+    records.forEach((r) => {
+      if (r.ip && !map.has(r.ip)) map.set(r.ip, r.ipCode);
+    });
+    return Array.from(map.entries())
+      .map(([name, code]) => ({ name, code }))
+      .sort((a, b) => naturalCompare(a.name, b.name));
+  }, [
+    combinations,
+    selectedCategory,
+    selectedProductType,
+    selectedShape,
+    selectedType,
+    selectedLiftSize,
+    selectedThickness,
+  ]);
+
+  const productTypeOptions = useMemo(() => {
+    const records = getMatchingRecords("pt");
+    const map = new Map<string, string>();
+    records.forEach((r) => {
+      if (r.pt && !map.has(r.pt)) map.set(r.pt, r.ptCode);
+    });
+    return Array.from(map.entries())
+      .map(([name, code]) => ({ name, code }))
+      .sort((a, b) => naturalCompare(a.name, b.name));
+  }, [
+    combinations,
+    selectedCategory,
+    selectedInternalProduct,
+    selectedShape,
+    selectedType,
+    selectedLiftSize,
+    selectedThickness,
+  ]);
+
+  const shapeOptions = useMemo(() => {
+    const records = getMatchingRecords("shape");
+    const map = new Map<string, string>();
+    records.forEach((r) => {
+      if (r.shape && !map.has(r.shape)) map.set(r.shape, r.shapeCode);
+    });
+    return Array.from(map.entries())
+      .map(([name, code]) => ({ name, code }))
+      .sort((a, b) => naturalCompare(a.name, b.name));
+  }, [
+    combinations,
+    selectedCategory,
+    selectedInternalProduct,
+    selectedProductType,
+    selectedType,
+    selectedLiftSize,
+    selectedThickness,
+  ]);
+
+  const typeOptions = useMemo(() => {
+    const records = getMatchingRecords("type");
+    const map = new Map<string, string>();
+    records.forEach((r) => {
+      if (r.type && !map.has(r.type)) map.set(r.type, r.typeCode);
+    });
+    return Array.from(map.entries())
+      .map(([name, code]) => ({ name, code }))
+      .sort((a, b) => naturalCompare(a.name, b.name));
+  }, [
+    combinations,
+    selectedCategory,
+    selectedInternalProduct,
+    selectedProductType,
+    selectedShape,
+    selectedLiftSize,
+    selectedThickness,
+  ]);
+
+  const liftSizeOptions = useMemo(() => {
+    const records = getMatchingRecords("lift");
+    const map = new Map<string, string>();
+    records.forEach((r) => {
+      if (r.lift && !map.has(r.lift)) map.set(r.lift, r.liftCode);
+    });
+    return Array.from(map.entries())
+      .map(([name, code]) => ({ name, code }))
+      .sort((a, b) => naturalCompare(a.name, b.name));
+  }, [
+    combinations,
+    selectedCategory,
+    selectedInternalProduct,
+    selectedProductType,
+    selectedShape,
+    selectedType,
+    selectedThickness,
+  ]);
+
+  const thicknessOptions = useMemo(() => {
+    const records = getMatchingRecords("thk");
+    const map = new Map<string, string>();
+    records.forEach((r) => {
+      if (r.thk && !map.has(r.thk)) map.set(r.thk, r.thkCode);
+    });
+    return Array.from(map.entries())
+      .map(([name, code]) => ({ name, code }))
+      .sort((a, b) => naturalCompare(a.name, b.name));
+  }, [
+    combinations,
+    selectedCategory,
+    selectedInternalProduct,
+    selectedProductType,
+    selectedShape,
+    selectedType,
+    selectedLiftSize,
+  ]);
+
+  // Set any field and validate that downstream selections remain valid
+  const setFieldAndValidate = (
+    field: "cat" | "ip" | "pt" | "shape" | "type" | "lift" | "thk",
+    value: string
+  ) => {
+    let nextCat = field === "cat" ? value : selectedCategory;
+    let nextIp = field === "ip" ? value : selectedInternalProduct;
+    let nextPt = field === "pt" ? value : selectedProductType;
+    let nextShape = field === "shape" ? value : selectedShape;
+    let nextType = field === "type" ? value : selectedType;
+    let nextLift = field === "lift" ? value : selectedLiftSize;
+    let nextThk = field === "thk" ? value : selectedThickness;
+
+    // Validate downstream fields
+    if (nextIp) {
+      const valid = combinations.some((r) => (!nextCat || r.cat === nextCat) && r.ip === nextIp);
+      if (!valid) nextIp = "";
+    }
+    if (nextPt) {
+      const valid = combinations.some(
+        (r) =>
+          (!nextCat || r.cat === nextCat) &&
+          (!nextIp || r.ip === nextIp) &&
+          r.pt === nextPt
+      );
+      if (!valid) nextPt = "";
+    }
+    if (nextShape) {
+      const valid = combinations.some(
+        (r) =>
+          (!nextCat || r.cat === nextCat) &&
+          (!nextIp || r.ip === nextIp) &&
+          (!nextPt || r.pt === nextPt) &&
+          r.shape === nextShape
+      );
+      if (!valid) nextShape = "";
+    }
+    if (nextType) {
+      const valid = combinations.some(
+        (r) =>
+          (!nextCat || r.cat === nextCat) &&
+          (!nextIp || r.ip === nextIp) &&
+          (!nextPt || r.pt === nextPt) &&
+          (!nextShape || r.shape === nextShape) &&
+          r.type === nextType
+      );
+      if (!valid) nextType = "";
+    }
+    if (nextLift) {
+      const valid = combinations.some(
+        (r) =>
+          (!nextCat || r.cat === nextCat) &&
+          (!nextIp || r.ip === nextIp) &&
+          (!nextPt || r.pt === nextPt) &&
+          (!nextShape || r.shape === nextShape) &&
+          (!nextType || r.type === nextType) &&
+          r.lift === nextLift
+      );
+      if (!valid) nextLift = "";
+    }
+    if (nextThk) {
+      const valid = combinations.some(
+        (r) =>
+          (!nextCat || r.cat === nextCat) &&
+          (!nextIp || r.ip === nextIp) &&
+          (!nextPt || r.pt === nextPt) &&
+          (!nextShape || r.shape === nextShape) &&
+          (!nextType || r.type === nextType) &&
+          (!nextLift || r.lift === nextLift) &&
+          r.thk === nextThk
+      );
+      if (!valid) nextThk = "";
+    }
+
+    setSelectedCategory(nextCat);
+    setSelectedInternalProduct(nextIp);
+    setSelectedProductType(nextPt);
+    setSelectedShape(nextShape);
+    setSelectedType(nextType);
+    setSelectedLiftSize(nextLift);
+    setSelectedThickness(nextThk);
+  };
 
   // Active matching drawing / image from production tree
   const activeProductPic = useMemo(() => {
-    const lookup = options.picLookup;
-    if (!lookup) return "";
-
-    const k4 = `${selectedCategory}||${selectedInternalProduct}||${selectedProductType}||${selectedShape}`;
-    if (selectedShape && lookup[k4]) return lookup[k4];
-
-    const k3 = `${selectedCategory}||${selectedInternalProduct}||${selectedProductType}`;
-    if (selectedProductType && lookup[k3]) return lookup[k3];
-
-    const k2 = `${selectedCategory}||${selectedInternalProduct}`;
-    if (selectedInternalProduct && lookup[k2]) return lookup[k2];
-
-    const k1 = selectedCategory;
-    if (selectedCategory && lookup[k1]) return lookup[k1];
-
+    const matching = getMatchingRecords();
+    const found = matching.find((r) => r.pic && r.pic.trim());
+    if (found?.pic) {
+      return normalizePicUrl(found.pic);
+    }
     return "";
-  }, [selectedCategory, selectedInternalProduct, selectedProductType, selectedShape, options.picLookup]);
+  }, [
+    combinations,
+    selectedCategory,
+    selectedInternalProduct,
+    selectedProductType,
+    selectedShape,
+    selectedType,
+    selectedLiftSize,
+    selectedThickness,
+  ]);
+
+  // Active codes for the current selection
+  const activeCodes = useMemo(() => {
+    const matching = getMatchingRecords();
+    const first = matching[0];
+
+    const catObj = categoryOptions.find((c) => c.name === selectedCategory);
+    const ipObj = internalProductOptions.find((ip) => ip.name === selectedInternalProduct);
+    const ptObj = productTypeOptions.find((pt) => pt.name === selectedProductType);
+    const shapeObj = shapeOptions.find((s) => s.name === selectedShape);
+    const typeObj = typeOptions.find((t) => t.name === selectedType);
+    const liftObj = liftSizeOptions.find((l) => l.name === selectedLiftSize);
+    const thkObj = thicknessOptions.find((th) => th.name === selectedThickness);
+
+    return {
+      catCode: catObj?.code || first?.catCode || "",
+      ipCode: ipObj?.code || first?.ipCode || "",
+      ptCode: ptObj?.code || first?.ptCode || "",
+      shapeCode: shapeObj?.code || first?.shapeCode || "",
+      typeCode: typeObj?.code || first?.typeCode || "",
+      liftCode: liftObj?.code || first?.liftCode || "",
+      thkCode: thkObj?.code || first?.thkCode || "",
+    };
+  }, [
+    selectedCategory,
+    selectedInternalProduct,
+    selectedProductType,
+    selectedShape,
+    selectedType,
+    selectedLiftSize,
+    selectedThickness,
+    categoryOptions,
+    internalProductOptions,
+    productTypeOptions,
+    shapeOptions,
+    typeOptions,
+    liftSizeOptions,
+    thicknessOptions,
+  ]);
 
   // Recalculate code whenever selections change
   useEffect(() => {
-    const catObj = options.categories.find((c) => c.name === selectedCategory);
-    const ipObj = options.internalProducts.find((ip) => ip.name === selectedInternalProduct);
-    const ptObj = options.productTypes.find((pt) => pt.name === selectedProductType);
-    const shapeObj = options.shapes.find((s) => s.name === selectedShape);
-    const typeObj = options.types.find((t) => t.name === selectedType);
-    const liftObj = options.liftSizes.find((l) => l.name === selectedLiftSize);
-    const thkObj = options.thicknesses.find((th) => th.name === selectedThickness);
-
     const attributes: Record<string, string> = {
       ESP_Code: "E",
-      Production_Code: catObj?.code || "",
-      Internal_Product_Code: ipObj?.code || "",
-      Product_Type_Code: ptObj?.code || "",
-      Shape_Code: shapeObj?.code || "",
-      Type_Code: typeObj?.code || "",
-      Lift_Size_Code: liftObj?.code || "",
-      Thk_Code: thkObj?.code || "",
-      P1: p1Value,
-      P2: p2Value,
-      P3: p3Value,
-      P4: p4Value,
-      Parameter: parameterValue,
+      Production_Code: selectedCategory ? activeCodes.catCode : "",
+      Internal_Product_Code: selectedInternalProduct ? activeCodes.ipCode : "",
+      Product_Type_Code: selectedProductType ? activeCodes.ptCode : "",
+      Shape_Code: selectedShape ? activeCodes.shapeCode : "",
+      Type_Code: selectedType ? activeCodes.typeCode : "",
+      Lift_Size_Code: selectedLiftSize ? activeCodes.liftCode : "",
+      Thk_Code: selectedThickness ? activeCodes.thkCode : "",
     };
 
-    EspCodingClientService.generateCode({
-      attributes,
-    })
+    EspCodingClientService.generateCode({ attributes })
       .then((res) => {
         setGeneratedResult(res);
       })
@@ -187,12 +425,7 @@ export function ProductCodingView() {
     selectedType,
     selectedLiftSize,
     selectedThickness,
-    p1Value,
-    p2Value,
-    p3Value,
-    p4Value,
-    parameterValue,
-    options,
+    activeCodes,
   ]);
 
   const handleCopyCode = () => {
@@ -203,18 +436,14 @@ export function ProductCodingView() {
   };
 
   const handleReset = () => {
-    setSelectedCategory(options.categories[0]?.name || "");
+    const firstCat = combinations[0]?.cat || "";
+    setSelectedCategory(firstCat);
     setSelectedInternalProduct("");
     setSelectedProductType("");
     setSelectedShape("");
     setSelectedType("");
     setSelectedLiftSize("");
     setSelectedThickness("");
-    setP1Value("");
-    setP2Value("");
-    setP3Value("");
-    setP4Value("");
-    setParameterValue("");
   };
 
   const handleReserve = async () => {
@@ -236,11 +465,14 @@ export function ProductCodingView() {
         liftHoleSize: selectedLiftSize,
         thk: selectedThickness,
         attributes: {
-          P1: p1Value,
-          P2: p2Value,
-          P3: p3Value,
-          P4: p4Value,
-          Parameter: parameterValue,
+          ESP_Code: "E",
+          Production_Code: activeCodes.catCode,
+          Internal_Product_Code: activeCodes.ipCode,
+          Product_Type_Code: activeCodes.ptCode,
+          Shape_Code: activeCodes.shapeCode,
+          Type_Code: activeCodes.typeCode,
+          Lift_Size_Code: activeCodes.liftCode,
+          Thk_Code: activeCodes.thkCode,
         },
       });
       toast.success(t("reservedSuccess"));
@@ -270,11 +502,14 @@ export function ProductCodingView() {
         liftHoleSize: selectedLiftSize,
         thk: selectedThickness,
         attributes: {
-          P1: p1Value,
-          P2: p2Value,
-          P3: p3Value,
-          P4: p4Value,
-          Parameter: parameterValue,
+          ESP_Code: "E",
+          Production_Code: activeCodes.catCode,
+          Internal_Product_Code: activeCodes.ipCode,
+          Product_Type_Code: activeCodes.ptCode,
+          Shape_Code: activeCodes.shapeCode,
+          Type_Code: activeCodes.typeCode,
+          Lift_Size_Code: activeCodes.liftCode,
+          Thk_Code: activeCodes.thkCode,
         },
       });
       toast.success(t("registeredSuccess"));
@@ -284,6 +519,81 @@ export function ProductCodingView() {
       setIsSubmitting(false);
     }
   };
+
+  const matchingCount = getMatchingRecords().length;
+
+  const comboConfig = [
+    {
+      id: "cat" as const,
+      num: 1,
+      labelFa: "رده تولید (Category)",
+      labelEn: "Production Category",
+      value: selectedCategory,
+      options: categoryOptions,
+      placeholderFa: "انتخاب رده تولید...",
+      placeholderEn: "Select Category...",
+    },
+    {
+      id: "ip" as const,
+      num: 2,
+      labelFa: "محصول داخلی (Internal Product)",
+      labelEn: "Internal Product",
+      value: selectedInternalProduct,
+      options: internalProductOptions,
+      placeholderFa: "انتخاب محصول داخلی...",
+      placeholderEn: "Select Internal Product...",
+    },
+    {
+      id: "pt" as const,
+      num: 3,
+      labelFa: "نوع محصول (Product Type)",
+      labelEn: "Product Type",
+      value: selectedProductType,
+      options: productTypeOptions,
+      placeholderFa: "انتخاب نوع محصول...",
+      placeholderEn: "Select Product Type...",
+    },
+    {
+      id: "shape" as const,
+      num: 4,
+      labelFa: "شکل هندسی (Shape)",
+      labelEn: "Shape",
+      value: selectedShape,
+      options: shapeOptions,
+      placeholderFa: "انتخاب شکل هندسی...",
+      placeholderEn: "Select Shape...",
+    },
+    {
+      id: "type" as const,
+      num: 5,
+      labelFa: "تیپ ساختار (Type)",
+      labelEn: "Type",
+      value: selectedType,
+      options: typeOptions,
+      placeholderFa: "انتخاب تیپ ساختار...",
+      placeholderEn: "Select Type...",
+    },
+    {
+      id: "lift" as const,
+      num: 6,
+      labelFa: "سایز سوراخکاری / لیفت (Lift)",
+      labelEn: "Lift / Hole Size",
+      value: selectedLiftSize,
+      options: liftSizeOptions,
+      placeholderFa: "انتخاب سایز لیفت / سوراخکاری...",
+      placeholderEn: "Select Lift / Hole Size...",
+    },
+    {
+      id: "thk" as const,
+      num: 7,
+      labelFa: "ضخامت متریال (Thickness)",
+      labelEn: "Thickness (mm)",
+      value: selectedThickness,
+      options: thicknessOptions,
+      placeholderFa: "انتخاب ضخامت متریال...",
+      placeholderEn: "Select Thickness...",
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-6 w-full animate-in fade-in duration-150">
@@ -296,8 +606,8 @@ export function ProductCodingView() {
           </h1>
           <p className="text-xs text-muted-foreground">
             {isRtl
-              ? "انتخاب مشخصات، پیش‌نمایش آنی تفکیک اجزا و رزرو یا ثبت قطعی محصول در مستر دیتا"
-              : "Cascading attribute selection, real-time segment breakdown & master registration"}
+              ? "انتخاب مشخصات، فیلتر به هم وابسته کومبوباکس‌ها و صدور آنی کد محصول"
+              : "Interdependent cascading specification filters & real-time product code generation"}
           </p>
         </div>
 
@@ -315,267 +625,81 @@ export function ProductCodingView() {
 
       {/* Two Column Layout: Classification Cascades & Live Code Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Form: Classification Cascades & Dynamic Attributes (8 cols) */}
+        {/* Left Form: All 7 Comboboxes stacked under each other with titles beside them (7 cols) */}
         <div className="lg:col-span-7 flex flex-col gap-4">
-          <Card className="p-5 rounded-2xl border-border/50 bg-card shadow-xs flex flex-col gap-4">
+          <Card className="p-5 sm:p-6 rounded-2xl border-border/50 bg-card shadow-xs flex flex-col gap-4">
             <div className="flex items-center justify-between border-b border-border/30 pb-3">
-              <span className="text-xs font-bold text-foreground flex items-center gap-2">
-                <Layers className="size-4 text-primary" />
-                <span>{isRtl ? "۱. سلسله‌مراتب دسته‌بندی محصول" : "1. Product Classification Hierarchy"}</span>
+              <span className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
+                <Layers className="size-4.5 text-primary" />
+                <span>{isRtl ? "سلسله‌مراتب و مشخصات محصول" : "Product Specifications"}</span>
               </span>
               <Badge variant="outline" className="text-[10px] font-mono">
-                8 Levels
+                {matchingCount} {isRtl ? "رکورد معتبر" : "Valid records"}
               </Badge>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {/* 1. Category */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="size-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
-                    1
-                  </span>
-                  <Label className="text-xs font-semibold text-foreground">
-                    {t("selectCategory")}
-                  </Label>
-                </div>
-                <Select
-                  value={selectedCategory}
-                  onValueChange={(val) => {
-                    setSelectedCategory(val);
-                    setSelectedInternalProduct("");
-                    setSelectedProductType("");
-                  }}
-                >
-                  <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
-                    <SelectValue placeholder={t("selectCategory")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.categories.map((c) => (
-                      <SelectItem key={c.id} value={c.name} className="text-xs">
-                        {c.name} ({c.code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* 7 Comboboxes stacked vertically with titles on the side */}
+            <div className="flex flex-col divide-y divide-border/25">
+              {comboConfig.map((item) => {
+                const isSelected = Boolean(item.value);
+                const label = isRtl ? item.labelFa : item.labelEn;
+                const placeholder = isRtl ? item.placeholderFa : item.placeholderEn;
 
-              {/* 2. Internal Product */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="size-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
-                    2
-                  </span>
-                  <Label className="text-xs font-semibold text-foreground">
-                    {t("selectInternalProduct")}
-                  </Label>
-                </div>
-                <Select
-                  value={selectedInternalProduct}
-                  onValueChange={(val) => {
-                    setSelectedInternalProduct(val);
-                    setSelectedProductType("");
-                  }}
-                >
-                  <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
-                    <SelectValue placeholder={t("selectInternalProduct")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredInternalProducts.map((ip) => (
-                      <SelectItem key={ip.id} value={ip.name} className="text-xs">
-                        {ip.name} ({ip.code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                return (
+                  <div
+                    key={item.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 py-3 first:pt-0 last:pb-0"
+                  >
+                    {/* Title beside the combobox */}
+                    <div className="flex items-center gap-2.5 sm:w-48 md:w-56 lg:w-64 shrink-0">
+                      <span className="size-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs fa-num shrink-0">
+                        {item.num}
+                      </span>
+                      <Label className="text-xs sm:text-[13px] font-semibold text-foreground truncate cursor-pointer select-none">
+                        {label}
+                      </Label>
+                    </div>
 
-              {/* 3. Product Type */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="size-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
-                    3
-                  </span>
-                  <Label className="text-xs font-semibold text-foreground">
-                    {t("selectProductType")}
-                  </Label>
-                </div>
-                <Select value={selectedProductType} onValueChange={setSelectedProductType}>
-                  <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
-                    <SelectValue placeholder={t("selectProductType")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredProductTypes.map((pt) => (
-                      <SelectItem key={pt.id} value={pt.name} className="text-xs">
-                        {pt.name} ({pt.code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                    {/* Combobox */}
+                    <div className="flex-1 min-w-0 flex items-center gap-2">
+                      <Select
+                        value={item.value}
+                        onValueChange={(val) => setFieldAndValidate(item.id, val)}
+                        disabled={item.options.length === 0}
+                      >
+                        <SelectTrigger className="h-10 rounded-xl text-xs sm:text-[13px] bg-background w-full">
+                          <SelectValue placeholder={placeholder} />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-64">
+                          {item.options.map((opt) => (
+                            <SelectItem key={opt.name} value={opt.name} className="text-xs sm:text-[13px]">
+                              <div className="flex items-center justify-between w-full gap-3">
+                                <span className="truncate">{opt.name}</span>
+                                <span className="font-mono text-[11px] text-muted-foreground shrink-0 ms-2">
+                                  ({opt.code})
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
 
-              {/* 4. Shape */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="size-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
-                    4
-                  </span>
-                  <Label className="text-xs font-semibold text-foreground">
-                    {t("selectShape")}
-                  </Label>
-                </div>
-                <Select value={selectedShape} onValueChange={setSelectedShape}>
-                  <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
-                    <SelectValue placeholder={t("selectShape")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.shapes.map((s) => (
-                      <SelectItem key={s.id} value={s.name} className="text-xs">
-                        {s.name} ({s.code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* 5. Type */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="size-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
-                    5
-                  </span>
-                  <Label className="text-xs font-semibold text-foreground">
-                    {t("selectType")}
-                  </Label>
-                </div>
-                <Select value={selectedType} onValueChange={setSelectedType}>
-                  <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
-                    <SelectValue placeholder={t("selectType")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.types.slice(0, 100).map((tp) => (
-                      <SelectItem key={tp.id} value={tp.name} className="text-xs">
-                        {tp.name} ({tp.code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* 6. Lift / Hole Size */}
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center gap-1.5">
-                  <span className="size-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
-                    6
-                  </span>
-                  <Label className="text-xs font-semibold text-foreground">
-                    {t("selectLiftSize")}
-                  </Label>
-                </div>
-                <Select value={selectedLiftSize} onValueChange={setSelectedLiftSize}>
-                  <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
-                    <SelectValue placeholder={t("selectLiftSize")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.liftSizes.slice(0, 100).map((ls) => (
-                      <SelectItem key={ls.id} value={ls.name} className="text-xs">
-                        {ls.name} ({ls.code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* 7. Thickness */}
-              <div className="flex flex-col gap-1.5 sm:col-span-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="size-5 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-[11px] fa-num shrink-0">
-                    7
-                  </span>
-                  <Label className="text-xs font-semibold text-foreground">
-                    {t("selectThickness")}
-                  </Label>
-                </div>
-                <Select value={selectedThickness} onValueChange={setSelectedThickness}>
-                  <SelectTrigger className="h-9 rounded-xl text-xs bg-background">
-                    <SelectValue placeholder={t("selectThickness")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.thicknesses.map((th) => (
-                      <SelectItem key={th.id} value={th.name} className="text-xs">
-                        {th.name} ({th.code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </Card>
-
-          {/* Dynamic Engineering Parameters Card (P1 - P4) */}
-          <Card className="p-5 rounded-2xl border-border/50 bg-card shadow-xs flex flex-col gap-3.5">
-            <div className="flex items-center justify-between border-b border-border/30 pb-3">
-              <span className="text-xs font-bold text-foreground flex items-center gap-2">
-                <Sparkles className="size-4 text-amber-500" />
-                <span>{isRtl ? "۲. پارامترهای فنی پویا (P1 الی P4)" : "2. Dynamic Engineering Parameters (P1 - P4)"}</span>
-              </span>
-              <span className="text-[10px] text-muted-foreground">
-                {isRtl ? "اختیاری بر اساس خانواده محصول" : "Family-specific dynamic attributes"}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label className="text-xs text-muted-foreground">
-                  P1 (e.g. Subtype / Flow Direction)
-                </Label>
-                <Input
-                  type="text"
-                  value={p1Value}
-                  onChange={(e) => setP1Value(e.target.value)}
-                  placeholder="e.g. Internal Subtype"
-                  className="h-9 rounded-xl text-xs bg-background"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <Label className="text-xs text-muted-foreground">
-                  P2 (e.g. Hole Type / Valve Type)
-                </Label>
-                <Input
-                  type="text"
-                  value={p2Value}
-                  onChange={(e) => setP2Value(e.target.value)}
-                  placeholder="e.g. Hole Type"
-                  className="h-9 rounded-xl text-xs bg-background"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <Label className="text-xs text-muted-foreground">
-                  P3 (e.g. Hole Diameter mm / Riser Height)
-                </Label>
-                <Input
-                  type="text"
-                  value={p3Value}
-                  onChange={(e) => setP3Value(e.target.value)}
-                  placeholder="e.g. Hole Diameter (mm)"
-                  className="h-9 rounded-xl text-xs bg-background"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <Label className="text-xs text-muted-foreground">
-                  P4 (e.g. Deck Thickness mm)
-                </Label>
-                <Input
-                  type="text"
-                  value={p4Value}
-                  onChange={(e) => setP4Value(e.target.value)}
-                  placeholder="e.g. Deck Thickness (mm)"
-                  className="h-9 rounded-xl text-xs bg-background"
-                />
-              </div>
+                      {isSelected && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setFieldAndValidate(item.id, "")}
+                          className="size-9 rounded-xl text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+                          title={isRtl ? "پاک کردن انتخاب" : "Clear selection"}
+                        >
+                          <X className="size-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </Card>
         </div>
@@ -593,7 +717,7 @@ export function ProductCodingView() {
               </Badge>
             </div>
 
-            {/* Big Monospace Code Display with Sliding Number Animations */}
+            {/* Monospace Code Display with Sliding Character Animations */}
             <div className="p-4 rounded-xl bg-background border border-border/60 shadow-2xs flex items-center justify-between gap-3 overflow-hidden">
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
@@ -746,7 +870,7 @@ export function ProductCodingView() {
                   {isRtl ? "نقشه‌ای برای ترکیب فیلترهای جاری ثبت نشده است" : "No technical drawing for current selection"}
                 </span>
                 <span className="text-[10px] text-muted-foreground/70">
-                  {isRtl ? "با تغییر نوع یا شکل قطعه نقشه‌های مرتبط بارگذاری می‌شوند" : "Selecting specific shapes or types reveals attached drawings"}
+                  {isRtl ? "با انتخاب مشخصات قطعه نقشه‌های مرتبط بارگذاری می‌شوند" : "Selecting specific shapes or types reveals attached drawings"}
                 </span>
               </div>
             )}
