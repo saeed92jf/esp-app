@@ -1,4 +1,4 @@
-﻿# ==============================================================================
+# ==============================================================================
 # Euroslot Pars - Professional Production Deployment Pipeline
 # Zero-Downtime Deployment with Automated Pre-Flight Quality Gate & Data Backup
 # ==============================================================================
