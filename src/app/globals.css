@@ -344,6 +344,10 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .segmented-item {
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
     background-color: #ffffff !important;
     border-radius: 6px; /* Decreased fillet for middle items */
     overflow: hidden;
@@ -823,6 +827,16 @@ h1, h2, h3, h4, h5, h6 {
   -ms-overflow-style: none !important;
   overflow-y: scroll !important;
   overscroll-behavior: contain;
+}
+
+.popup-scroll [data-slot="scroll-area-viewport"] > div,
+.popup-scroll [data-radix-scroll-area-viewport] > div,
+.apps-radix-scroll [data-slot="scroll-area-viewport"] > div,
+.apps-radix-scroll [data-radix-scroll-area-viewport] > div {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
 }
 
 [data-slot="scroll-area-viewport"]::-webkit-scrollbar,
