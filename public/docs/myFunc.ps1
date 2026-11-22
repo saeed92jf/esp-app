@@ -86,7 +86,7 @@ function run {
     .SYNOPSIS
         Starts development servers.
         By default, runs BOTH ESP CORE (Port 3000) and NPC CORE (Port 4100) concurrently in parallel!
-        Automatically opens URLs in your default browser.
+        Automatically opens URLs (http://192.168.0.242) in your default browser.
         Usage:
           run          -> Runs BOTH ESP and NPC frontends and opens both in browser
           run all      -> Runs BOTH ESP and NPC frontends
@@ -105,27 +105,28 @@ function run {
 
     if ($Target -eq "esp") {
         Write-Host "  Starting ESP CORE Frontend Dev (Port 3000)..." -ForegroundColor Blue
-        Write-Host "  URL: http://localhost:3000 (opening in browser...)" -ForegroundColor Yellow
+        Write-Host "  URL: http://$($global:EspLanIp):3000 (opening in browser...)" -ForegroundColor Yellow
         Write-Host "============================================================" -ForegroundColor Cyan
-        Start-Job -ScriptBlock { Start-Sleep -Seconds 3; Start-Process "http://localhost:3000" } | Out-Null
+        Start-Job -ScriptBlock { param($ip) Start-Sleep -Seconds 3; Start-Process "http://$ip:3000" } -ArgumentList $global:EspLanIp | Out-Null
         pnpm --filter @apps/esp-core dev
     } elseif ($Target -eq "npc") {
         Write-Host "  Starting NPC CORE Frontend Dev (Port 4100)..." -ForegroundColor Magenta
-        Write-Host "  URL: http://localhost:4100 (opening in browser...)" -ForegroundColor Yellow
+        Write-Host "  URL: http://$($global:EspLanIp):4100 (opening in browser...)" -ForegroundColor Yellow
         Write-Host "============================================================" -ForegroundColor Cyan
-        Start-Job -ScriptBlock { Start-Sleep -Seconds 3; Start-Process "http://localhost:4100" } | Out-Null
+        Start-Job -ScriptBlock { param($ip) Start-Sleep -Seconds 3; Start-Process "http://$ip:4100" } -ArgumentList $global:EspLanIp | Out-Null
         pnpm --filter @apps/npc-core dev
     } else {
         Write-Host "  Starting BOTH ESP CORE & NPC CORE Concurrently in Parallel..." -ForegroundColor Green
-        Write-Host "  • ESP CORE (Euroslot Pars)      : http://localhost:3000" -ForegroundColor Cyan
-        Write-Host "  • NPC CORE (Nano Palayesh Ceram): http://localhost:4100" -ForegroundColor Magenta
-        Write-Host "  (Opening both URLs in browser...)" -ForegroundColor Yellow
+        Write-Host "  • ESP CORE (Euroslot Pars)      : http://$($global:EspLanIp):3000" -ForegroundColor Cyan
+        Write-Host "  • NPC CORE (Nano Palayesh Ceram): http://$($global:EspLanIp):4100" -ForegroundColor Magenta
+        Write-Host "  (Opening both URLs at http://$($global:EspLanIp) in browser...)" -ForegroundColor Yellow
         Write-Host "============================================================" -ForegroundColor Cyan
         Start-Job -ScriptBlock { 
+            param($ip)
             Start-Sleep -Seconds 3
-            Start-Process "http://localhost:3000"
-            Start-Process "http://localhost:4100"
-        } | Out-Null
+            Start-Process "http://$ip:3000"
+            Start-Process "http://$ip:4100"
+        } -ArgumentList $global:EspLanIp | Out-Null
         pnpm --parallel --filter "@apps/*" dev
     }
 }
@@ -154,18 +155,18 @@ function runb {
     if ($Target -eq "esp") {
         Set-Location $global:EspBackendRoot
         Write-Host "Starting ESP Backend Dev (Port 8000)..." -ForegroundColor Blue
-        Write-Host "URL: http://localhost:8000/docs" -ForegroundColor Yellow
+        Write-Host "URL: http://$($global:EspLanIp):8000/docs" -ForegroundColor Yellow
         & $pythonExe -m uvicorn app.main:app --host 0.0.0.0 --port $global:EspDevBackendPort --reload
     } elseif ($Target -eq "npc") {
         Set-Location $global:NpcBackendRoot
         Write-Host "Starting NPC Backend Dev (Port 8100)..." -ForegroundColor Magenta
-        Write-Host "URL: http://localhost:8100/docs" -ForegroundColor Yellow
+        Write-Host "URL: http://$($global:EspLanIp):8100/docs" -ForegroundColor Yellow
         & $pythonExe run_dev.py
     } else {
         Write-Host "============================================================" -ForegroundColor Cyan
         Write-Host "  Starting BOTH ESP & NPC Backend APIs in Dedicated Windows..." -ForegroundColor Green
-        Write-Host "  • ESP Backend API (Dev) : http://localhost:8000/docs" -ForegroundColor Cyan
-        Write-Host "  • NPC Backend API (Dev) : http://localhost:8100/docs" -ForegroundColor Magenta
+        Write-Host "  • ESP Backend API (Dev) : http://$($global:EspLanIp):8000/docs" -ForegroundColor Cyan
+        Write-Host "  • NPC Backend API (Dev) : http://$($global:EspLanIp):8100/docs" -ForegroundColor Magenta
         Write-Host "============================================================" -ForegroundColor Cyan
         Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$global:EspBackendRoot'; Write-Host '=== ESP Backend (Port 8000) ===' -ForegroundColor Cyan; & '$pythonExe' -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
         Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$global:NpcBackendRoot'; Write-Host '=== NPC Backend (Port 8100) ===' -ForegroundColor Magenta; & '$pythonExe' run_dev.py"
@@ -209,24 +210,23 @@ function run-client {
 
     Write-Host "`n[Production Endpoints]" -ForegroundColor Green
     if ($Target -in @("all", "both", "esp")) {
-        Write-Host "  ESP CORE Frontend (Local): http://localhost:4000" -ForegroundColor Yellow
         Write-Host "  ESP CORE Frontend (LAN):   http://$($global:EspLanIp):4000" -ForegroundColor Yellow
         Write-Host "  ESP Backend API:           http://$($global:EspLanIp):8080" -ForegroundColor Yellow
         Write-Host "  ESP Data Store:            $global:EspDataRoot\live\data (Safe & Isolated)" -ForegroundColor Gray
     }
     if ($Target -in @("all", "both", "npc")) {
-        Write-Host "  NPC CORE Frontend (Local): http://localhost:4200" -ForegroundColor Yellow
-        Write-Host "  NPC Backend API:           http://localhost:8280" -ForegroundColor Yellow
+        Write-Host "  NPC CORE Frontend (LAN):   http://$($global:EspLanIp):4200" -ForegroundColor Yellow
+        Write-Host "  NPC Backend API:           http://$($global:EspLanIp):8280" -ForegroundColor Yellow
         Write-Host "  NPC Data Store:            $global:NpcDataRoot\live\data (Safe & Isolated)" -ForegroundColor Gray
     }
 
     # Automatically open URLs in default browser
     Start-Sleep -Seconds 2
     if ($Target -in @("all", "both", "esp")) {
-        Start-Process "http://localhost:4000"
+        Start-Process "http://$($global:EspLanIp):4000"
     }
     if ($Target -in @("all", "both", "npc")) {
-        Start-Process "http://localhost:4200"
+        Start-Process "http://$($global:EspLanIp):4200"
     }
 
     Write-Host "`n[INFO] Services are detached Windows daemons; closing this window will NOT stop them." -ForegroundColor Cyan
@@ -244,10 +244,10 @@ function run-develop {
     powershell.exe -ExecutionPolicy Bypass -File "$global:EspDevRoot\dev-start.ps1"
 
     Write-Host "`n[Developer Endpoints]" -ForegroundColor Green
-    Write-Host "  ESP CORE Frontend : http://localhost:3000" -ForegroundColor Cyan
-    Write-Host "  NPC CORE Frontend : http://localhost:4100" -ForegroundColor Magenta
-    Write-Host "  ESP Backend API   : http://localhost:8000/docs" -ForegroundColor Cyan
-    Write-Host "  NPC Backend API   : http://localhost:8100/docs" -ForegroundColor Magenta
+    Write-Host "  ESP CORE Frontend : http://$($global:EspLanIp):3000" -ForegroundColor Cyan
+    Write-Host "  NPC CORE Frontend : http://$($global:EspLanIp):4100" -ForegroundColor Magenta
+    Write-Host "  ESP Backend API   : http://$($global:EspLanIp):8000/docs" -ForegroundColor Cyan
+    Write-Host "  NPC Backend API   : http://$($global:EspLanIp):8100/docs" -ForegroundColor Magenta
     Write-Host "  (Live users on Production 4000/8080 are completely unaffected)" -ForegroundColor Gray
 }
 
