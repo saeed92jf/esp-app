@@ -53,6 +53,51 @@ function naturalCompare(a: string, b: string): number {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
 }
 
+export const PITCH_TYPE_OPTIONS = [
+  { name: "Triangular Pitch", nameFa: "گام مثلثی", code: "1" },
+  { name: "Square Pitch", nameFa: "گام مربعی", code: "2" },
+  { name: "Staggered Pitch", nameFa: "گام متناوب", code: "3" },
+  { name: "Diamond Pitch", nameFa: "گام لوزی", code: "4" },
+];
+
+export const HOLE_SIZE_OPTIONS = [
+  { name: "0.5", code: "01" },
+  { name: "0.8", code: "02" },
+  { name: "1.0", code: "03" },
+  { name: "1.2", code: "04" },
+  { name: "1.5", code: "05" },
+  { name: "2.0", code: "06" },
+  { name: "2.5", code: "07" },
+  { name: "3.0", code: "08" },
+  { name: "4.0", code: "09" },
+  { name: "5.0", code: "10" },
+  { name: "6.0", code: "11" },
+  { name: "8.0", code: "12" },
+  { name: "10", code: "13" },
+  { name: "12", code: "14" },
+  { name: "15", code: "15" },
+  { name: "20", code: "16" },
+];
+
+export const PITCH_SIZE_OPTIONS = [
+  { name: "1", code: "01" },
+  { name: "1.5", code: "02" },
+  { name: "2", code: "03" },
+  { name: "2.5", code: "04" },
+  { name: "3", code: "05" },
+  { name: "3.5", code: "06" },
+  { name: "4", code: "07" },
+  { name: "5", code: "08" },
+  { name: "6", code: "09" },
+  { name: "8", code: "10" },
+  { name: "10", code: "11" },
+  { name: "12", code: "12" },
+  { name: "15", code: "13" },
+  { name: "16", code: "14" },
+  { name: "20", code: "15" },
+  { name: "25", code: "16" },
+];
+
 interface FormAndMaterialCodingViewProps {
   initialFocus?: "form" | "material" | "both";
 }
@@ -101,6 +146,11 @@ export function FormAndMaterialCodingView({
   const [specDim1, setSpecDim1] = useState<string>("1/2\""); // NPS or Type or Standard
   const [specDim2, setSpecDim2] = useState<string>("Welding Neck (Sch. STD)"); // Schedule or Size
   const [specDim3, setSpecDim3] = useState<string>("150# (R.F.)"); // Class or Length
+
+  // Perforated Sheet Dimensions
+  const [pitchTypeValue, setPitchTypeValue] = useState<string>("Triangular Pitch");
+  const [holeSizeValue, setHoleSizeValue] = useState<string>("0.5");
+  const [pitchSizeValue, setPitchSizeValue] = useState<string>("1");
 
   // ==========================================
   // PANEL B: MATERIAL SELECTIONS
@@ -258,11 +308,15 @@ export function FormAndMaterialCodingView({
   }, [subFormOptions, selectedSubForm, currentFormRecord]);
 
   const currentPicture = useMemo(() => {
+    if (selectedCategoryForm === "Perforated Sheet") {
+      return "/coding-docs/Production Form/PerfRound.png";
+    }
     if (currentFormRecord?.refPic) return currentFormRecord.refPic;
     return "/coding-docs/Production Form/Plate2.png";
-  }, [currentFormRecord]);
+  }, [currentFormRecord, selectedCategoryForm]);
 
   const formReference = useMemo(() => {
+    if (selectedCategoryForm === "Perforated Sheet") return "SA-20";
     if (!currentFormRecord) return "SA-20";
     const ref = currentFormRecord.referenceName || currentFormRecord.reference || "";
     if (ref && ref !== "--" && ref !== "undefined") {
@@ -273,7 +327,28 @@ export function FormAndMaterialCodingView({
     if (selectedGeneralForm === "Fitting Form") return "ASME B16.9";
     if (selectedGeneralForm === "Connection Form") return "DIN 933 / ASME B18.2.1";
     return "SA-20";
-  }, [currentFormRecord, selectedGeneralForm]);
+  }, [currentFormRecord, selectedGeneralForm, selectedCategoryForm]);
+
+  // Derived codes for Perforated Sheet
+  const pitchTypeCode = useMemo(() => {
+    return PITCH_TYPE_OPTIONS.find((p) => p.name === pitchTypeValue)?.code || "1";
+  }, [pitchTypeValue]);
+
+  const holeSizeCode = useMemo(() => {
+    return (
+      HOLE_SIZE_OPTIONS.find((h) => h.name === holeSizeValue)?.code ||
+      HOLE_SIZE_OPTIONS.find((h) => parseFloat(h.name) === parseFloat(holeSizeValue))?.code ||
+      "01"
+    );
+  }, [holeSizeValue]);
+
+  const pitchSizeCode = useMemo(() => {
+    return (
+      PITCH_SIZE_OPTIONS.find((p) => p.name === pitchSizeValue)?.code ||
+      PITCH_SIZE_OPTIONS.find((p) => parseFloat(p.name) === parseFloat(pitchSizeValue))?.code ||
+      "01"
+    );
+  }, [pitchSizeValue]);
 
   // Dynamic titles and labels for Form dimensions
   const dynamicFormDimLabels = useMemo(() => {
@@ -281,6 +356,16 @@ export function FormAndMaterialCodingView({
     const cf = selectedCategoryForm;
 
     if (gf === "Flat Form") {
+      if (cf === "Perforated Sheet") {
+        return {
+          dim1: isRtl ? "نوع گام" : "Pitch Type",
+          dim2: isRtl ? "قطر سوراخ (mm)" : "Hole Size (mm)",
+          dim3: isRtl ? "فاصله گام (mm)" : "Pitch Size (mm)",
+          isFlat: true,
+          isPerforated: true,
+        };
+      }
+
       return {
         dim1: isRtl ? "ضخامت ورق (mm)" : "Thickness (mm)",
         dim2: isRtl ? "عرض ورق (mm)" : "Width (mm)",
@@ -289,9 +374,10 @@ export function FormAndMaterialCodingView({
             ? "طول شاخه (mm)"
             : "Length (mm)"
           : isRtl
-          ? "طول کویل (mm)"
-          : "Coil (mm)",
+          ? "کویل"
+          : "Coil",
         isFlat: true,
+        isPerforated: false,
       };
     }
     if (gf === "Forge Form" && cf === "Standard Flange") {
@@ -300,6 +386,7 @@ export function FormAndMaterialCodingView({
         dim2: isRtl ? "نوع اتصال و رده (Type/Sch)" : "Connection Type & Sch",
         dim3: isRtl ? "کلاس فشاری و پیشانی (Class/Face)" : "Pressure Class & Face",
         isFlat: false,
+        isPerforated: false,
       };
     }
     if (gf === "Cylinder Form" && cf === "Pipe") {
@@ -308,6 +395,7 @@ export function FormAndMaterialCodingView({
         dim2: isRtl ? "رده ضخامت (Schedule)" : "Wall Schedule",
         dim3: isRtl ? "طول شاخه لوله (mm)" : "Pipe Length (mm)",
         isFlat: false,
+        isPerforated: false,
       };
     }
     if (gf === "Fitting Form") {
@@ -316,6 +404,7 @@ export function FormAndMaterialCodingView({
         dim2: isRtl ? "رده ضخامت (Schedule)" : "Wall Schedule",
         dim3: isRtl ? "زاویه یا ابعاد فرعی" : "Angle / Dimension",
         isFlat: false,
+        isPerforated: false,
       };
     }
     if (gf === "Connection Form") {
@@ -324,6 +413,7 @@ export function FormAndMaterialCodingView({
         dim2: isRtl ? "سایز رزوه (Metric / Inch)" : "Thread Size",
         dim3: isRtl ? "طول کارگیر پیچ (mm)" : "Bolt Length (mm)",
         isFlat: false,
+        isPerforated: false,
       };
     }
 
@@ -332,6 +422,7 @@ export function FormAndMaterialCodingView({
       dim2: isRtl ? "مشخصه دوم ابعادی" : "Dimension 2",
       dim3: isRtl ? "مشخصه سوم ابعادی" : "Dimension 3",
       isFlat: false,
+      isPerforated: false,
     };
   }, [selectedGeneralForm, selectedCategoryForm, isLengthMode, isRtl]);
 
@@ -341,10 +432,17 @@ export function FormAndMaterialCodingView({
     const cf = selectedCategoryForm;
 
     if (gf === "Flat Form") {
+      if (cf === "Perforated Sheet") {
+        return `${pitchTypeCode}${holeSizeCode}${pitchSizeCode}`;
+      }
+
       const t = parseFloat(thkValue) || 10.0;
       const tCode = String(Math.round(t * 10)).padStart(3, "0");
       const w = parseInt(widthValue, 10) || 1500;
       const wCode = String(w).padStart(4, "0");
+      if (!isLengthMode) {
+        return `${tCode}${wCode}C`;
+      }
       const l = parseInt(lengthValue, 10) || 6000;
       const lCode = String(l).padStart(5, "0");
       return `${tCode}${wCode}${lCode}`;
@@ -383,7 +481,20 @@ export function FormAndMaterialCodingView({
     }
 
     return "100150006000";
-  }, [selectedGeneralForm, selectedCategoryForm, thkValue, widthValue, lengthValue, specDim1, specDim2, specDim3]);
+  }, [
+    selectedGeneralForm,
+    selectedCategoryForm,
+    pitchTypeCode,
+    holeSizeCode,
+    pitchSizeCode,
+    thkValue,
+    widthValue,
+    lengthValue,
+    isLengthMode,
+    specDim1,
+    specDim2,
+    specDim3,
+  ]);
 
   const generatedFormCode = useMemo(() => {
     return `R${generalFormCode}${categoryFormCode}${subFormCode}-${formDimensionCode}`;
@@ -719,6 +830,12 @@ export function FormAndMaterialCodingView({
       .filter((v, i, a) => a.indexOf(v) === i);
     const firstSub = availableSubs[0] || "";
     setSelectedSubForm(firstSub);
+
+    if (newCf === "Perforated Sheet") {
+      setPitchTypeValue("Triangular Pitch");
+      setHoleSizeValue("0.5");
+      setPitchSizeValue("1");
+    }
   };
 
   const handleBasicMaterialChange = (newBm: string) => {
@@ -881,6 +998,10 @@ export function FormAndMaterialCodingView({
     setThkValue("10.0");
     setWidthValue("1500");
     setLengthValue("6000");
+    setIsLengthMode(true);
+    setPitchTypeValue("Triangular Pitch");
+    setHoleSizeValue("0.5");
+    setPitchSizeValue("1");
 
     setSelectedBasicMaterial("Metal-Group");
     setSelectedSubMaterial("Ferritic");
@@ -893,12 +1014,12 @@ export function FormAndMaterialCodingView({
 
   // Reverse Lookup Handler
   const handleReverseFormLookup = (code: string) => {
-    const clean = code.trim().toUpperCase().replace(/[^R0-9\-]/g, "");
+    const clean = code.trim().toUpperCase().replace(/[^R0-9A-Z\-]/g, "");
     setReverseFormCodeInput(clean);
 
     const m = clean.match(/^R?(\d)(\d)(\d)-?([0-9A-Z]+)$/);
     if (m) {
-      const [, gfId, cfId, sfId] = m;
+      const [, gfId, cfId, sfId, dimPart] = m;
       const matched = forms.find(
         (f) =>
           f.generalFormId === gfId &&
@@ -909,6 +1030,38 @@ export function FormAndMaterialCodingView({
         setSelectedGeneralForm(matched.generalForm);
         setSelectedCategoryForm(matched.categoryForm);
         setSelectedSubForm(matched.subForm);
+
+        if (matched.generalForm === "Flat Form") {
+          if (matched.categoryForm === "Perforated Sheet") {
+            if (dimPart && dimPart.length >= 5) {
+              const pCode = dimPart[0];
+              const hCode = dimPart.slice(1, 3);
+              const psCode = dimPart.slice(3, 5);
+              const foundP = PITCH_TYPE_OPTIONS.find((p) => p.code === pCode);
+              if (foundP) setPitchTypeValue(foundP.name);
+              const foundH = HOLE_SIZE_OPTIONS.find((h) => h.code === hCode);
+              if (foundH) setHoleSizeValue(foundH.name);
+              const foundPs = PITCH_SIZE_OPTIONS.find((ps) => ps.code === psCode);
+              if (foundPs) setPitchSizeValue(foundPs.name);
+            }
+          } else {
+            if (dimPart.endsWith("C")) {
+              setIsLengthMode(false);
+              const tRaw = dimPart.slice(0, 3);
+              const wRaw = dimPart.slice(3, 7);
+              if (tRaw) setThkValue((parseInt(tRaw, 10) / 10).toFixed(1));
+              if (wRaw) setWidthValue(String(parseInt(wRaw, 10)));
+            } else if (dimPart.length >= 12) {
+              setIsLengthMode(true);
+              const tRaw = dimPart.slice(0, 3);
+              const wRaw = dimPart.slice(3, 7);
+              const lRaw = dimPart.slice(7, 12);
+              if (tRaw) setThkValue((parseInt(tRaw, 10) / 10).toFixed(1));
+              if (wRaw) setWidthValue(String(parseInt(wRaw, 10)));
+              if (lRaw) setLengthValue(String(parseInt(lRaw, 10)));
+            }
+          }
+        }
       }
     }
   };
@@ -944,6 +1097,8 @@ export function FormAndMaterialCodingView({
     );
   }
 
+  const isPerforated = dynamicFormDimLabels.isPerforated;
+
   // Configurations for the 6 rows of Form Coding
   const formRowConfig = [
     {
@@ -954,7 +1109,8 @@ export function FormAndMaterialCodingView({
       isCombo: true,
       value: selectedGeneralForm,
       onChange: handleGeneralFormChange,
-      options: generalFormOptions.map((g) => ({ name: g.name, code: g.code })),
+      options: generalFormOptions.map((g) => ({ name: g.name, value: g.name, code: g.code })),
+      currentCode: generalFormCode,
     },
     {
       id: "cf",
@@ -964,7 +1120,8 @@ export function FormAndMaterialCodingView({
       isCombo: true,
       value: selectedCategoryForm,
       onChange: handleCategoryFormChange,
-      options: categoryFormOptions.map((c) => ({ name: c.name, code: c.code })),
+      options: categoryFormOptions.map((c) => ({ name: c.name, value: c.name, code: c.code })),
+      currentCode: categoryFormCode,
     },
     {
       id: "sf",
@@ -974,66 +1131,120 @@ export function FormAndMaterialCodingView({
       isCombo: true,
       value: selectedSubForm,
       onChange: setSelectedSubForm,
-      options: subFormOptions.map((s) => ({ name: s.name, code: s.code })),
+      options: subFormOptions.map((s) => ({ name: s.name, value: s.name, code: s.code })),
+      currentCode: subFormCode,
     },
     {
       id: "dim1",
       num: 4,
       labelFa: dynamicFormDimLabels.dim1,
       labelEn: dynamicFormDimLabels.dim1,
-      isCombo: !dynamicFormDimLabels.isFlat && selectedGeneralForm === "Forge Form",
-      value: dynamicFormDimLabels.isFlat ? thkValue : specDim1,
+      isCombo: isPerforated || (!dynamicFormDimLabels.isFlat && selectedGeneralForm === "Forge Form"),
+      value: isPerforated ? pitchTypeValue : dynamicFormDimLabels.isFlat ? thkValue : specDim1,
       onChange: (val: string) => {
-        if (dynamicFormDimLabels.isFlat) setThkValue(val);
+        if (isPerforated) setPitchTypeValue(val);
+        else if (dynamicFormDimLabels.isFlat) setThkValue(val);
         else setSpecDim1(val);
       },
-      options: ["1/2\"", "3/4\"", "1\"", "1.5\"", "2\"", "3\"", "4\"", "6\"", "8\"", "10\"", "12\""].map((s) => ({
-        name: s,
-        code: s,
-      })),
-      isNumberInput: dynamicFormDimLabels.isFlat,
+      options: isPerforated
+        ? PITCH_TYPE_OPTIONS.map((p) => ({
+            name: isRtl ? `${p.name} (${p.nameFa})` : p.name,
+            value: p.name,
+            code: p.code,
+          }))
+        : ["1/2\"", "3/4\"", "1\"", "1.5\"", "2\"", "3\"", "4\"", "6\"", "8\"", "10\"", "12\""].map((s) => ({
+            name: s,
+            value: s,
+            code: s,
+          })),
+      isNumberInput: dynamicFormDimLabels.isFlat && !isPerforated,
+      currentCode: isPerforated
+        ? pitchTypeCode
+        : dynamicFormDimLabels.isFlat
+        ? String(Math.round((parseFloat(thkValue) || 10.0) * 10)).padStart(3, "0")
+        : (specDim1 === "1/2\"" ? "04" : "06"),
     },
     {
       id: "dim2",
       num: 5,
       labelFa: dynamicFormDimLabels.dim2,
       labelEn: dynamicFormDimLabels.dim2,
-      isCombo: !dynamicFormDimLabels.isFlat && selectedGeneralForm === "Forge Form",
-      value: dynamicFormDimLabels.isFlat ? widthValue : specDim2,
+      isCombo: isPerforated || (!dynamicFormDimLabels.isFlat && selectedGeneralForm === "Forge Form"),
+      value: isPerforated ? holeSizeValue : dynamicFormDimLabels.isFlat ? widthValue : specDim2,
       onChange: (val: string) => {
-        if (dynamicFormDimLabels.isFlat) setWidthValue(val);
+        if (isPerforated) setHoleSizeValue(val);
+        else if (dynamicFormDimLabels.isFlat) setWidthValue(val);
         else setSpecDim2(val);
       },
-      options: [
-        "Welding Neck (Sch. STD)",
-        "Blind",
-        "Slip-On",
-        "Socket Weld",
-        "Lap Joint",
-      ].map((t) => ({ name: t, code: t })),
-      isNumberInput: dynamicFormDimLabels.isFlat,
+      options: isPerforated
+        ? HOLE_SIZE_OPTIONS.map((h) => ({
+            name: h.name,
+            value: h.name,
+            code: h.code,
+          }))
+        : [
+            "Welding Neck (Sch. STD)",
+            "Blind",
+            "Slip-On",
+            "Socket Weld",
+            "Lap Joint",
+          ].map((t) => ({ name: t, value: t, code: t })),
+      isNumberInput: dynamicFormDimLabels.isFlat && !isPerforated,
+      currentCode: isPerforated
+        ? holeSizeCode
+        : dynamicFormDimLabels.isFlat
+        ? String(parseInt(widthValue, 10) || 1500).padStart(4, "0")
+        : (specDim2.includes("Welding Neck") ? "16" : "01"),
     },
     {
       id: "dim3",
       num: 6,
       labelFa: dynamicFormDimLabels.dim3,
       labelEn: dynamicFormDimLabels.dim3,
-      isCombo: !dynamicFormDimLabels.isFlat && selectedGeneralForm === "Forge Form",
-      value: dynamicFormDimLabels.isFlat ? lengthValue : specDim3,
+      isCombo: isPerforated || (!dynamicFormDimLabels.isFlat && selectedGeneralForm === "Forge Form"),
+      value: isPerforated
+        ? pitchSizeValue
+        : dynamicFormDimLabels.isFlat
+        ? isLengthMode
+          ? lengthValue
+          : (isRtl ? "کویل" : "Coil")
+        : specDim3,
+      disabled: dynamicFormDimLabels.isFlat && !isPerforated && !isLengthMode,
       onChange: (val: string) => {
-        if (dynamicFormDimLabels.isFlat) setLengthValue(val);
-        else setSpecDim3(val);
+        if (isPerforated) setPitchSizeValue(val);
+        else if (dynamicFormDimLabels.isFlat) {
+          if (isLengthMode) setLengthValue(val);
+        } else setSpecDim3(val);
       },
-      options: ["150# (R.F.)", "300# (R.F.)", "600# (R.F.)", "150# (R.T.J.)"].map((c) => ({
-        name: c,
-        code: c,
-      })),
-      isNumberInput: dynamicFormDimLabels.isFlat,
-      extraToggle: dynamicFormDimLabels.isFlat ? (
+      options: isPerforated
+        ? PITCH_SIZE_OPTIONS.map((p) => ({
+            name: p.name,
+            value: p.name,
+            code: p.code,
+          }))
+        : ["150# (R.F.)", "300# (R.F.)", "600# (R.F.)", "150# (R.T.J.)"].map((c) => ({
+            name: c,
+            value: c,
+            code: c,
+          })),
+      isNumberInput: dynamicFormDimLabels.isFlat && !isPerforated && isLengthMode,
+      currentCode: isPerforated
+        ? pitchSizeCode
+        : dynamicFormDimLabels.isFlat
+        ? isLengthMode
+          ? String(parseInt(lengthValue, 10) || 6000).padStart(5, "0")
+          : "C"
+        : (specDim3.includes("300") ? "13" : "12"),
+      extraToggle: dynamicFormDimLabels.isFlat && !isPerforated ? (
         <button
           type="button"
           onClick={() => setIsLengthMode(!isLengthMode)}
-          className="text-[10px] font-bold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 shrink-0 cursor-pointer hover:bg-primary/20 transition-colors"
+          className={cn(
+            "text-[10px] font-bold px-2 py-0.5 rounded border shrink-0 cursor-pointer transition-colors",
+            !isLengthMode
+              ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 shadow-xs"
+              : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
+          )}
           title={isRtl ? "تغییر حالت بین شاخه و کویل" : "Toggle Length/Coil"}
         >
           {isLengthMode ? (isRtl ? "شاخه" : "Len.") : (isRtl ? "کویل" : "Coil")}
@@ -1051,7 +1262,8 @@ export function FormAndMaterialCodingView({
       labelEn: "Basic Material",
       value: selectedBasicMaterial,
       onChange: handleBasicMaterialChange,
-      options: basicMaterialOptions.map((o) => ({ name: o, code: activeMaterial?.bmCode || "1" })),
+      options: basicMaterialOptions.map((o) => ({ name: o, value: o, code: activeMaterial?.bmCode || "1" })),
+      currentCode: activeMaterial?.bmCode || "1",
     },
     {
       id: "sm",
@@ -1060,7 +1272,8 @@ export function FormAndMaterialCodingView({
       labelEn: "Sub-Material",
       value: selectedSubMaterial,
       onChange: handleSubMaterialChange,
-      options: subMaterialOptions.map((o) => ({ name: o, code: activeMaterial?.smCode || "1" })),
+      options: subMaterialOptions.map((o) => ({ name: o, value: o, code: activeMaterial?.smCode || "1" })),
+      currentCode: activeMaterial?.smCode || "1",
     },
     {
       id: "gm",
@@ -1069,7 +1282,8 @@ export function FormAndMaterialCodingView({
       labelEn: "Material Category",
       value: selectedMaterialCategory,
       onChange: handleCategoryChange,
-      options: categoryOptions.map((o) => ({ name: o, code: activeMaterial?.gmCode || "1" })),
+      options: categoryOptions.map((o) => ({ name: o, value: o, code: activeMaterial?.gmCode || "1" })),
+      currentCode: activeMaterial?.gmCode || "1",
     },
     {
       id: "spec",
@@ -1078,7 +1292,8 @@ export function FormAndMaterialCodingView({
       labelEn: "Specification",
       value: selectedSpecification,
       onChange: handleSpecChange,
-      options: specOptions.map((o) => ({ name: o, code: (activeMaterial?.specCode || "01").padStart(2, "0") })),
+      options: specOptions.map((o) => ({ name: o, value: o, code: (activeMaterial?.specCode || "01").padStart(2, "0") })),
+      currentCode: (activeMaterial?.specCode || "01").padStart(2, "0"),
     },
     {
       id: "grade",
@@ -1087,7 +1302,8 @@ export function FormAndMaterialCodingView({
       labelEn: "Material Grade",
       value: selectedGrade,
       onChange: handleGradeChange,
-      options: gradeOptions.map((o) => ({ name: o, code: (activeMaterial?.gradeCode || "01").padStart(2, "0") })),
+      options: gradeOptions.map((o) => ({ name: o, value: o, code: (activeMaterial?.gradeCode || "01").padStart(2, "0") })),
+      currentCode: (activeMaterial?.gradeCode || "01").padStart(2, "0"),
     },
     {
       id: "class",
@@ -1096,7 +1312,8 @@ export function FormAndMaterialCodingView({
       labelEn: "Class / Note",
       value: selectedClass,
       onChange: setSelectedClass,
-      options: classOptions.map((o) => ({ name: o, code: activeMaterial?.classCode || "0" })),
+      options: classOptions.map((o) => ({ name: o, value: o, code: activeMaterial?.classCode || "0" })),
+      currentCode: activeMaterial?.classCode || "0",
     },
   ];
 
@@ -1360,36 +1577,55 @@ export function FormAndMaterialCodingView({
                       </div>
 
                       {/* Combobox or Input */}
-                      <div className="flex-1 min-w-0 flex items-center">
-                        {item.isCombo ? (
-                          <Select value={item.value} onValueChange={item.onChange}>
-                            <SelectTrigger className="h-9 rounded-xl text-xs sm:text-[13px] bg-background w-full">
-                              <SelectValue placeholder={isRtl ? "انتخاب کنید..." : "Select..."} />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-64">
-                              {item.options.map((opt) => (
-                                <SelectItem key={opt.name} value={opt.name} className="text-xs sm:text-[13px]">
-                                  <div className="flex items-center justify-between w-full gap-3">
-                                    <span className="truncate">{opt.name}</span>
-                                    {opt.code && (
-                                      <span className="font-mono text-[11px] text-muted-foreground shrink-0 ms-2">
-                                        ({opt.code})
-                                      </span>
-                                    )}
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <Input
-                            type={item.isNumberInput ? "number" : "text"}
-                            step="0.1"
-                            value={item.value}
-                            onChange={(e) => item.onChange(e.target.value)}
-                            className="h-9 rounded-xl text-xs sm:text-[13px] font-mono bg-background w-full"
-                          />
-                        )}
+                      <div className="flex-1 min-w-0 flex items-center gap-2">
+                        <div className="flex-1 min-w-0">
+                          {item.isCombo ? (
+                            <Select value={item.value} onValueChange={item.onChange}>
+                              <SelectTrigger className="h-9 rounded-xl text-xs sm:text-[13px] bg-background w-full">
+                                <SelectValue placeholder={isRtl ? "انتخاب کنید..." : "Select..."} />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-64">
+                                {item.options.map((opt) => {
+                                  const optVal = (opt as any).value || opt.name;
+                                  return (
+                                    <SelectItem key={optVal} value={optVal} className="text-xs sm:text-[13px]">
+                                      <div className="flex items-center justify-between w-full gap-3">
+                                        <span className="truncate">{opt.name}</span>
+                                        {opt.code && (
+                                          <span className="font-mono text-[11px] text-muted-foreground shrink-0 ms-2">
+                                            ({opt.code})
+                                          </span>
+                                        )}
+                                      </div>
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input
+                              type={item.isNumberInput ? "number" : "text"}
+                              step="0.1"
+                              value={item.value}
+                              disabled={(item as any).disabled}
+                              onChange={(e) => item.onChange(e.target.value)}
+                              className="h-9 rounded-xl text-xs sm:text-[13px] font-mono bg-background w-full disabled:opacity-75 disabled:cursor-not-allowed"
+                            />
+                          )}
+                        </div>
+
+                        {/* Distinct Code Badge / Box identical to screenshot */}
+                        <div
+                          className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-xl bg-muted/40 border border-border/60 min-w-[65px] justify-between shadow-2xs"
+                          title={`${isRtl ? "کد" : "Code"}: ${item.currentCode}`}
+                        >
+                          <span className="text-[10px] font-semibold text-muted-foreground uppercase select-none">
+                            {isRtl ? "کد" : "Code"}
+                          </span>
+                          <span className="font-mono text-xs font-bold text-primary px-1.5 py-0.5 rounded-md bg-background shadow-2xs border border-border/40 text-center min-w-[24px]">
+                            {item.currentCode}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   );
@@ -1550,26 +1786,41 @@ export function FormAndMaterialCodingView({
                       </div>
 
                       {/* Combobox */}
-                      <div className="flex-1 min-w-0 flex items-center">
-                        <Select value={item.value} onValueChange={item.onChange}>
-                          <SelectTrigger className="h-9 rounded-xl text-xs sm:text-[13px] bg-background w-full">
-                            <SelectValue placeholder={isRtl ? "انتخاب کنید..." : "Select..."} />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-64">
-                            {item.options.map((opt) => (
-                              <SelectItem key={opt.name} value={opt.name} className="text-xs sm:text-[13px]">
-                                <div className="flex items-center justify-between w-full gap-3">
-                                  <span className="truncate">{opt.name}</span>
-                                  {opt.code && (
-                                    <span className="font-mono text-[11px] text-muted-foreground shrink-0 ms-2">
-                                      ({opt.code})
-                                    </span>
-                                  )}
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      <div className="flex-1 min-w-0 flex items-center gap-2">
+                        <div className="flex-1 min-w-0">
+                          <Select value={item.value} onValueChange={item.onChange}>
+                            <SelectTrigger className="h-9 rounded-xl text-xs sm:text-[13px] bg-background w-full">
+                              <SelectValue placeholder={isRtl ? "انتخاب کنید..." : "Select..."} />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-64">
+                              {item.options.map((opt) => (
+                                <SelectItem key={opt.name} value={opt.name} className="text-xs sm:text-[13px]">
+                                  <div className="flex items-center justify-between w-full gap-3">
+                                    <span className="truncate">{opt.name}</span>
+                                    {opt.code && (
+                                      <span className="font-mono text-[11px] text-muted-foreground shrink-0 ms-2">
+                                        ({opt.code})
+                                      </span>
+                                    )}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Distinct Code Badge / Box */}
+                        <div
+                          className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-xl bg-muted/40 border border-border/60 min-w-[65px] justify-between shadow-2xs"
+                          title={`${isRtl ? "کد" : "Code"}: ${item.currentCode}`}
+                        >
+                          <span className="text-[10px] font-semibold text-muted-foreground uppercase select-none">
+                            {isRtl ? "کد" : "Code"}
+                          </span>
+                          <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md bg-background shadow-2xs border border-border/40 text-center min-w-[24px]">
+                            {item.currentCode}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   );
