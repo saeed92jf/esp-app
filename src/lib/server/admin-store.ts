@@ -1,4 +1,6 @@
 // src/lib/server/admin-store.ts
+import fs from "fs";
+import path from "path";
 import type {
   User,
   PendingRequest,
@@ -145,12 +147,88 @@ const DEFAULT_SERVER_ADMIN_USERS: User[] = [
   },
 ];
 
-// Initialize store with persistent seed users
-if (!globalThis.__espServerAdminUsers || globalThis.__espServerAdminUsers.length === 0) {
-  globalThis.__espServerAdminUsers = [...DEFAULT_SERVER_ADMIN_USERS];
+function loadPersistentDiskAdminUsers(): User[] {
+  try {
+    const candidates = [
+      process.env.ADMIN_USERS_FILE,
+      "C:\\ESP_DATA\\live\\data\\admin_users.json",
+      path.join(process.cwd(), "..", "..", "ESP_DATA", "live", "data", "admin_users.json"),
+      path.join(process.cwd(), "src", "data", "mock", "admin-users.json"),
+    ].filter(Boolean) as string[];
+
+    for (const filePath of candidates) {
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, "utf-8");
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((item: any) => {
+            const inner = (item.user && typeof item.user === "object") ? item.user : {};
+            const merged = { ...inner, ...item };
+            const email = (merged.email || "").trim();
+            const rawId = merged.id || inner.id || item.id;
+            const fallbackId = email ? `u-${email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "")}` : `u-${Date.now()}`;
+            const id = rawId || fallbackId;
+            const name = merged.name || merged.fullNameFa || merged.fullName || (email ? email.split("@")[0] : "کاربر");
+            return {
+              ...merged,
+              id,
+              name,
+              firstNameFa: merged.firstNameFa,
+              lastNameFa: merged.lastNameFa,
+              fullNameFa: merged.fullNameFa || name,
+              firstName: merged.firstName,
+              lastName: merged.lastName,
+              fullName: merged.fullName || name,
+              email,
+              role: (merged.role || "user").toLowerCase() as any,
+              status: (merged.status === "online" ? "online" : "offline") as any,
+              accountStatus: merged.accountStatus || "active",
+              phone: merged.phone || merged.mobile,
+              nationalId: merged.nationalId,
+              department: merged.department || "engineering",
+              jobTitle: merged.jobTitle || "کارشناس",
+              company: merged.company || "یورو اسلات پارس",
+              companyId: merged.companyId || "euroslot",
+              avatarColor: merged.avatarColor || "#0284c7",
+              primaryColor: merged.primaryColor || "blue",
+              avatarMode: merged.avatarMode || "initials",
+              joinedAt: merged.joinedAt || new Date().toISOString(),
+              daysInCompany: merged.daysInCompany ?? 365,
+              doneProjects: merged.doneProjects ?? 0,
+              salary: merged.salary ?? 350000000,
+              hasOvertime: merged.hasOvertime ?? true,
+              maxOvertimeHours: merged.maxOvertimeHours ?? 40,
+              workingFormat: merged.workingFormat || { office: 60, factory: 20, mission: 10, leave: 10 },
+              modulesAccess: merged.modulesAccess || [],
+              isProfileCompleted: true,
+              adminApproved: true,
+              managerApproved: true,
+              hrApproved: true,
+              password: merged.password,
+              documents: [],
+              subordinates: [],
+              skills: merged.skills || [],
+              monthlyBonuses: [],
+            } as User;
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Failed to load persistent disk admin users:", err);
+  }
+  return [];
+}
+
+// Initialize store with persistent disk or seed users
+const diskUsers = loadPersistentDiskAdminUsers();
+const baseSeed = diskUsers.length > 0 ? diskUsers : DEFAULT_SERVER_ADMIN_USERS;
+
+if (!globalThis.__espServerAdminUsers || globalThis.__espServerAdminUsers.length < baseSeed.length) {
+  globalThis.__espServerAdminUsers = [...baseSeed];
 } else {
-  for (const defU of DEFAULT_SERVER_ADMIN_USERS) {
-    if (!globalThis.__espServerAdminUsers.some(u => u.id === defU.id || u.email.toLowerCase() === defU.email.toLowerCase())) {
+  for (const defU of baseSeed) {
+    if (!globalThis.__espServerAdminUsers.some(u => u.id === defU.id || (u.email && defU.email && u.email.toLowerCase() === defU.email.toLowerCase()))) {
       globalThis.__espServerAdminUsers.push(defU);
     }
   }

@@ -47,21 +47,23 @@ export class RealAdminService implements IAdminService {
 
   private mapAdminUser(u: any): User {
     if (!u) return null as any;
-    const personal = u.personal || u.data?.personal || u;
-    const organizational = u.organizational || u.data?.organizational || {};
+    const inner = (u.user && typeof u.user === "object") ? u.user : {};
+    const personal = u.personal || u.data?.personal || inner.personal || {};
+    const organizational = u.organizational || u.data?.organizational || inner.organizational || {};
+    const merged = { ...inner, ...u };
 
-    let firstNameFa = (personal.firstNameFa || u.firstNameFa || "").trim();
-    let lastNameFa = (personal.lastNameFa || u.lastNameFa || "").trim();
-    let firstName = (personal.firstName || u.firstName || "").trim();
-    let lastName = (personal.lastName || u.lastName || "").trim();
+    let firstNameFa = (merged.firstNameFa || personal.firstNameFa || inner.firstNameFa || "").trim();
+    let lastNameFa = (merged.lastNameFa || personal.lastNameFa || inner.lastNameFa || "").trim();
+    let firstName = (merged.firstName || personal.firstName || inner.firstName || "").trim();
+    let lastName = (merged.lastName || personal.lastName || inner.lastName || "").trim();
 
     let fullNameFa = (firstNameFa || lastNameFa)
       ? `${firstNameFa} ${lastNameFa}`.trim()
-      : (personal.fullNameFa || u.fullNameFa || "").trim();
+      : (merged.fullNameFa || personal.fullNameFa || inner.fullNameFa || "").trim();
 
     let fullName = (firstName || lastName)
       ? `${firstName} ${lastName}`.trim()
-      : (personal.fullName || u.fullName || u.name || "").trim();
+      : (merged.fullName || personal.fullName || inner.fullName || merged.name || "").trim();
 
     if (!firstNameFa && !lastNameFa && fullNameFa) {
       const parts = fullNameFa.split(" ");
@@ -75,11 +77,15 @@ export class RealAdminService implements IAdminService {
       lastName = parts.slice(1).join(" ");
     }
 
-    const email = (personal.email || u.email || "").trim();
+    const email = (merged.email || personal.email || inner.email || "").trim();
 
-    let name = u.name || fullNameFa || fullName;
+    const rawId = merged.id || inner.id || u.id || merged.userId || inner.userId || personal.id;
+    const fallbackId = email ? `u-${email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "")}` : "u-real";
+    const id = rawId || fallbackId;
+
+    let name = merged.name || inner.name || fullNameFa || fullName;
     if (!name || name.toLowerCase() === "user") {
-      const isSaeed = (email.toLowerCase().includes("jalili") || email.toLowerCase() === "s.jalilifard@euroslotpars.com" || email.toLowerCase() === "saeed@euroslotpars.com" || String(u.id || u.userId) === "u-saeed") && !email.toLowerCase().includes("saeedkhani") && String(u.id || u.userId) !== "u-msaeedkhani";
+      const isSaeed = (email.toLowerCase().includes("jalili") || email.toLowerCase() === "s.jalilifard@euroslotpars.com" || email.toLowerCase() === "saeed@euroslotpars.com" || String(id) === "u-saeed") && !email.toLowerCase().includes("saeedkhani") && String(id) !== "u-msaeedkhani";
       if (isSaeed) {
         name = "سعید جلیلی";
         fullNameFa = "سعید جلیلی";
@@ -95,27 +101,27 @@ export class RealAdminService implements IAdminService {
     }
 
     const isOnline = Boolean(
-      u.isOnline === true ||
-      u.status === "online" ||
-      (u.lastSeenAt && (Date.now() - new Date(u.lastSeenAt).getTime() < 130000))
+      merged.isOnline === true ||
+      merged.status === "online" ||
+      (merged.lastSeenAt && (Date.now() - new Date(merged.lastSeenAt).getTime() < 130000))
     );
     const status: 'online' | 'offline' = isOnline ? "online" : "offline";
-    const roleLower = (u.role || organizational.role || personal.role || "user").toLowerCase();
+    const roleLower = (merged.role || organizational.role || personal.role || inner.role || "user").toLowerCase();
     let role: UserRole = "user";
     if (roleLower === "superadmin") role = "superadmin";
     else if (roleLower === "dept_admin" || roleLower === "deptadmin") role = "dept_admin";
     else if (roleLower === "office_admin" || roleLower === "officeadmin") role = "office_admin";
-    else if (roleLower === "admin" || roleLower === "administrator" || roleLower === "superuser" || Boolean(u.is_superuser)) role = "admin";
+    else if (roleLower === "admin" || roleLower === "administrator" || roleLower === "superuser" || Boolean(merged.is_superuser)) role = "admin";
     else if (roleLower === "manager") role = "manager";
     else if (roleLower === "engineer") role = "engineer";
     else if (roleLower === "staff") role = "staff";
     else if (roleLower === "customer") role = "customer";
     else role = "user";
 
-    const insNormalized = normalizeInsurance(u.insuranceType, u.supplementaryPlan);
+    const insNormalized = normalizeInsurance(merged.insuranceType || inner.insuranceType, merged.supplementaryPlan || inner.supplementaryPlan);
 
     return {
-      id: u.id || u.userId || personal.id || "u-real",
+      id,
       name,
       firstNameFa: firstNameFa || undefined,
       lastNameFa: lastNameFa || undefined,
@@ -127,85 +133,85 @@ export class RealAdminService implements IAdminService {
       role,
       status,
       isOnline,
-      lastSeenAt: u.lastSeenAt || u.lastActiveAt,
-      accountStatus: (u.accountStatus || (u.status === "active" || u.status === "ACTIVE" ? "active" : "pending_approval")) as AccountStatus,
-      avatar: personal.avatarUrl || personal.avatar || u.avatarUrl || u.avatar,
-      avatarColor: personal.avatarColor || u.avatarColor,
-      avatarBgColor: personal.avatarBgColor || u.avatarBgColor || personal.avatarColor || u.avatarColor,
-      avatarMode: personal.avatarMode || u.avatarMode || "photo",
-      primaryColor: personal.primaryColor || u.primaryColor,
-      phone: personal.phone || u.phone,
-      nationalId: personal.nationalId || u.nationalId,
-      department: organizational.department || u.department || "engineering",
-      jobTitle: organizational.jobTitle || u.jobTitle,
-      company: organizational.company || u.company || "یورو اسلات پارس",
-      companyId: organizational.companyId || u.companyId || "euroslot",
-      joinedAt: u.createdAt || u.joinedAt || new Date().toISOString(),
-      daysInCompany: u.daysInCompany ?? 120,
-      doneProjects: u.doneProjects ?? 12,
-      salary: u.salary ?? 350000000,
-      hasOvertime: u.hasOvertime ?? true,
-      maxOvertimeHours: u.maxOvertimeHours ?? 40,
-      monthlyBonusType: u.monthlyBonusType ?? "cash",
-      monthlyBonusAmount: u.monthlyBonusAmount ?? 25000000,
-      monthlyBonusTitle: u.monthlyBonusTitle ?? "پاداش حسن انجام کار و بهره‌وری",
-      monthlyBonuses: u.monthlyBonuses ?? [],
-      score: u.score ?? 85,
-      age: u.age ?? 30,
-      maritalStatus: personal.maritalStatus || u.maritalStatus || "single",
-      childrenCount: personal.childrenCount ?? u.childrenCount ?? 0,
+      lastSeenAt: merged.lastSeenAt || merged.lastActiveAt,
+      accountStatus: (merged.accountStatus || (merged.status === "active" || merged.status === "ACTIVE" ? "active" : "pending_approval")) as AccountStatus,
+      avatar: personal.avatarUrl || personal.avatar || merged.avatarUrl || merged.avatar,
+      avatarColor: personal.avatarColor || merged.avatarColor || inner.avatarColor,
+      avatarBgColor: personal.avatarBgColor || merged.avatarBgColor || personal.avatarColor || merged.avatarColor,
+      avatarMode: personal.avatarMode || merged.avatarMode || "photo",
+      primaryColor: personal.primaryColor || merged.primaryColor || inner.primaryColor,
+      phone: personal.phone || merged.phone || merged.mobile,
+      nationalId: personal.nationalId || merged.nationalId || inner.nationalId,
+      department: organizational.department || merged.department || inner.department || "engineering",
+      jobTitle: organizational.jobTitle || merged.jobTitle || inner.jobTitle,
+      company: organizational.company || merged.company || inner.company || "یورو اسلات پارس",
+      companyId: organizational.companyId || merged.companyId || inner.companyId || "euroslot",
+      joinedAt: merged.createdAt || merged.joinedAt || new Date().toISOString(),
+      daysInCompany: merged.daysInCompany ?? 120,
+      doneProjects: merged.doneProjects ?? 12,
+      salary: merged.salary ?? 350000000,
+      hasOvertime: merged.hasOvertime ?? true,
+      maxOvertimeHours: merged.maxOvertimeHours ?? 40,
+      monthlyBonusType: merged.monthlyBonusType ?? "cash",
+      monthlyBonusAmount: merged.monthlyBonusAmount ?? 25000000,
+      monthlyBonusTitle: merged.monthlyBonusTitle ?? "پاداش حسن انجام کار و بهره‌وری",
+      monthlyBonuses: merged.monthlyBonuses ?? [],
+      score: merged.score ?? 85,
+      age: merged.age ?? 30,
+      maritalStatus: personal.maritalStatus || merged.maritalStatus || "single",
+      childrenCount: personal.childrenCount ?? merged.childrenCount ?? 0,
       insuranceType: insNormalized.insuranceType,
-      educationDegree: u.educationDegree ?? "master",
-      educationField: u.educationField ?? "مهندسی مکانیک",
-      skills: u.skills?.length ? u.skills : [
+      educationDegree: merged.educationDegree ?? "master",
+      educationField: merged.educationField ?? "مهندسی مکانیک",
+      skills: merged.skills?.length ? merged.skills : [
         { name: "React / Next.js", rate: 85 },
         { name: "TypeScript & Architecture", rate: 75 },
         { name: "SolidWorks / ASME", rate: 80 },
         { name: "Project Management & P&ID", rate: 80 }
       ],
-      workingFormat: u.workingFormat ?? { office: 60, factory: 20, mission: 10, leave: 10 },
-      modulesAccess: u.modulesAccess ?? [],
-      recentActivities: u.recentActivities ?? [],
-      checklists: u.checklists ?? [],
-      isProfileCompleted: u.isProfileCompleted ?? true,
-      adminApproved: u.adminApproved ?? (u.status === "active" || u.status === "ACTIVE"),
-      managerApproved: u.managerApproved ?? true,
-      documents: u.documents ?? [],
-      subordinates: u.subordinates ?? [],
-      manager: organizational.manager || u.manager,
-      managerId: organizational.managerId || u.managerId,
-      employeeId: organizational.employeeId || u.employeeId,
-      workLocation: organizational.workLocation || u.workLocation,
-      contractType: organizational.contractType || u.contractType,
-      insuranceCode: u.insuranceCode,
-      insuranceProvider: u.insuranceProvider,
-      insuranceValidUntil: u.insuranceValidUntil,
+      workingFormat: merged.workingFormat ?? { office: 60, factory: 20, mission: 10, leave: 10 },
+      modulesAccess: merged.modulesAccess ?? [],
+      recentActivities: merged.recentActivities ?? [],
+      checklists: merged.checklists ?? [],
+      isProfileCompleted: merged.isProfileCompleted ?? true,
+      adminApproved: merged.adminApproved ?? (merged.status === "active" || merged.status === "ACTIVE"),
+      managerApproved: merged.managerApproved ?? true,
+      documents: merged.documents ?? [],
+      subordinates: merged.subordinates ?? [],
+      manager: organizational.manager || merged.manager || inner.manager,
+      managerId: organizational.managerId || merged.managerId,
+      employeeId: organizational.employeeId || merged.employeeId || inner.employeeId,
+      workLocation: organizational.workLocation || merged.workLocation || inner.workLocation,
+      contractType: organizational.contractType || merged.contractType || inner.contractType,
+      insuranceCode: merged.insuranceCode || inner.insuranceCode,
+      insuranceProvider: merged.insuranceProvider || inner.insuranceProvider,
+      insuranceValidUntil: merged.insuranceValidUntil || inner.insuranceValidUntil,
       supplementaryPlan: insNormalized.supplementaryPlan,
-      supplementaryProvider: u.supplementaryProvider,
-      shebaNumber: u.shebaNumber,
-      university: u.university,
-      graduationYear: u.graduationYear,
-      birthDate: personal.birthDate || u.birthDate,
-      address: personal.address || u.address,
-      password: u.password,
-      extensionNumber: u.extensionNumber || personal.extensionNumber || organizational.extensionNumber,
-      personnelCode: u.personnelCode || organizational.employeeId || u.employeeId,
-      mobile: personal.phone || u.phone || u.mobile,
-      subUnit: u.subUnit,
-      jobPosition: u.jobPosition,
-      jobPositionEn: u.jobPositionEn,
-      directManager: u.directManager || organizational.manager || u.manager,
-      floor: u.floor,
-      unit: u.unit,
-      employmentDate: u.employmentDate || u.joinedAt,
-      fieldOfStudy: u.fieldOfStudy || u.educationField,
-      graduationDate: u.graduationDate,
-      fatherName: u.fatherName,
-      birthPlace: u.birthPlace,
-      militaryDuty: u.militaryDuty,
-      insuranceNumber: u.insuranceNumber || u.insuranceCode,
-      bankAccount: u.bankAccount || u.accountNumber,
-      duties: u.duties || [],
+      supplementaryProvider: merged.supplementaryProvider || inner.supplementaryProvider,
+      shebaNumber: merged.shebaNumber || inner.shebaNumber,
+      university: merged.university || inner.university,
+      graduationYear: merged.graduationYear || inner.graduationYear,
+      birthDate: personal.birthDate || merged.birthDate || inner.birthDate,
+      address: personal.address || merged.address || inner.address,
+      password: merged.password || inner.password,
+      extensionNumber: merged.extensionNumber || personal.extensionNumber || organizational.extensionNumber || inner.extensionNumber,
+      personnelCode: merged.personnelCode || organizational.employeeId || merged.employeeId || inner.employeeId,
+      mobile: personal.phone || merged.phone || merged.mobile || inner.mobile,
+      subUnit: merged.subUnit || inner.subUnit,
+      jobPosition: merged.jobPosition || inner.jobPosition,
+      jobPositionEn: merged.jobPositionEn || inner.jobPositionEn,
+      directManager: merged.directManager || organizational.manager || merged.manager || inner.manager,
+      floor: merged.floor || inner.floor,
+      unit: merged.unit || inner.unit,
+      employmentDate: merged.employmentDate || merged.joinedAt || inner.employmentDate,
+      fieldOfStudy: merged.fieldOfStudy || merged.educationField || inner.fieldOfStudy,
+      graduationDate: merged.graduationDate || inner.graduationDate,
+      fatherName: merged.fatherName || inner.fatherName,
+      birthPlace: merged.birthPlace || inner.birthPlace,
+      militaryDuty: merged.militaryDuty || inner.militaryDuty,
+      insuranceNumber: merged.insuranceNumber || merged.insuranceCode || inner.insuranceNumber,
+      bankAccount: merged.bankAccount || merged.accountNumber || inner.bankAccount,
+      duties: merged.duties || inner.duties || [],
     };
   }
 
