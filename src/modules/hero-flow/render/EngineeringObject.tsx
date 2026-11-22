@@ -20,8 +20,8 @@ function DynamicModel({ type }: { type: ShapeType }) {
   useEffect(() => {
     // Apply a cool, natural metallic texture to all meshes
     scene.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child as THREE.Mesh;
+      if ((child as any).isMesh) {
+        const mesh = child as unknown as THREE.Mesh;
         if (mesh.material) {
           const mat = mesh.material as THREE.MeshStandardMaterial;
           mat.color.set("#ceb9b0ff"); // Realistic steel grey
