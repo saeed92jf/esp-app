@@ -1,4 +1,4 @@
-# ==============================================================================
+﻿# ==============================================================================
 # Euroslot Pars - Professional Production Deployment Pipeline
 # Zero-Downtime Deployment with Automated Pre-Flight Quality Gate & Data Backup
 # ==============================================================================
@@ -54,6 +54,9 @@ if ($LASTEXITCODE -ne 0) {
 # Sync project public documentation if any new files were added
 if (Test-Path "$devRoot\esp-app\public\docs") {
     robocopy "$devRoot\esp-app\public\docs" "$prodRoot\esp-app\public\docs" /E /MT:16 /NFL /NDL /NJH /NJS | Out-Null
+}
+if (Test-Path "$devRoot\esp-app\public\coding-docs") {
+    robocopy "$devRoot\esp-app\public\coding-docs" "$prodRoot\esp-app\public\coding-docs" /E /MT:16 /NFL /NDL /NJH /NJS | Out-Null
 }
 Write-Host "  [OK] Production codebase updated." -ForegroundColor Green
 
