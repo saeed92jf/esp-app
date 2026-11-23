@@ -241,7 +241,7 @@ export function SearchPopup<T>({
           )}
         >
           <div className="relative flex items-center" style={{ height: SEARCH_BOX_HEIGHT }}>
-            <Search className="text-muted-foreground pointer-events-none absolute inset-s-4 size-5" />
+            <Search className="text-muted-foreground pointer-events-none absolute start-4 top-1/2 -translate-y-1/2 size-5" />
             <input
               ref={inputRef}
               type="text"
@@ -251,7 +251,7 @@ export function SearchPopup<T>({
               onFocus={() => { setIsFocused(true); setKeyboardMode(false); }}
               onBlur={() => setTimeout(() => setIsFocused(false), 150)}
               placeholder={isFocused ? '' : t('placeholder')}
-              className="text-foreground placeholder:text-muted-foreground h-full w-full bg-transparent ps-11 pe-4 text-base focus:outline-none"
+              className="text-foreground placeholder:text-muted-foreground h-full w-full bg-transparent ps-12 pe-4 text-base focus:outline-none"
             />
           </div>
         </div>
