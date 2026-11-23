@@ -36,7 +36,7 @@ export function GoogleAddShortcutTile({
         {/* Google Circular Plus Bubble */}
         <div
           className={cn(
-            "flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800/90 text-foreground/80 shadow-xs"
+            "flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-foreground/80 shadow-xs"
           )}
         >
           <Plus className="size-5 sm:size-6 stroke-[2]" />
