@@ -159,22 +159,17 @@ export function DashboardSettingsPopover({
 
       <PopoverAnchor
         className={cn(
-          "fixed top-[calc(var(--header-height)+8px)] w-0 h-0 pointer-events-none",
+          "fixed top-[calc(var(--header-height,64px)+8px)] w-0 h-0 pointer-events-none",
           anchorEdge === "left" ? "left-3 sm:left-6" : "right-3 sm:right-6"
         )}
       />
 
       <PopoverContent
-        className="relative w-[calc(100vw-24px)] max-w-[380px] sm:w-[380px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden"
-        align={
-          anchorEdge === "left"
-            ? dir === "rtl"
-              ? "end"
-              : "start"
-            : dir === "rtl"
-            ? "start"
-            : "end"
-        }
+        style={{
+          maxHeight: 'min(540px, var(--radix-popover-content-available-height, calc(100dvh - var(--header-height, 64px) - 1.25rem)), calc(100dvh - var(--header-height, 64px) - 1.25rem))',
+        }}
+        className="relative w-[calc(100vw-24px)] max-w-[380px] sm:w-[380px] max-h-[min(540px,calc(100dvh-var(--header-height,64px)-1.25rem))] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden"
+        align={anchorEdge === "left" ? "start" : "end"}
         side="bottom"
         sideOffset={0}
         collisionPadding={12}

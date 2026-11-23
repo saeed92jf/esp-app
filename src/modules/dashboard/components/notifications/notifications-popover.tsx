@@ -363,7 +363,7 @@ export function NotificationsPopover({
                 origin: window.location.origin,
               }),
             });
-          } catch {}
+          } catch { }
         }
 
         toast.info(
@@ -584,22 +584,17 @@ export function NotificationsPopover({
 
         <PopoverAnchor
           className={cn(
-            "fixed top-[calc(var(--header-height)+8px)] w-0 h-0 pointer-events-none",
+            "fixed top-[calc(var(--header-height,64px)+8px)] w-0 h-0 pointer-events-none",
             anchorEdge === "left" ? "left-3 sm:left-6" : "right-3 sm:right-6"
           )}
         />
 
         <PopoverContent
-          className="relative w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] sm:w-[380px] sm:max-w-[380px] h-[500px] sm:h-[540px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden box-border"
-          align={
-            anchorEdge === "left"
-              ? dir === "rtl"
-                ? "end"
-                : "start"
-              : dir === "rtl"
-                ? "start"
-                : "end"
-          }
+          style={{
+            maxHeight: 'min(540px, var(--radix-popover-content-available-height, calc(100dvh - var(--header-height, 64px) - 1.25rem)), calc(100dvh - var(--header-height, 64px) - 1.25rem))',
+          }}
+          className="relative w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] sm:w-[380px] sm:max-w-[380px] max-h-[min(540px,calc(100dvh-var(--header-height,64px)-1.25rem))] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border border-border/40 z-[100] overflow-hidden box-border"
+          align={anchorEdge === "left" ? "start" : "end"}
           side="bottom"
           sideOffset={0}
           collisionPadding={12}
@@ -687,7 +682,7 @@ export function NotificationsPopover({
                     <div className="flex items-center justify-center size-11 sm:size-12 shrink-0 select-none">
                       <IoNotifications className="size-9.5 sm:size-11 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <div className="flex flex-col items-start gap-0.5 flex-1 min-w-0 overflow-hidden">
+                    <div className="flex flex-col items-start gap-0.5 flex-1 w-0 min-w-0 max-w-full overflow-hidden">
                       <div className="flex items-center gap-2 w-full min-w-0">
                         <h3 className="font-extrabold text-base sm:text-lg text-foreground tracking-tight truncate text-start">
                           {t("titleShort")}
@@ -857,8 +852,8 @@ export function NotificationsPopover({
                                             ? "علامت به عنوان خوانده‌نشده"
                                             : "Mark as unread"
                                           : dir === "rtl"
-                                          ? "علامت به عنوان خوانده‌شده"
-                                          : "Mark as read"
+                                            ? "علامت به عنوان خوانده‌شده"
+                                            : "Mark as read"
                                       }
                                       className="p-0.5 rounded hover:bg-muted/60 transition-colors shrink-0 cursor-pointer"
                                     >

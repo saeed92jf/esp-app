@@ -255,11 +255,14 @@ export function DashboardAvatar() {
         </Tooltip>
       </TooltipProvider>
       
-      <PopoverAnchor className={cn("fixed top-[calc(var(--header-height)+8px)] w-0 h-0 pointer-events-none", anchorEdge === "left" ? "start-3 sm:start-6" : "end-3 sm:end-6")} />
+      <PopoverAnchor className={cn("fixed top-[calc(var(--header-height,64px)+8px)] w-0 h-0 pointer-events-none", anchorEdge === "left" ? "left-3 sm:left-6" : "right-3 sm:right-6")} />
       
       <PopoverContent 
-        className="relative w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] sm:w-[380px] sm:max-w-[380px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden" 
-        align={anchorEdge === "left" ? (dir === "rtl" ? "end" : "start") : (dir === "rtl" ? "start" : "end")}
+        style={{
+          maxHeight: 'min(540px, var(--radix-popover-content-available-height, calc(100dvh - var(--header-height, 64px) - 1.25rem)), calc(100dvh - var(--header-height, 64px) - 1.25rem))',
+        }}
+        className="relative w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] sm:w-[380px] sm:max-w-[380px] max-h-[min(540px,calc(100dvh-var(--header-height,64px)-1.25rem))] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border border-border/40 z-[100] overflow-hidden box-border" 
+        align={anchorEdge === "left" ? "start" : "end"}
         side="bottom"
         sideOffset={0}
         collisionPadding={12}
@@ -342,14 +345,14 @@ export function DashboardAvatar() {
         </div>
 
         <ScrollArea 
-          className="w-full flex-1 min-h-0 popup-scroll" 
+          className="w-full max-w-full flex-1 min-h-0 overflow-x-hidden popup-scroll [&_[data-slot=scroll-area-viewport]>div]:!block [&_[data-slot=scroll-area-viewport]>div]:!w-full [&_[data-slot=scroll-area-viewport]>div]:!max-w-full [&_[data-slot=scroll-area-viewport]>div]:!min-w-0 [&_[data-radix-scroll-area-viewport]>div]:!block [&_[data-radix-scroll-area-viewport]>div]:!w-full [&_[data-radix-scroll-area-viewport]>div]:!max-w-full [&_[data-radix-scroll-area-viewport]>div]:!min-w-0" 
           dir={dir} 
           type="auto"
           onViewportScroll={(e) => {
             setIsScrolled(e.currentTarget.scrollTop > 8);
           }}
         >
-          <div className="flex flex-col w-full px-3.5 sm:px-4 pt-[60px] sm:pt-[66px] pb-3.5 sm:pb-4">
+          <div className="flex flex-col w-full max-w-full min-w-0 box-border px-3.5 sm:px-4 pt-[54px] sm:pt-[58px] pb-3.5 sm:pb-4">
 
             <div className="segmented-list w-full">
               {/* Top Block (Avatar + Name) */}
@@ -441,44 +444,20 @@ export function DashboardAvatar() {
                     exit={segmentedAccordionMotion.exit}
                     className="flex flex-col w-full gap-[2px] overflow-hidden"
                   >
-                    {/* Tags Section (Separated block, showing popover background above and below) */}
-                    <div className="flex items-center justify-between gap-1 sm:gap-1.5 py-2.5 sm:py-3 px-2 sm:px-4 segmented-item">
-                      {(Object.entries(STATUSES) as [UserStatus, typeof STATUSES[UserStatus]][]).map(([key, meta]) => (
-                        <button
-                          key={key}
-                          onClick={() => { setStatus(key); setStatusExpanded(false); }}
-                          className={cn(
-                            "group relative flex flex-1 flex-col items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-normal text-foreground/80 border outline-none",
-                            status === key 
-                              ? "bg-zinc-100 dark:bg-zinc-900 border-border/60 dark:border-zinc-800" 
-                              : "bg-transparent border-transparent"
-                          )}
-                        >
-                          {/* GPU-accelerated hover layer */}
-                          {status !== key && (
-                            <span className="absolute inset-0 rounded-xl bg-accent opacity-0 group-hover:opacity-100 pointer-events-none" aria-hidden="true" />
-                          )}
-                          <span className={cn("relative z-10 size-2 sm:size-2.5 rounded-full shadow-sm", meta.color)} />
-                          <span className={cn("relative z-10 truncate transition-colors text-[10.5px] sm:text-xs", status !== key && meta.hoverText)}>{t(`avatar.${key}`)}</span>
-                        </button>
-                      ))}
-                    </div>
-
                     {/* Manage Account Button */}
-                    <div className="segmented-item flex flex-col overflow-hidden">
+                    <div className="segmented-item flex flex-col overflow-hidden rounded-t-[6px] rounded-b-[6px]">
                       <Link 
-                         href="/profile" 
-                         target="_blank"
+                         href="/dashboard/profile" 
                          onClick={() => setOpen(false)}
-                         className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 outline-none"
+                         className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 outline-none hover:bg-accent transition-colors"
                       >
-                         <User className="relative z-10 size-5 transition-colors" />
+                         <User className="relative z-10 size-5 text-muted-foreground transition-colors" />
                          <span className="relative z-10 transition-colors">{t("avatar.userProfile")}</span>
                       </Link>
                     </div>
 
                     {/* Sign Out Button (Sharp flat top, rounded bottom) */}
-                    <div className="segmented-item flex flex-col overflow-hidden rounded-b-[32px]">
+                    <div className="segmented-item flex flex-col overflow-hidden rounded-t-[6px] rounded-b-[32px]">
                       <button 
                         type="button"
                         onClick={async () => {

@@ -91,11 +91,14 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
         </Tooltip>
       </TooltipProvider>
       
-      <PopoverAnchor className={cn("fixed top-[calc(var(--header-height)+8px)] w-0 h-0 pointer-events-none", anchorEdge === "left" ? "start-3 sm:start-6" : "end-3 sm:end-6")} />
+      <PopoverAnchor className={cn("fixed top-[calc(var(--header-height,64px)+8px)] w-0 h-0 pointer-events-none", anchorEdge === "left" ? "left-3 sm:left-6" : "right-3 sm:right-6")} />
       
       <PopoverContent 
-        className="relative w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] sm:w-[380px] sm:max-w-[380px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden" 
-        align={anchorEdge === "left" ? (dir === "rtl" ? "end" : "start") : (dir === "rtl" ? "start" : "end")}
+        style={{
+          maxHeight: 'min(540px, var(--radix-popover-content-available-height, calc(100dvh - var(--header-height, 64px) - 1.25rem)), calc(100dvh - var(--header-height, 64px) - 1.25rem))',
+        }}
+        className="relative w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] sm:w-[380px] sm:max-w-[380px] max-h-[min(540px,calc(100dvh-var(--header-height,64px)-1.25rem))] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border border-border/40 z-[100] overflow-hidden box-border" 
+        align={anchorEdge === "left" ? "start" : "end"}
         side="bottom"
         sideOffset={0}
         collisionPadding={12}
@@ -110,8 +113,8 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
           )}
         >
           {/* Mini Help Summary (Centered in header, single line title with simple fade) */}
-          <div className="absolute inset-0 flex items-center justify-center px-12 pointer-events-none">
-            <div className="flex items-center gap-2.5 max-w-full">
+          <div className="absolute inset-0 flex items-center justify-center px-12 pointer-events-none overflow-hidden">
+            <div className="flex items-center gap-2 max-w-full min-w-0">
               <div 
                 className={cn(
                   "transition-all duration-300 ease-out shrink-0 flex items-center justify-center",
@@ -120,7 +123,7 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
                     : "opacity-0 scale-90 translate-y-2 pointer-events-none"
                 )}
               >
-                <span className="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400 leading-none select-none">?</span>
+                <HelpCircle className="size-4.5 sm:size-5 text-blue-600 dark:text-blue-400" />
               </div>
               <span 
                 className={cn(
@@ -135,7 +138,7 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
             </div>
           </div>
 
-          {/* Concentric Close Button (nested fillet: R_inner = R_outer - d = 22-6=16, 26-6=20) */}
+          {/* Concentric Close Button */}
           <Button 
             type="button"
             variant="ghost"
@@ -149,31 +152,32 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
         </div>
 
         <ScrollArea 
-          className="w-full flex-1 min-h-0 popup-scroll" 
+          className="w-full max-w-full flex-1 min-h-0 overflow-x-hidden popup-scroll [&_[data-slot=scroll-area-viewport]>div]:!block [&_[data-slot=scroll-area-viewport]>div]:!w-full [&_[data-slot=scroll-area-viewport]>div]:!max-w-full [&_[data-slot=scroll-area-viewport]>div]:!min-w-0 [&_[data-radix-scroll-area-viewport]>div]:!block [&_[data-radix-scroll-area-viewport]>div]:!w-full [&_[data-radix-scroll-area-viewport]>div]:!max-w-full [&_[data-radix-scroll-area-viewport]>div]:!min-w-0" 
           dir={dir} 
           type="auto"
           onViewportScroll={(e) => {
             setIsScrolled(e.currentTarget.scrollTop > 8);
           }}
         >
-          <div className="flex flex-col w-full px-3.5 sm:px-4 pt-[60px] sm:pt-[66px] pb-3.5 sm:pb-4">
+          <div className="flex flex-col w-full max-w-full min-w-0 box-border px-3.5 sm:px-4 pt-[54px] sm:pt-[58px] pb-3.5 sm:pb-4">
 
-            <div className="segmented-list flex flex-col gap-[2px] w-full">
+            <div className="segmented-list flex flex-col gap-[2px] w-full max-w-full min-w-0">
               {/* Group Header */}
               <button
+                type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
                 className={cn(
-                  "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer",
+                  "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full max-w-full min-w-0 box-border outline-none cursor-pointer overflow-hidden",
                   getSegmentedAccordionHeaderClass(isExpanded, { isTopRounded: true, fullCapsuleWhenClosed: true })
                 )}
               >
-                <div className="relative z-10 flex items-center gap-3.5 flex-1 min-w-0">
+                <div className="relative z-10 flex items-center gap-3.5 flex-1 min-w-0 max-w-full overflow-hidden">
                   <div className="flex items-center justify-center size-12 sm:size-14 shrink-0 select-none">
                     <span className="text-5xl sm:text-6xl font-black text-blue-600 dark:text-blue-400 mb-1 leading-none">?</span>
                   </div>
-                  <div className="flex flex-col items-start gap-0.5 flex-1 min-w-0">
-                    <h3 className="font-extrabold text-base sm:text-lg text-foreground tracking-tight truncate w-full text-start">{t("title")}</h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground text-start leading-tight truncate w-full">{t("description")}</p>
+                  <div className="flex flex-col items-start gap-0.5 flex-1 w-0 min-w-0 max-w-full overflow-hidden">
+                    <h3 className="font-extrabold text-base sm:text-lg text-foreground tracking-tight truncate w-full max-w-full min-w-0 text-start">{t("title")}</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground text-start leading-tight truncate w-full max-w-full min-w-0 block overflow-hidden text-ellipsis whitespace-nowrap">{t("description")}</p>
                   </div>
                 </div>
                 <ChevronDown className={cn("relative z-10 size-4.5 shrink-0 text-muted-foreground transition-transform duration-200", isExpanded && "rotate-180")} />
@@ -186,7 +190,7 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
                     initial={segmentedAccordionMotion.initial}
                     animate={segmentedAccordionMotion.animate}
                     exit={segmentedAccordionMotion.exit}
-                    className="flex flex-col overflow-hidden gap-[2px]"
+                    className="flex flex-col overflow-hidden gap-[2px] w-full max-w-full min-w-0"
                   >
                     {menuItems.map((item, idx) => {
                       const Icon = item.icon;
@@ -197,7 +201,7 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
                           href={item.href}
                           onClick={() => setOpen(false)}
                           className={cn(
-                            "segmented-item relative flex items-center gap-3.5 py-3 px-5 outline-none group w-full",
+                            "segmented-item relative flex items-center gap-3.5 py-3 px-5 outline-none group w-full max-w-full min-w-0 box-border overflow-hidden",
                             "rounded-t-[6px]",
                             isLast ? "rounded-b-[32px]" : "rounded-b-[6px]"
                           )}
@@ -205,7 +209,7 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
                           <div className="relative z-10 shrink-0 flex items-center justify-center size-5 text-muted-foreground group-hover:text-foreground transition-colors">
                             <Icon className="size-4.5" />
                           </div>
-                          <span className="relative z-10 text-sm font-medium text-foreground/90 group-hover:text-foreground transition-colors flex-1 text-start">
+                          <span className="relative z-10 text-sm font-medium text-foreground/90 group-hover:text-foreground transition-colors flex-1 min-w-0 max-w-full truncate text-start">
                             {item.title}
                           </span>
                         </Link>
@@ -220,12 +224,12 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
             <Link 
               href={contactItem.href}
               onClick={() => setOpen(false)}
-              className="segmented-item group relative flex items-center gap-3.5 py-3 px-5 outline-none rounded-[32px] mt-2.5 w-full"
+              className="segmented-item group relative flex items-center gap-3.5 py-3 px-5 outline-none rounded-[32px] mt-2.5 w-full max-w-full min-w-0 box-border overflow-hidden"
             >
               <div className="relative z-10 shrink-0 flex items-center justify-center size-5 text-muted-foreground group-hover:text-foreground transition-colors">
                 <contactItem.icon className="size-4.5" />
               </div>
-              <span className="relative z-10 text-sm font-semibold text-foreground/90 group-hover:text-foreground transition-colors flex-1 text-start">
+              <span className="relative z-10 text-sm font-semibold text-foreground/90 group-hover:text-foreground transition-colors flex-1 min-w-0 max-w-full truncate text-start">
                 {contactItem.title}
               </span>
             </Link>
