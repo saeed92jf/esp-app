@@ -175,7 +175,7 @@ export function DashboardSettingsPopover({
         collisionPadding={12}
         dir={dir}
       >
-        {/* ── Top Bar: Only Close Button ("بالا فقط ضربدر") with concentric fillet ── */}
+        {/* ── Top Bar: Mini Summary on scroll & concentric Close Button ── */}
         <div
           className={cn(
             "absolute top-0 inset-x-0 z-30 flex items-center h-[46px] sm:h-[50px] transition-colors duration-200 pointer-events-auto rounded-t-[22px] sm:rounded-t-[26px]",
@@ -184,6 +184,30 @@ export function DashboardSettingsPopover({
               : "bg-popover border-b border-transparent"
           )}
         >
+          {/* Mini Settings Summary (Centered in header on scroll) */}
+          <div className="absolute inset-0 flex items-center justify-center px-12 pointer-events-none overflow-hidden">
+            <div className="flex items-center gap-2 max-w-full min-w-0">
+              <div
+                className={cn(
+                  "transition-all duration-300 ease-out shrink-0 flex items-center justify-center",
+                  isScrolled
+                    ? "opacity-100 scale-100 translate-y-0"
+                    : "opacity-0 scale-90 translate-y-2 pointer-events-none"
+                )}
+              >
+                <SlidersHorizontal className="size-4.5 sm:size-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <span
+                className={cn(
+                  "text-sm font-semibold text-foreground truncate min-w-0 text-center transition-opacity duration-300 ease-out",
+                  isScrolled ? "opacity-100" : "opacity-0 pointer-events-none"
+                )}
+              >
+                {t("schematic.settingsButton")}
+              </span>
+            </div>
+          </div>
+
           <Button
             type="button"
             variant="ghost"
