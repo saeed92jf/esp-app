@@ -445,19 +445,19 @@ export function DashboardAvatar() {
                     className="flex flex-col w-full gap-[2px] overflow-hidden"
                   >
                     {/* Manage Account Button */}
-                    <div className="segmented-item flex flex-col overflow-hidden rounded-t-[6px] rounded-b-[6px]">
+                    <div className="segmented-item group flex flex-col overflow-hidden rounded-t-[6px] rounded-b-[6px]">
                       <Link 
                          href="/dashboard/profile" 
                          onClick={() => setOpen(false)}
-                         className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 outline-none hover:bg-accent transition-colors"
+                         className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 group-hover:text-foreground outline-none transition-colors"
                       >
-                         <User className="relative z-10 size-5 text-muted-foreground transition-colors" />
+                         <User className="relative z-10 size-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                          <span className="relative z-10 transition-colors">{t("avatar.userProfile")}</span>
                       </Link>
                     </div>
 
                     {/* Sign Out Button (Sharp flat top, rounded bottom) */}
-                    <div className="segmented-item flex flex-col overflow-hidden rounded-t-[6px] rounded-b-[32px]">
+                    <div className="segmented-item group flex flex-col overflow-hidden rounded-t-[6px] rounded-b-[32px]">
                       <button 
                         type="button"
                         onClick={async () => {
@@ -465,9 +465,9 @@ export function DashboardAvatar() {
                           await logout();
                           router.push('/login');
                         }}
-                        className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 outline-none cursor-pointer"
+                        className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 group-hover:text-foreground outline-none cursor-pointer transition-colors"
                       >
-                        <LogOut className="relative z-10 size-5 transition-colors" />
+                        <LogOut className="relative z-10 size-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                         <span className="relative z-10 transition-colors">{t("avatar.logout")}</span>
                       </button>
                     </div>
@@ -480,31 +480,31 @@ export function DashboardAvatar() {
             <div className="segmented-list w-full mt-3">
               {/* Dashboard Button */}
               <div className={cn(
-                "segmented-item flex flex-col overflow-hidden",
+                "segmented-item group flex flex-col overflow-hidden",
                 Boolean(user?.role && ['superadmin', 'admin', 'dept_admin', 'office_admin'].includes(user.role)) ? "rounded-t-[32px] rounded-b-[6px]" : "rounded-[32px]"
               )}>
                 <Link 
                    href="/dashboard" 
                    target="_blank"
                    onClick={() => setOpen(false)}
-                   className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 outline-none"
+                   className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 group-hover:text-foreground outline-none transition-colors"
                 >
-                   <Home className="relative z-10 size-5 transition-colors" />
+                   <Home className="relative z-10 size-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                    <span className="relative z-10 transition-colors">{t("avatar.dashboard")}</span>
                 </Link>
               </div>
 
               {/* Admin Panel Button */}
               {Boolean(user?.role && ['superadmin', 'admin', 'dept_admin', 'office_admin'].includes(user.role)) && (
-                <div className="segmented-item flex flex-col overflow-hidden rounded-t-[6px] rounded-b-[32px]">
+                <div className="segmented-item group flex flex-col overflow-hidden rounded-t-[6px] rounded-b-[32px]">
                   <Link 
                      href="/admin" 
                      target="_blank"
                      rel="noopener noreferrer"
                      onClick={() => setOpen(false)}
-                     className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 outline-none"
+                     className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 group-hover:text-foreground outline-none transition-colors"
                   >
-                     <Settings className="relative z-10 size-5 transition-colors" />
+                     <Settings className="relative z-10 size-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                      <span className="relative z-10 transition-colors">{t("avatar.adminPanel")}</span>
                   </Link>
                 </div>
@@ -513,9 +513,9 @@ export function DashboardAvatar() {
 
             {/* Footer */}
             <div className="flex items-center justify-center gap-3 text-[11px] text-muted-foreground my-4">
-               <Link href="#" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">{t("avatar.privacy")}</Link>
+               <Link href="#" className="text-primary hover:opacity-80 transition-opacity">{t("avatar.privacy")}</Link>
                <span>•</span>
-               <Link href="#" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">{t("avatar.terms")}</Link>
+               <Link href="#" className="text-primary hover:opacity-80 transition-opacity">{t("avatar.terms")}</Link>
             </div>
           </div>
         </ScrollArea>
