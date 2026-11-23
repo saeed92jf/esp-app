@@ -335,7 +335,7 @@ export function LoginForm({
                 type="submit"
                 disabled={isLoading}
                 className={cn(
-                  'w-full h-11 sm:h-12 text-sm sm:text-base font-semibold rounded-xl bg-primary text-white hover:opacity-95 shadow-md shadow-primary/20 transition-all relative overflow-hidden select-none cursor-pointer',
+                  'w-full h-11 sm:h-12 text-sm sm:text-base font-semibold rounded-xl bg-primary text-white hover:opacity-95 shadow-md shadow-primary/20 transition-all relative overflow-hidden select-none cursor-pointer border-0',
                   isLoading && 'cursor-wait opacity-100 pointer-events-none'
                 )}
               >
