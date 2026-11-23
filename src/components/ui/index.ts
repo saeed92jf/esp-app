@@ -39,6 +39,7 @@ export * from './metaball-tabs';
 export * from './multi-button-demo';
 export * from './multi-button';
 export * from './navigation-menu';
+export * from './notification-bell-icon';
 export * from './pagination';
 export * from './password-input';
 export * from './phone-input';
