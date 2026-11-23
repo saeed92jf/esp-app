@@ -37,7 +37,11 @@
       "@/config/*": ["./src/config/*"],
       "@/theme/*": ["./src/theme/*"],
       "@/styles/*": ["./src/styles/*"],
-      "@/public/*": ["./public/*"]
+      "@/public/*": ["./public/*"],
+      "@core/ui": ["./src/components/ui/index.ts"],
+      "@core/ui/*": ["./src/components/ui/*"],
+      "@core/auth-core": ["./src/components/auth/index.ts"],
+      "@core/auth-core/*": ["./src/components/auth/*"]
     }
   },
   "include": [

@@ -48,9 +48,9 @@
    ============================================ */
 @layer base {
   :root {
-    --primary-h: 265;
-    --primary-s: 83%;
-    --primary-l: 57%;
+    --primary-h: 213;
+    --primary-s: 100%;
+    --primary-l: 61%;
   }
 
   .primary-color-red {
