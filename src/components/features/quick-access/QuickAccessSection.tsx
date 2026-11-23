@@ -413,10 +413,10 @@ export function QuickAccessSection({
 
                     <div className="relative z-10 flex flex-col items-center justify-start w-full h-full pt-3 sm:pt-4 pointer-events-none">
                       <div className="flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800/90 shadow-xs">
-                        <Expand className="size-4.5 sm:size-5.5 text-muted-foreground group-hover:text-foreground transition-colors stroke-[2.2]" />
+                        <Expand className="size-4.5 sm:size-5.5 text-muted-foreground stroke-[2.2]" />
                       </div>
                       <span
-                        className="mt-2 sm:mt-3 text-[11px] sm:text-[12.5px] font-medium tracking-normal text-foreground/90 leading-tight block w-full max-w-[60px] sm:max-w-[76px] truncate text-center group-hover:text-foreground transition-colors"
+                        className="mt-2 sm:mt-3 text-[11px] sm:text-[12.5px] font-medium tracking-normal text-foreground/90 leading-tight block w-full max-w-[60px] sm:max-w-[76px] truncate text-center"
                         title={tHome("quickAccess.expand")}
                       >
                         {tHome("quickAccess.expand")}
