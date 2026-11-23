@@ -321,7 +321,7 @@ export function QuickAccessSection({
                         <div className="relative z-10 flex flex-col items-center justify-start w-full h-full pt-3 sm:pt-4 pointer-events-none">
                           <div
                             className={cn(
-                              "flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800/90 shadow-xs transition-colors",
+                              "flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 shadow-xs transition-colors",
                               isItemSelected && "bg-primary/10 dark:bg-primary/20"
                             )}
                           >
@@ -412,7 +412,7 @@ export function QuickAccessSection({
                     />
 
                     <div className="relative z-10 flex flex-col items-center justify-start w-full h-full pt-3 sm:pt-4 pointer-events-none">
-                      <div className="flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800/90 shadow-xs">
+                      <div className="flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 shadow-xs">
                         <Expand className="size-4.5 sm:size-5.5 text-muted-foreground stroke-[2.2]" />
                       </div>
                       <span

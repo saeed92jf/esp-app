@@ -1378,7 +1378,7 @@ export function AdminUserConfig({
                                     ) : null}
                                   </div>
                                   <div className="relative">
-                                    <Mail size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+                                    <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
                                     <Input
                                       id="email"
                                       type="email"
@@ -1392,7 +1392,7 @@ export function AdminUserConfig({
                                             : "username@euroslotpars.com"
                                       }
                                       className={cn(
-                                        "ps-9 pe-9 h-10 bg-background border rounded-xl text-xs font-medium transition-colors",
+                                        "pl-9 pr-9 text-left h-10 bg-background border rounded-xl text-xs font-medium transition-colors",
                                         isInvalidExternalDomain
                                           ? "border-rose-500/60 focus-visible:ring-rose-500/30"
                                           : isEmailValid
@@ -1402,10 +1402,10 @@ export function AdminUserConfig({
                                       dir="ltr"
                                     />
                                     {isEmailValid && (
-                                      <CheckCircle2 className="size-4 absolute end-3 top-1/2 -translate-y-1/2 text-emerald-500 pointer-events-none" />
+                                      <CheckCircle2 className="size-4 absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 pointer-events-none" />
                                     )}
                                     {isInvalidExternalDomain && (
-                                      <AlertCircle className="size-4 absolute end-3 top-1/2 -translate-y-1/2 text-rose-500 pointer-events-none" />
+                                      <AlertCircle className="size-4 absolute right-3 top-1/2 -translate-y-1/2 text-rose-500 pointer-events-none" />
                                     )}
                                   </div>
 
@@ -1480,17 +1480,17 @@ export function AdminUserConfig({
                                     </Button>
                                   </div>
                                   <div className="relative">
-                                    <KeyRound size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
+                                    <KeyRound size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none" />
                                     <Input
                                       id="password"
                                       type={showPassword ? "text" : "password"}
                                       value={form.password || ""}
                                       onChange={(e) => setForm({ ...form, password: e.target.value })}
                                       placeholder={t("passwordPlaceholder")}
-                                      className="ps-9 pe-16 h-10 bg-background border-border/50 rounded-xl text-xs font-mono font-semibold"
+                                      className="pl-9 pr-16 text-left h-10 bg-background border-border/50 rounded-xl text-xs font-mono font-semibold"
                                       dir="ltr"
                                     />
-                                    <div className="absolute end-1.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                                    <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
                                       {form.password && (
                                         <button
                                           type="button"

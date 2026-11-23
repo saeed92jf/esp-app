@@ -178,7 +178,7 @@ export function GoogleShortcutTile({
         {/* Google Circular Icon Bubble */}
         <div
           className={cn(
-            "flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800/90 shadow-xs"
+            "flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 shadow-xs"
           )}
         >
           {Icon && (

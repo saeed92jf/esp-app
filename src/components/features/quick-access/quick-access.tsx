@@ -45,8 +45,7 @@ export function QuickAccessCard({
         <span
           className={cn(
             "flex size-11 items-center justify-center rounded-full",
-            "transition-transform duration-300 ease-out",
-            "group-hover:scale-100 group-hover:hoverBgClassName motion-reduce:transform-none",
+            "transition-transform duration-300 ease-out motion-reduce:transform-none",
             iconBgClassName ?? "bg-muted",
           )}
         >
@@ -54,7 +53,6 @@ export function QuickAccessCard({
             className={cn(
               "size-6",
               iconClassName ?? "text-foreground",
-              "group-hover:text-white",
             )}
             strokeWidth={1.8}
             aria-hidden="true"

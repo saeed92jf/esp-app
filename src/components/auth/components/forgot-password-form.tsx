@@ -198,9 +198,9 @@ export function ForgotPasswordForm({
                       autoComplete="email"
                       dir="ltr"
                       disabled={isSubmitting}
-                      className="h-11 sm:h-12 text-sm sm:text-base ps-10 pe-3.5 font-sans rounded-xl border-border/60 bg-background/60 focus:bg-background transition-colors auth-input-ltr"
+                      className="h-11 sm:h-12 text-sm sm:text-base pl-10 pr-3.5 text-left font-sans rounded-xl border-border/60 bg-background/60 focus:bg-background transition-colors auth-input-ltr"
                     />
-                    <Mail className="size-4.5 text-muted-foreground/70 absolute top-1/2 -translate-y-1/2 start-3.5 pointer-events-none" />
+                    <Mail className="size-4.5 text-muted-foreground/70 absolute top-1/2 -translate-y-1/2 left-3.5 pointer-events-none" />
                   </div>
                 </div>
 

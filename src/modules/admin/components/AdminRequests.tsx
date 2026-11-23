@@ -1897,7 +1897,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                     <div className="relative">
                                       <Mail
                                         size={18}
-                                        className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
                                       />
                                       <Input
                                         type="email"
@@ -1908,7 +1908,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                             email: e.target.value.trim(),
                                           })
                                         }
-                                        className="ps-10 h-11 bg-background border-border/50 rounded-xl text-sm"
+                                        className="pl-10 pr-3.5 text-left h-11 bg-background border-border/50 rounded-xl text-sm"
                                         dir="ltr"
                                       />
                                     </div>
@@ -2460,7 +2460,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                       <div className="relative">
                                         <CreditCard
                                           size={18}
-                                          className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
                                         />
                                         <Input
                                           value={reviewData.shebaNumber || ""}
@@ -2472,7 +2472,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                           }
                                           placeholder="IR000000000000000000000000"
                                           className={cn(
-                                            "pl-10 h-11 bg-background border-border/50 rounded-xl text-sm font-mono text-left",
+                                            "pl-10 pr-3.5 h-11 bg-background border-border/50 rounded-xl text-sm font-mono text-left",
                                             isRtl && "fa-num"
                                           )}
                                           dir="ltr"
