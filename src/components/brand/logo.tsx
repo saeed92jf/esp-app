@@ -77,10 +77,7 @@ export function Logo({
             </>
           )}
           <span 
-            className="ms-[0.25em] inline-flex items-center justify-center font-sans font-bold uppercase tracking-[0.06em] leading-none px-[0.26em] py-[0.08em] rounded-none text-white border-0 bg-gradient-logo select-none self-center"
-            style={{
-              backgroundImage: 'var(--gradient-logo)'
-            }}
+            className="ms-[0.25em] inline-flex items-center justify-center font-sans font-bold uppercase tracking-[0.06em] leading-none px-[0.25em] py-[0.08em] rounded-none bg-primary text-white border-0 select-none self-center"
           >
             CORE
           </span>
