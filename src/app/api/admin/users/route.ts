@@ -78,12 +78,21 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const authHeader = req.headers.get("authorization");
 
+    // Email is optional: generate a standard fallback email if omitted
     if (!body.email || !body.email.trim()) {
-      return NextResponse.json(
-        { error_code: "VALIDATION_ERROR", message: "ایمیل سازمانی الزامی است." },
-        { status: 422 }
-      );
+      const codeOrPhone = (body.employeeId || body.personnelCode || body.phone || body.mobile || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+      const prefix = codeOrPhone ? `esp_${codeOrPhone}` : `u_${Date.now()}`;
+      body.email = `${prefix}@euroslotpars.com`;
     }
+
+    // Password is optional: generate a secure fallback password if omitted
+    if (!body.password || !body.password.trim()) {
+      body.password = `Esp@${Math.random().toString(36).slice(-6)}!`;
+    }
+
+    // Company is exclusively Euroslot Pars
+    body.company = "یورواسلات پارس";
+    body.companyId = "esp";
 
     try {
       const remoteRes = await fetch(`${BACKEND_API_URL}/admin/users`, {

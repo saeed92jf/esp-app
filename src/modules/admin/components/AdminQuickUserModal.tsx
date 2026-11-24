@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { api } from "@/services";
 import { User } from "../types/admin.types";
+import { cn } from "@/lib/utils";
 import {
   UserPlus,
   RefreshCw,
@@ -29,6 +30,7 @@ import {
   ShieldCheck,
   Check,
   Sparkles,
+  Calendar,
 } from "lucide-react";
 import {
   ESP_DEPARTMENTS,
@@ -74,6 +76,7 @@ export function AdminQuickUserModal({
   const [personnelCode, setPersonnelCode] = useState(`ESP-${nextCodeNum}`);
   const [nationalId, setNationalId] = useState("");
   const [mobile, setMobile] = useState("");
+  const [joinDate, setJoinDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [email, setEmail] = useState("");
   const [department, setDepartment] = useState("مهندسی و طراحی");
   const [jobTitle, setJobTitle] = useState("");
@@ -84,6 +87,7 @@ export function AdminQuickUserModal({
   const [showPassword, setShowPassword] = useState(false);
   const [sendCredentialsEmail, setSendCredentialsEmail] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isQuickMode, setIsQuickMode] = useState(true);
 
   // Auto-suggest email based on English name
   const handleEnNameChange = (val: string) => {
@@ -107,6 +111,7 @@ export function AdminQuickUserModal({
     setPersonnelCode(`ESP-${String(existingUsersCount + 1).padStart(3, "0")}`);
     setNationalId("");
     setMobile("");
+    setJoinDate(new Date().toISOString().split("T")[0]);
     setEmail("");
     setDepartment("مهندسی و طراحی");
     setJobTitle("");
@@ -125,6 +130,16 @@ export function AdminQuickUserModal({
       return;
     }
 
+    if (!mobile.trim()) {
+      toast.warning(isRtl ? "شماره موبایل الزامی است." : "Mobile number is required.");
+      return;
+    }
+
+    if (!joinDate.trim()) {
+      toast.warning(isRtl ? "تاریخ شروع به کار (Join Date) الزامی است." : "Join date is required.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const partsFa = fullNameFa.trim().split(/\s+/);
@@ -136,7 +151,9 @@ export function AdminQuickUserModal({
       const lastName = partsEn.slice(1).join(" ") || partsEn[0];
 
       const cleanEmail = email.trim().toLowerCase();
-      const prefix = cleanEmail ? cleanEmail.split("@")[0].replace(/[^a-z0-9]/g, "") : `user${Date.now()}`;
+      const prefix = cleanEmail
+        ? cleanEmail.split("@")[0].replace(/[^a-z0-9]/g, "")
+        : (personnelCode.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() || `u${Date.now()}`);
       const newId = `u-${prefix}`;
 
       const isInactive = employmentStatus.includes("غیرفعال") || employmentStatus.includes("قطع");
@@ -166,7 +183,8 @@ export function AdminQuickUserModal({
         accountStatus: isInactive ? "inactive" : "active",
         employmentStatus: isInactive ? "قطع همکاری" : "فعال",
         password,
-        joinedAt: new Date().toISOString().split("T")[0],
+        joinDate: joinDate.trim(),
+        joinedAt: joinDate.trim(),
         isProfileCompleted: true,
         adminApproved: true,
         managerApproved: true,
@@ -195,19 +213,52 @@ export function AdminQuickUserModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 rounded-3xl border border-border/60 bg-background shadow-2xl">
         <DialogHeader className="p-5 pb-4 border-b border-border/40 bg-muted/20">
-          <div className="flex items-center gap-3">
-            <div className="size-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
-              <UserPlus className="size-5" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                <UserPlus className="size-5" />
+              </div>
+              <div>
+                <DialogTitle className="text-base font-bold text-foreground">
+                  {isRtl ? "ساخت و تعریف کاربر جدید" : "Add New User Account"}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                  {isRtl
+                    ? "تعریف سریع پرسنل جدید یورواسلات پارس (ESP CORE) با اطلاعات پایه سازمانی و دسترسی"
+                    : "Quickly provision new Euroslot Pars staff with organizational profile and credentials"}
+                </DialogDescription>
+              </div>
             </div>
-            <div>
-              <DialogTitle className="text-base font-bold text-foreground">
-                {isRtl ? "ساخت و تعریف کاربر جدید" : "Add New User Account"}
-              </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                {isRtl
-                  ? "تعریف سریع پرسنل جدید یورواسلات پارس (ESP CORE) با اطلاعات پایه سازمانی و دسترسی"
-                  : "Quickly provision new Euroslot Pars staff with organizational profile and credentials"}
-              </DialogDescription>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30 text-xs font-semibold">
+                <Building2 className="size-3.5" />
+                <span>{isRtl ? "یورواسلات پارس" : "Euroslot Pars"}</span>
+              </div>
+
+              <div className="flex items-center gap-1 p-0.5 bg-background border border-border/60 rounded-xl shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setIsQuickMode(true)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer",
+                    isQuickMode ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Sparkles className="size-3" />
+                  <span>{isRtl ? "کوییک مد (ستاره‌دار)" : "Quick Mode"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsQuickMode(false)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer",
+                    !isQuickMode ? "bg-primary text-primary-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <span>{isRtl ? "حالت کامل" : "Full Mode"}</span>
+                </button>
+              </div>
             </div>
           </div>
         </DialogHeader>
@@ -229,35 +280,57 @@ export function AdminQuickUserModal({
               />
             </div>
 
-            {/* 2. Full Name EN */}
+            {/* 2. Mobile Number (Mandatory) */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">
-                {isRtl ? "نام و نام خانوادگی (انگلیسی)" : "Full Name (English)"}
+              <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                <span>{isRtl ? "شماره موبایل" : "Mobile Number"}</span>
+                <span className="text-rose-500 text-[11px]">*</span>
               </Label>
               <Input
-                value={fullNameEn}
-                onChange={(e) => handleEnNameChange(e.target.value)}
-                placeholder="e.g. Alireza Hosseini"
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value)}
+                placeholder="09121234567"
                 dir="ltr"
-                className="h-9 text-xs rounded-xl bg-background border-border/60 text-start"
+                required
+                className="h-9 text-xs rounded-xl bg-background border-border/60 text-start font-mono fa-num"
               />
             </div>
 
-            {/* 3. Personnel Code */}
+            {/* 3. Join Date (Mandatory) */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">
-                {isRtl ? "کد پرسنلی" : "Personnel Code"}
+              <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                <span className="flex items-center gap-1">
+                  <Calendar className="size-3 text-primary" />
+                  <span>{isRtl ? "تاریخ شروع به کار (Join Date)" : "Join Date"}</span>
+                </span>
+                <span className="text-rose-500 text-[11px]">*</span>
+              </Label>
+              <Input
+                type="date"
+                value={joinDate}
+                onChange={(e) => setJoinDate(e.target.value)}
+                required
+                className="h-9 text-xs rounded-xl bg-background border-border/60 font-mono fa-num"
+              />
+            </div>
+
+            {/* 4. Personnel Code */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                <span>{isRtl ? "کد پرسنلی" : "Personnel Code"}</span>
+                <span className="text-rose-500 text-[11px]">*</span>
               </Label>
               <Input
                 value={personnelCode}
                 onChange={(e) => setPersonnelCode(e.target.value)}
                 placeholder="ESP-739"
                 dir="ltr"
+                required
                 className="h-9 text-xs rounded-xl bg-background border-border/60 text-start font-mono fa-num"
               />
             </div>
 
-            {/* 4. National ID */}
+            {/* 5. National ID */}
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-foreground">
                 {isRtl ? "کد ملی" : "National ID"}
@@ -272,38 +345,11 @@ export function AdminQuickUserModal({
               />
             </div>
 
-            {/* 5. Mobile Number */}
+            {/* 6. Department (Combobox) */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">
-                {isRtl ? "شماره موبایل" : "Mobile Number"}
-              </Label>
-              <Input
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-                placeholder="09121234567"
-                dir="ltr"
-                className="h-9 text-xs rounded-xl bg-background border-border/60 text-start font-mono fa-num"
-              />
-            </div>
-
-            {/* 6. Corporate Email */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">
-                {isRtl ? "ایمیل سازمانی (@euroslotpars.com)" : "Corporate Email"}
-              </Label>
-              <Input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="a.hosseini@euroslotpars.com"
-                dir="ltr"
-                className="h-9 text-xs rounded-xl bg-background border-border/60 text-start font-mono"
-              />
-            </div>
-
-            {/* 7. Department (Combobox) */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">
-                {isRtl ? "دپارتمان سازمانی" : "Department"}
+              <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                <span>{isRtl ? "دپارتمان سازمانی" : "Department"}</span>
+                <span className="text-rose-500 text-[11px]">*</span>
               </Label>
               <Combobox
                 options={getOrganizationDepartmentOptions(isRtl)}
@@ -321,10 +367,11 @@ export function AdminQuickUserModal({
               />
             </div>
 
-            {/* 8. Job Title (Combobox) */}
+            {/* 7. Job Title (Combobox) */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">
-                {isRtl ? "عنوان شغلی / سمت" : "Job Title"}
+              <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                <span>{isRtl ? "عنوان شغلی / سمت" : "Job Title"}</span>
+                <span className="text-rose-500 text-[11px]">*</span>
               </Label>
               <Combobox
                 options={getOrganizationRoleOptions(department, isRtl)}
@@ -336,10 +383,11 @@ export function AdminQuickUserModal({
               />
             </div>
 
-            {/* 9. Work Location (Combobox) */}
+            {/* 8. Work Location (Combobox) */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">
-                {isRtl ? "محل خدمت" : "Work Location"}
+              <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                <span>{isRtl ? "محل خدمت" : "Work Location"}</span>
+                <span className="text-rose-500 text-[11px]">*</span>
               </Label>
               <Combobox
                 options={toComboboxOptions(ESP_LOCATIONS, isRtl)}
@@ -351,10 +399,11 @@ export function AdminQuickUserModal({
               />
             </div>
 
-            {/* 10. Role (Combobox) */}
+            {/* 9. Role (Combobox) */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">
-                {isRtl ? "نقش سیستمی" : "System Role"}
+              <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                <span>{isRtl ? "نقش سیستمی" : "System Role"}</span>
+                <span className="text-rose-500 text-[11px]">*</span>
               </Label>
               <Combobox
                 options={toComboboxOptions(ESP_ROLES, isRtl)}
@@ -366,10 +415,11 @@ export function AdminQuickUserModal({
               />
             </div>
 
-            {/* 11. Employment Status (Combobox) */}
-            <div className="space-y-1.5 sm:col-span-2">
-              <Label className="text-xs font-semibold text-foreground">
-                {isRtl ? "وضعیت همکاری" : "Employment Status"}
+            {/* 10. Employment Status (Combobox) */}
+            <div className={cn("space-y-1.5", isQuickMode ? "sm:col-span-2" : "")}>
+              <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                <span>{isRtl ? "وضعیت همکاری" : "Employment Status"}</span>
+                <span className="text-rose-500 text-[11px]">*</span>
               </Label>
               <Combobox
                 options={toComboboxOptions(ESP_EMPLOYMENT_STATUSES, isRtl)}
@@ -380,57 +430,92 @@ export function AdminQuickUserModal({
                 triggerClassName="w-full justify-between h-9 rounded-xl bg-background border-border/60 text-xs"
               />
             </div>
+
+            {/* Optional Fields (Hidden in Quick Mode) */}
+            {!isQuickMode && (
+              <>
+                {/* Full Name EN */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">
+                    {isRtl ? "نام و نام خانوادگی (انگلیسی - اختیاری)" : "Full Name (English - Optional)"}
+                  </Label>
+                  <Input
+                    value={fullNameEn}
+                    onChange={(e) => handleEnNameChange(e.target.value)}
+                    placeholder="e.g. Alireza Hosseini"
+                    dir="ltr"
+                    className="h-9 text-xs rounded-xl bg-background border-border/60 text-start"
+                  />
+                </div>
+
+                {/* Corporate Email */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-foreground">
+                    {isRtl ? "ایمیل سازمانی (اختیاری)" : "Corporate Email (Optional)"}
+                  </Label>
+                  <Input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="a.hosseini@euroslotpars.com"
+                    dir="ltr"
+                    className="h-9 text-xs rounded-xl bg-background border-border/60 text-start font-mono"
+                  />
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Password Card */}
-          <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="space-y-1">
-              <span className="text-xs font-semibold text-foreground block">
-                {isRtl ? "کلمه عبور اولیه حساب" : "Initial Account Password"}
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-primary select-all" dir="ltr">
-                  {showPassword ? password : "••••••••••••"}
+          {/* Password Card (Hidden in Quick Mode, auto-generated) */}
+          {!isQuickMode && (
+            <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <span className="text-xs font-semibold text-foreground block">
+                  {isRtl ? "کلمه عبور اولیه حساب (اختیاری)" : "Initial Account Password (Optional)"}
                 </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="size-6 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => {
-                    navigator.clipboard.writeText(password);
-                    toast.success(isRtl ? "رمز عبور کپی شد." : "Password copied.");
-                  }}
-                  className="size-6 text-muted-foreground hover:text-foreground"
-                >
-                  <Copy size={13} />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-bold text-primary select-all" dir="ltr">
+                    {showPassword ? password : "••••••••••••"}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="size-6 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => {
+                      navigator.clipboard.writeText(password);
+                      toast.success(isRtl ? "رمز عبور کپی شد." : "Password copied.");
+                    }}
+                    className="size-6 text-muted-foreground hover:text-foreground"
+                  >
+                    <Copy size={13} />
+                  </Button>
+                </div>
               </div>
-            </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="xs"
-              onClick={() => {
-                const nextPwd = generateSecurePassword();
-                setPassword(nextPwd);
-                toast.info(isRtl ? "رمز عبور جدید تولید شد." : "New password generated.");
-              }}
-              className="gap-1.5 text-xs rounded-xl cursor-pointer"
-            >
-              <RefreshCw size={13} />
-              <span>{isRtl ? "تولید رمز جدید" : "Regenerate"}</span>
-            </Button>
-          </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="xs"
+                onClick={() => {
+                  const nextPwd = generateSecurePassword();
+                  setPassword(nextPwd);
+                  toast.info(isRtl ? "رمز عبور جدید تولید شد." : "New password generated.");
+                }}
+                className="gap-1.5 text-xs rounded-xl cursor-pointer"
+              >
+                <RefreshCw size={13} />
+                <span>{isRtl ? "تولید رمز جدید" : "Regenerate"}</span>
+              </Button>
+            </div>
+          )}
 
           <DialogFooter className="pt-3 border-t border-border/40 gap-2 sm:gap-0">
             <Button

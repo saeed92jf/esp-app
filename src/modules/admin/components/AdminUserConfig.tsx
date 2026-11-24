@@ -93,6 +93,13 @@ import {
   resolveOrganizationRole,
 } from "@/config/organization";
 import {
+  ESP_DEPARTMENTS,
+  ESP_LOCATIONS,
+  ESP_ROLES,
+  ESP_EMPLOYMENT_STATUSES,
+  toComboboxOptions,
+} from "../data/esp-master-lists";
+import {
   getDepartmentsForCompany,
   getJobTitlesForDepartment,
   getManagerialTitlesWithOccupants,
@@ -294,6 +301,7 @@ export function AdminUserConfig({
   const { user: currentUser, updateUser: updateUserStore } = useAuth();
 
   const [isEditMode, setIsEditMode] = useState<boolean>(Boolean(selectedUser));
+  const [isQuickMode, setIsQuickMode] = useState<boolean>(!Boolean(selectedUser));
 
   const [form, setForm] = useState<FormState>(() => ({
     ...INITIAL_FORM,
@@ -303,6 +311,7 @@ export function AdminUserConfig({
   useEffect(() => {
     if (selectedUser) {
       setIsEditMode(true);
+      setIsQuickMode(false);
       setForm({
         firstNameFa: selectedUser.firstNameFa || selectedUser.fullNameFa?.split(" ")[0] || "",
         lastNameFa: selectedUser.lastNameFa || selectedUser.fullNameFa?.split(" ").slice(1).join(" ") || "",
@@ -351,6 +360,7 @@ export function AdminUserConfig({
       });
     } else {
       setIsEditMode(false);
+      setIsQuickMode(true);
       setForm({
         ...INITIAL_FORM,
         password: generateRandomPassword(),
@@ -732,10 +742,12 @@ export function AdminUserConfig({
         const hasFa = Boolean(form.firstNameFa.trim().length > 0 || form.lastNameFa.trim().length > 0);
         const hasEn = Boolean(form.firstName.trim().length > 0 || form.lastName.trim().length > 0);
         const hasAnyName = Boolean(hasFa || hasEn || form.name.trim().length > 0);
-        return Boolean(hasAnyName && isValidCorporateEmail(form.email));
+        const hasPhone = Boolean(form.phone && form.phone.trim().length >= 10);
+        const emailValidOrEmpty = !form.email.trim() || isValidCorporateEmail(form.email);
+        return Boolean(hasAnyName && hasPhone && emailValidOrEmpty);
       }
       case "org":
-        return Boolean(form.department && form.jobTitle.trim().length > 0);
+        return Boolean(form.department && form.jobTitle.trim().length > 0 && form.joinDate && form.joinDate.trim().length > 0);
       case "personal":
         return Boolean(form.age >= 18 && form.maritalStatus && form.insuranceType);
       case "education":
@@ -858,29 +870,71 @@ export function AdminUserConfig({
 
   const handleCreateUser = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!form.email.trim()) {
-      toast.error(isRtl ? "لطفاً ایمیل سازمانی کاربر را وارد کنید." : "Please enter user's corporate email.");
-      setActiveSegment("identity");
-      setOpenSegment("identity");
-      return;
-    }
-    if (!isValidCorporateEmail(form.email)) {
-      toast.error(
-        isRtl
-          ? "ایمیل سازمانی باید منحصراً متعلق به شرکت یورواسلات پارس (euroslotpars.com@) یا نانو پالایش (npceram.com@) باشد."
-          : "Corporate email must end with @euroslotpars.com or @npceram.com."
-      );
-      setActiveSegment("identity");
-      setOpenSegment("identity");
-      return;
-    }
-    if (!isSegmentFilled("identity")) {
-      toast.error(t("fillRequiredFields"));
-      setActiveSegment("identity");
-      setOpenSegment("identity");
+
+    // 1. Mobile is strictly mandatory
+    if (!form.phone?.trim() || form.phone.trim().length < 10) {
+      toast.error(isRtl ? "شماره موبایل الزامی است (حداقل ۱۰ رقم)." : "Mobile phone number is required (at least 10 digits).");
+      if (!isQuickMode) {
+        setActiveSegment("identity");
+        setOpenSegment("identity");
+      }
       return;
     }
 
+    // 2. Join Date is strictly mandatory
+    if (!form.joinDate?.trim()) {
+      toast.error(isRtl ? "تاریخ شروع به کار (Join Date) الزامی است." : "Join date is required.");
+      if (!isQuickMode) {
+        setActiveSegment("org");
+        setOpenSegment("org");
+      }
+      return;
+    }
+
+    // 3. Name check
+    const hasFa = Boolean(form.firstNameFa.trim().length > 0 || form.lastNameFa.trim().length > 0);
+    const hasEn = Boolean(form.firstName.trim().length > 0 || form.lastName.trim().length > 0);
+    const hasAnyName = Boolean(hasFa || hasEn || form.name.trim().length > 0);
+    if (!hasAnyName) {
+      toast.error(isRtl ? "نام و نام خانوادگی الزامی است." : "Full name is required.");
+      if (!isQuickMode) {
+        setActiveSegment("identity");
+        setOpenSegment("identity");
+      }
+      return;
+    }
+
+    // 4. Department & Job Title check
+    if (!form.department || !form.jobTitle.trim()) {
+      toast.error(isRtl ? "دپارتمان و سمت سازمانی الزامی است." : "Department and job title are required.");
+      if (!isQuickMode) {
+        setActiveSegment("org");
+        setOpenSegment("org");
+      }
+      return;
+    }
+
+    // 5. Corporate email is optional; validate only if provided
+    if (form.email.trim() && !isValidCorporateEmail(form.email)) {
+      toast.error(
+        isRtl
+          ? "ایمیل سازمانی در صورت درج، باید منحصراً متعلق به شرکت یورواسلات پارس (euroslotpars.com@) باشد."
+          : "Corporate email must end with @euroslotpars.com."
+      );
+      if (!isQuickMode) {
+        setActiveSegment("identity");
+        setOpenSegment("identity");
+      }
+      return;
+    }
+
+    // Generate fallback email if empty
+    const cleanUsername = form.firstName.trim() && form.lastName.trim()
+      ? `${form.firstName.trim().toLowerCase()[0]}.${form.lastName.trim().toLowerCase().replace(/[^a-z0-9]/g, "")}`
+      : (form.employeeId?.trim().toLowerCase().replace(/[^a-z0-9]/g, "") || `u${form.phone.trim().slice(-6)}`);
+    const effectiveEmail = form.email.trim() || `${cleanUsername}@euroslotpars.com`;
+
+    // Password is optional; auto-generate if empty
     const effectivePassword = form.password?.trim() || generateRandomPassword();
 
     try {
@@ -1003,13 +1057,13 @@ export function AdminUserConfig({
         lastNameFa: form.lastNameFa.trim(),
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
-        email: form.email.trim(),
+        email: effectiveEmail,
         password: effectivePassword,
         phone: form.phone.trim(),
         nationalId: form.nationalId.trim(),
         department: form.department,
-        company: isRtl ? detectedCompany.nameFa : detectedCompany.nameEn,
-        companyId: detectedCompany.id,
+        company: "یورواسلات پارس",
+        companyId: "euroslot",
         role: isEditMode && selectedUser ? selectedUser.role : "user",
         jobTitle: form.jobTitle.trim(),
         manager: form.manager.trim(),
@@ -1136,7 +1190,30 @@ export function AdminUserConfig({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              {!isEditMode && (
+                <div className="flex items-center gap-1 p-0.5 bg-background/80 dark:bg-background/60 border border-border/60 rounded-xl shadow-2xs">
+                  <Button
+                    type="button"
+                    size="xs"
+                    variant={isQuickMode ? "default" : "ghost"}
+                    onClick={() => setIsQuickMode(true)}
+                    className="h-8 px-2.5 rounded-lg text-xs font-semibold gap-1.5 cursor-pointer"
+                  >
+                    <Sparkles className="size-3 text-amber-500 fill-amber-500" />
+                    <span>{isRtl ? "کوییک مد (ستاره‌دار)" : "Quick Mode"}</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    size="xs"
+                    variant={!isQuickMode ? "default" : "ghost"}
+                    onClick={() => setIsQuickMode(false)}
+                    className="h-8 px-2.5 rounded-lg text-xs font-semibold gap-1.5 cursor-pointer"
+                  >
+                    <span>{isRtl ? "حالت جامع" : "Full Mode"}</span>
+                  </Button>
+                </div>
+              )}
               {selectedUser && (
                 <Button
                   type="button"
@@ -1174,6 +1251,7 @@ export function AdminUserConfig({
           {/* =================================================== */}
           {/* SEGMENTED LIST / STEP TABS CONTROL (FLEXIBLE WRAP - NO SCROLL) */}
           {/* =================================================== */}
+          {(isEditMode || !isQuickMode) && (
           <div className="bg-background/60 dark:bg-background/40 border border-border/40 rounded-2xl p-2 flex flex-wrap items-center gap-1.5">
             {SEGMENTS.map((seg) => {
               const isActive = activeSegment === seg.id;
@@ -1222,12 +1300,279 @@ export function AdminUserConfig({
               );
             })}
           </div>
+          )}
         </div>
 
         {/* =================================================== */}
-        {/* ACCORDION ITEMS CONTAINER */}
+        {/* QUICK MODE FORM (ONLY STARRED / MANDATORY FIELDS) */}
         {/* =================================================== */}
-        <div className="flex flex-col gap-4">
+        {!isEditMode && isQuickMode ? (
+          <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-6 flex flex-col gap-5 shadow-xs animate-in fade-in duration-150">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/40 pb-4 gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="size-9 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+                  <Sparkles className="size-4.5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">
+                    {isRtl ? "فرم سریع ایجاد پرسنل (کوییک مد)" : "Quick Personnel Provisioning"}
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {isRtl
+                      ? "تعریف سریع کاربر با ورود انحصاری فیلدهای ستاره‌دار الزامی"
+                      : "Quickly provision new personnel by entering only mandatory starred fields"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30 text-xs font-semibold self-start sm:self-auto">
+                <Building2 className="size-3.5" />
+                <span>{isRtl ? "شرکت: یورواسلات پارس (ثابت)" : "Company: Euroslot Pars"}</span>
+              </div>
+            </div>
+
+            {/* Grid of Starred Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 1. Full Name FA */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                  <span>{isRtl ? "نام و نام خانوادگی (فارسی)" : "Full Name (Persian)"}</span>
+                  <span className="text-rose-500 text-[11px] font-bold">*</span>
+                </Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    value={form.firstNameFa}
+                    onChange={(e) => setForm({ ...form, firstNameFa: e.target.value })}
+                    placeholder={isRtl ? "نام (علیرضا)" : "First Name"}
+                    required
+                    className="h-10 bg-background border-border/60 rounded-xl text-xs"
+                  />
+                  <Input
+                    value={form.lastNameFa}
+                    onChange={(e) => setForm({ ...form, lastNameFa: e.target.value })}
+                    placeholder={isRtl ? "نام خانوادگی (حسینی)" : "Last Name"}
+                    required
+                    className="h-10 bg-background border-border/60 rounded-xl text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* 2. Mobile Phone (Mandatory) */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Phone className="size-3.5 text-primary" />
+                    <span>{isRtl ? "شماره موبایل" : "Mobile Phone"}</span>
+                  </span>
+                  <span className="text-rose-500 text-[11px] font-bold">*</span>
+                </Label>
+                <Input
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: normalizeDigits(e.target.value) })}
+                  placeholder="09121234567"
+                  dir="ltr"
+                  required
+                  className="h-10 bg-background border-border/60 rounded-xl text-xs font-mono fa-num text-start"
+                />
+              </div>
+
+              {/* 3. Join Date (Mandatory) */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="size-3.5 text-primary" />
+                    <span>{isRtl ? "تاریخ شروع به کار (Join Date)" : "Join Date"}</span>
+                  </span>
+                  <span className="text-rose-500 text-[11px] font-bold">*</span>
+                </Label>
+                <Input
+                  type="date"
+                  value={form.joinDate || new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setForm({ ...form, joinDate: e.target.value })}
+                  required
+                  className="h-10 bg-background border-border/60 rounded-xl text-xs font-mono fa-num text-start"
+                />
+              </div>
+
+              {/* 4. Personnel Code */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                  <span>{isRtl ? "کد پرسنلی" : "Personnel Code"}</span>
+                  <span className="text-rose-500 text-[11px] font-bold">*</span>
+                </Label>
+                <Input
+                  value={form.employeeId}
+                  onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
+                  placeholder="ESP-739"
+                  dir="ltr"
+                  className="h-10 bg-background border-border/60 rounded-xl text-xs font-mono fa-num text-start"
+                />
+              </div>
+
+              {/* 5. National ID */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs font-semibold text-foreground">
+                  {isRtl ? "کد ملی" : "National ID"}
+                </Label>
+                <Input
+                  value={form.nationalId}
+                  onChange={(e) => setForm({ ...form, nationalId: normalizeDigits(e.target.value) })}
+                  placeholder="0012345678"
+                  dir="ltr"
+                  maxLength={10}
+                  className="h-10 bg-background border-border/60 rounded-xl text-xs font-mono fa-num text-start"
+                />
+              </div>
+
+              {/* 6. Department */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                  <span>{isRtl ? "دپارتمان سازمانی" : "Department"}</span>
+                  <span className="text-rose-500 text-[11px] font-bold">*</span>
+                </Label>
+                <Combobox
+                  options={getOrganizationDepartmentOptions(isRtl)}
+                  value={form.department}
+                  onChange={(val) => {
+                    setForm((prev) => {
+                      const roles = getOrganizationRoleOptions(val, isRtl);
+                      return {
+                        ...prev,
+                        department: val,
+                        jobTitle: roles.length > 0 && !roles.some((r) => r.value === prev.jobTitle) ? roles[0].value : prev.jobTitle,
+                      };
+                    });
+                  }}
+                  allowClear={false}
+                  size="sm"
+                  triggerClassName="w-full justify-between h-10 rounded-xl bg-background border-border/60 text-xs"
+                />
+              </div>
+
+              {/* 7. Job Title */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                  <span>{isRtl ? "سمت سازمانی / شغل" : "Job Title"}</span>
+                  <span className="text-rose-500 text-[11px] font-bold">*</span>
+                </Label>
+                <Combobox
+                  options={getOrganizationRoleOptions(form.department, isRtl)}
+                  value={form.jobTitle}
+                  onChange={(val) => setForm({ ...form, jobTitle: val })}
+                  allowClear={false}
+                  size="sm"
+                  triggerClassName="w-full justify-between h-10 rounded-xl bg-background border-border/60 text-xs"
+                />
+              </div>
+
+              {/* 8. Work Location */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                  <span>{isRtl ? "محل خدمت" : "Work Location"}</span>
+                  <span className="text-rose-500 text-[11px] font-bold">*</span>
+                </Label>
+                <Combobox
+                  options={toComboboxOptions(ESP_LOCATIONS, isRtl)}
+                  value={form.workMode}
+                  onChange={(val) => setForm({ ...form, workMode: val as any })}
+                  allowClear={false}
+                  size="sm"
+                  triggerClassName="w-full justify-between h-10 rounded-xl bg-background border-border/60 text-xs"
+                />
+              </div>
+
+              {/* 9. Role */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                  <span>{isRtl ? "نقش سیستمی" : "System Role"}</span>
+                  <span className="text-rose-500 text-[11px] font-bold">*</span>
+                </Label>
+                <Combobox
+                  options={toComboboxOptions(ESP_ROLES, isRtl)}
+                  value={form.role}
+                  onChange={(val) => setForm({ ...form, role: val as any })}
+                  allowClear={false}
+                  size="sm"
+                  triggerClassName="w-full justify-between h-10 rounded-xl bg-background border-border/60 text-xs"
+                />
+              </div>
+
+              {/* 10. Contract / Status */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs font-semibold text-foreground flex items-center justify-between">
+                  <span>{isRtl ? "نوع قرارداد / همکاری" : "Contract Type"}</span>
+                  <span className="text-rose-500 text-[11px] font-bold">*</span>
+                </Label>
+                <Combobox
+                  options={toComboboxOptions(ESP_EMPLOYMENT_STATUSES, isRtl)}
+                  value={form.contractType || "فعال"}
+                  onChange={(val) => setForm({ ...form, contractType: val })}
+                  allowClear={false}
+                  size="sm"
+                  triggerClassName="w-full justify-between h-10 rounded-xl bg-background border-border/60 text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Optional Email & Password */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/30">
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs font-semibold text-muted-foreground">
+                  {isRtl ? "ایمیل سازمانی (اختیاری - خودکار ساخته می‌شود)" : "Corporate Email (Optional - Auto-generated)"}
+                </Label>
+                <Input
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  placeholder="user@euroslotpars.com"
+                  dir="ltr"
+                  className="h-10 bg-background border-border/60 rounded-xl text-xs font-mono text-start"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
+                  <span>{isRtl ? "کلمه عبور اولیه (اختیاری)" : "Initial Password (Optional)"}</span>
+                  <span className="text-[10px] text-primary cursor-pointer hover:underline" onClick={() => setForm({ ...form, password: generateRandomPassword() })}>
+                    {isRtl ? "تولید مجدد" : "Regenerate"}
+                  </span>
+                </Label>
+                <Input
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  placeholder="Esp@123456"
+                  dir="ltr"
+                  className="h-10 bg-background border-border/60 rounded-xl text-xs font-mono text-start"
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border/40">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleResetForm}
+                className="rounded-xl text-xs h-10 px-4 cursor-pointer"
+              >
+                {isRtl ? "انصراف و پاکسازی" : "Reset"}
+              </Button>
+              <Button
+                type="button"
+                onClick={() => handleCreateUser()}
+                disabled={isSubmitting}
+                className="rounded-xl text-xs h-10 px-6 font-semibold bg-primary hover:bg-primary/90 text-primary-foreground gap-2 shadow-md cursor-pointer"
+              >
+                {isSubmitting ? <RefreshCw className="size-4 animate-spin" /> : <UserPlus className="size-4" />}
+                <span>{isSubmitting ? (isRtl ? "در حال ثبت..." : "Saving...") : (isRtl ? "تأیید و ایجاد کاربر" : "Create User")}</span>
+              </Button>
+            </div>
+          </div>
+        ) : (
+          /* =================================================== */
+          /* ACCORDION ITEMS CONTAINER */
+          /* =================================================== */
+          <div className="flex flex-col gap-4">
           {SEGMENTS.map((seg, idx) => {
             const isOpen = openSegment === seg.id;
             const isCompleted = isSegmentTicked(seg.id);
@@ -1396,19 +1741,6 @@ export function AdminUserConfig({
                                       dir="ltr"
                                     >
                                       <span>+ @euroslotpars.com</span>
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAttachDomain("npceram.com")}
-                                      className={cn(
-                                        "px-2 py-0.5 rounded-md text-[10px] font-semibold border cursor-pointer transition-colors flex items-center gap-1",
-                                        form.email.toLowerCase().endsWith("@npceram.com")
-                                          ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40"
-                                          : "bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border-border/40"
-                                      )}
-                                      dir="ltr"
-                                    >
-                                      <span>+ @npceram.com</span>
                                     </button>
                                   </div>
 
@@ -1717,47 +2049,17 @@ export function AdminUserConfig({
                                   {isRtl ? detectedCompany.nameFa : detectedCompany.nameEn}
                                 </span>
                               </div>
-                              {/* 3-Button Company Selector Grid */}
-                              <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-muted/50 border border-border/40">
-                                <button
-                                  type="button"
-                                  onClick={() => handleSelectCompany("euroslot")}
-                                  className={cn(
-                                    "px-2 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
-                                    form.companyId === "euroslot"
-                                      ? "bg-sky-600 text-white shadow-xs"
-                                      : "text-muted-foreground hover:text-foreground hover:bg-background/80"
-                                  )}
-                                >
-                                  <Building2 className="size-3.5 shrink-0" />
-                                  <span className="truncate">{isRtl ? "یورواسلات" : "Euroslot"}</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleSelectCompany("npceram")}
-                                  className={cn(
-                                    "px-2 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
-                                    form.companyId === "npceram"
-                                      ? "bg-amber-600 text-white shadow-xs"
-                                      : "text-muted-foreground hover:text-foreground hover:bg-background/80"
-                                  )}
-                                >
-                                  <Sparkles className="size-3.5 shrink-0" />
-                                  <span className="truncate">{isRtl ? "نانوپالایش" : "NPCeram"}</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleSelectCompany("holding")}
-                                  className={cn(
-                                    "px-2 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer",
-                                    form.companyId === "holding"
-                                      ? "bg-purple-600 text-white shadow-xs"
-                                      : "text-muted-foreground hover:text-foreground hover:bg-background/80"
-                                  )}
-                                >
-                                  <Briefcase className="size-3.5 shrink-0" />
-                                  <span className="truncate">{isRtl ? "هلدینگ" : "Holding"}</span>
-                                </button>
+                              {/* Fixed Company Info (Euroslot Pars Only) */}
+                              <div className="p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Building2 className="size-4 text-sky-600 dark:text-sky-400" />
+                                  <span className="text-xs font-bold text-sky-900 dark:text-sky-200">
+                                    {isRtl ? "شرکت: یورواسلات پارس (ثابت و اختصاصی)" : "Company: Euroslot Pars (Fixed)"}
+                                  </span>
+                                </div>
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-700 dark:text-sky-300 border border-sky-500/40">
+                                  ESP CORE
+                                </span>
                               </div>
                             </div>
 
@@ -3430,6 +3732,7 @@ export function AdminUserConfig({
             );
           })}
         </div>
+        )}
     </div>
   );
 }
