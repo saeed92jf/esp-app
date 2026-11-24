@@ -119,7 +119,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const navigateToTab = useCallback(
     (tab: AdminTab, query?: Record<string, string>) => {
-      if (isOfficeAdmin && !["home", "usersTable", "add", "requests"].includes(tab)) {
+      if (isOfficeAdmin && !["executiveDashboard", "home", "usersTable", "add", "requests"].includes(tab)) {
         toast.error(
           isRtl
             ? "دسترسی مدیر اداری محدود به مشاهده پرسنل، ایجاد حساب کاربری و تأیید درخواست‌ها می‌باشد."

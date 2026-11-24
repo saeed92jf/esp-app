@@ -33,14 +33,6 @@ export interface AdminSidebarProps {
 
 export const ADMIN_NAV_ITEMS = [
   {
-    id: "home" as const,
-    href: "/admin",
-    exact: true,
-    icon: Briefcase,
-    labelKey: "userInfo",
-    superAdminOnly: false,
-  },
-  {
     id: "executiveDashboard" as const,
     href: "/admin/dashboard",
     exact: false,
@@ -54,6 +46,14 @@ export const ADMIN_NAV_ITEMS = [
     exact: false,
     icon: TableProperties,
     labelKey: "usersTable",
+    superAdminOnly: false,
+  },
+  {
+    id: "home" as const,
+    href: "/admin",
+    exact: true,
+    icon: Briefcase,
+    labelKey: "userInfo",
     superAdminOnly: false,
   },
   {
@@ -157,7 +157,7 @@ export function AdminSidebar({
               }
               if (
                 isOfficeAdmin &&
-                !["home", "usersTable", "add", "requests"].includes(item.id)
+                !["executiveDashboard", "home", "usersTable", "add", "requests"].includes(item.id)
               ) {
                 return null;
               }
