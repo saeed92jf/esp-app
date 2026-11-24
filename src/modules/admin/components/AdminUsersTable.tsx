@@ -2147,34 +2147,41 @@ export function AdminUsersTable({
               const isTrayOpen = openTrayUserId === user.id;
               const isRowActive = isAccordionOpen || isTrayOpen;
 
-              // Determine unclipped location badge (color & localized label)
-              const getLocationBadge = () => {
-                const loc = user.workLocation?.toLowerCase();
-                if (loc === 'factory') return { colorClass: 'bg-[#3b82f6]', label: t("factory") };
-                if (loc === 'mission') return { colorClass: 'bg-[#f59e0b]', label: t("mission") };
-                if (loc === 'leave') return { colorClass: 'bg-[#94a3b8]', label: t("leave") };
-                if (loc === 'remote') return { colorClass: 'bg-purple-500', label: t("workLocationRemote") };
-                if (loc === 'office') return { colorClass: 'bg-[#22c55e]', label: t("office") };
+              // Determine presence & employment status badge on avatar (Online, Offline, Active, Deactivated)
+              const getAvatarStatusBadge = () => {
+                const isCurrent = checkIsCurrentUser(user);
+                const isUserInactive = user.accountStatus === 'inactive' || user.employmentStatus === 'قطع همکاری' || user.status === 'inactive';
+                const isUserOnline = !isUserInactive && (isCurrent || user.status === 'online' || Boolean(user.isOnline));
 
-                if (wf) {
-                  const entries = Object.entries(wf) as [string, number][];
-                  entries.sort((a, b) => b[1] - a[1]);
-                  const dominant = entries[0]?.[0];
-                  if (dominant === 'factory') return { colorClass: 'bg-[#3b82f6]', label: t("factory") };
-                  if (dominant === 'mission') return { colorClass: 'bg-[#f59e0b]', label: t("mission") };
-                  if (dominant === 'leave') return { colorClass: 'bg-[#94a3b8]', label: t("leave") };
-                  if (dominant === 'office') return { colorClass: 'bg-[#22c55e]', label: t("office") };
+                if (isUserInactive) {
+                  return {
+                    colorClass: "bg-rose-500 shadow-rose-500/30",
+                    isOnline: false,
+                    isInactive: true,
+                    label: isRtl ? "قطع همکاری (غیرفعال)" : "Inactive / Deactivated",
+                    tooltip: isRtl ? "وضعیت حساب: غیرفعال و قطع همکاری" : "Status: Deactivated / Inactive",
+                  };
                 }
 
-                const isCurrentForLoc = checkIsCurrentUser(user);
-                const isOnlineForLoc = isCurrentForLoc || user.status === 'online' || Boolean(user.isOnline);
-                if (!isOnlineForLoc) {
-                  return { colorClass: 'bg-slate-400', label: t("offline") };
+                if (isUserOnline) {
+                  return {
+                    colorClass: "bg-emerald-500 shadow-emerald-500/40",
+                    isOnline: true,
+                    isInactive: false,
+                    label: isRtl ? "آنلاین (حضور فعال)" : "Online (Active Now)",
+                    tooltip: isRtl ? "وضعیت حساب: شاغل (آنلاین در سامانه)" : "Status: Active & Online",
+                  };
                 }
 
-                return { colorClass: 'bg-[#22c55e]', label: t("office") };
+                return {
+                  colorClass: "bg-slate-400 dark:bg-slate-500 shadow-slate-500/20",
+                  isOnline: false,
+                  isInactive: false,
+                  label: isRtl ? "آفلاین (شاغل)" : "Offline",
+                  tooltip: isRtl ? "وضعیت حساب: شاغل (آفلاین)" : "Status: Active (Offline)",
+                };
               };
-              const locationBadge = getLocationBadge();
+              const avatarStatusBadge = getAvatarStatusBadge();
 
               const enName = (user.firstName || user.lastName)
                 ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
@@ -2256,11 +2263,15 @@ export function AdminUsersTable({
                             )}
                             <span
                               className={cn(
-                                "absolute -bottom-0.5 -end-0.5 size-3 rounded-full border-2 border-background z-10 pointer-events-none shadow-2xs transition-colors",
-                                locationBadge.colorClass
+                                "absolute -bottom-0.5 -end-0.5 size-3 rounded-full border-2 border-background z-10 pointer-events-none shadow-2xs transition-all flex items-center justify-center",
+                                avatarStatusBadge.colorClass
                               )}
-                              title={`${t("workLocationLabel")}: ${locationBadge.label}`}
-                            />
+                              title={avatarStatusBadge.tooltip}
+                            >
+                              {avatarStatusBadge.isOnline && (
+                                <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75" />
+                              )}
+                            </span>
                           </div>
                           <div className="flex flex-col min-w-0">
                             <span className="font-bold text-xs text-foreground truncate max-w-[170px] leading-snug">
