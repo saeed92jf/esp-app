@@ -1452,8 +1452,8 @@ export function AdminUsersTable({
               <PopoverContent
                 align={align === 'start' ? 'start' : 'center'}
                 sideOffset={6}
-                dir="rtl"
-                className="w-64 p-3 bg-popover border border-border/60 shadow-xl rounded-2xl text-xs flex flex-col gap-2.5 rtl:text-end"
+                dir={isRtl ? "rtl" : "ltr"}
+                className="w-72 sm:w-80 p-3 bg-popover border border-border/60 shadow-xl rounded-2xl text-xs flex flex-col gap-2.5 rtl:text-end"
               >
                 {/* Header Title & Sorting options */}
                 <div className="flex flex-col gap-1 pb-2 border-b border-border/40">
@@ -1499,7 +1499,10 @@ export function AdminUsersTable({
                 </div>
 
                 {/* Custom Filter Body */}
-                <div className="flex flex-col gap-2 max-h-56 overflow-y-auto custom-scrollbar pe-1">
+                <div 
+                  className="flex flex-col gap-1.5 max-h-60 overflow-y-auto custom-scrollbar px-2.5 py-1"
+                  style={{ scrollbarGutter: 'stable' }}
+                >
                   {children}
                 </div>
 
@@ -1937,7 +1940,7 @@ export function AdminUsersTable({
                         return r !== 'superadmin' && r !== 'admin';
                       })
                       .map(role => (
-                      <label key={role} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
+                      <label key={role} className="flex items-center gap-2 cursor-pointer py-1 px-1.5 rounded-lg hover:bg-muted/60 transition-colors">
                         <Checkbox
                           checked={colFilters.userRoles.includes(role)}
                           onCheckedChange={() => setColFilters(prev => ({
@@ -1992,8 +1995,8 @@ export function AdminUsersTable({
                         depName = dep;
                       }
                       return (
-                        <label key={dep} className="flex items-center justify-between gap-2 cursor-pointer py-0.5 hover:text-foreground">
-                          <div className="flex items-center gap-2">
+                        <label key={dep} className="flex items-center justify-between gap-2.5 cursor-pointer py-1 px-1.5 rounded-lg hover:bg-muted/60 transition-colors">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
                             <Checkbox
                               checked={colFilters.departments.includes(dep)}
                               onCheckedChange={() => setColFilters(prev => ({
@@ -2001,9 +2004,9 @@ export function AdminUsersTable({
                                 departments: toggleArrayItem(prev.departments, dep)
                               }))}
                             />
-                            <span>{depName}</span>
+                            <span className="truncate">{depName}</span>
                           </div>
-                          <span className="text-[10px] text-muted-foreground font-mono">
+                          <span className="text-[10px] text-muted-foreground font-mono shrink-0 px-1.5 py-0.5 rounded bg-muted/80">
                             {departmentCounts[dep]}
                           </span>
                         </label>
@@ -2033,7 +2036,7 @@ export function AdminUsersTable({
                 children: (
                   <div className="flex flex-col gap-1.5">
                     <span className="font-semibold text-foreground/80 text-[10px]">{t("filterValues")}</span>
-                    <label className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
+                    <label className="flex items-center gap-2 cursor-pointer py-1 px-1.5 rounded-lg hover:bg-muted/60 transition-colors">
                       <Checkbox
                         checked={colFilters.hasPhoneOnly}
                         onCheckedChange={(c) => setColFilters(prev => ({ ...prev, hasPhoneOnly: Boolean(c) }))}
@@ -2059,7 +2062,7 @@ export function AdminUsersTable({
                       { key: '100to300', label: t("tenure100to300") },
                       { key: 'lt100', label: t("tenureLt100") }
                     ].map(item => (
-                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
+                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-1 px-1.5 rounded-lg hover:bg-muted/60 transition-colors">
                         <Checkbox
                           checked={colFilters.tenureRanges.includes(item.key)}
                           onCheckedChange={() => setColFilters(prev => ({
@@ -2090,7 +2093,7 @@ export function AdminUsersTable({
                       { key: 'online', label: t("online"), dot: "bg-emerald-500" },
                       { key: 'offline', label: t("offline"), dot: "bg-slate-400" }
                     ].map(item => (
-                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-1 hover:text-foreground">
+                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-1 px-1.5 rounded-lg hover:bg-muted/60 transition-colors">
                         <Checkbox
                           checked={colFilters.statuses.includes(item.key)}
                           onCheckedChange={() => setColFilters(prev => ({
