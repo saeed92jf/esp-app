@@ -12,7 +12,7 @@ import { Upload, X, ChevronRight, ChevronLeft, Check, User, LogOut, Pencil, Chev
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useRouter } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
-import { getRoleGradient, getRoleGlowShadow } from '@/lib/role-avatar';
+import { getRoleGradient } from '@/lib/role-avatar';
 import { toast } from 'sonner';
 import { HEADER_ICON_BUTTON_CLASS } from '@/lib/constants';
 import { usePrimaryColor } from '@/hooks/use-primary-color';
@@ -117,49 +117,49 @@ export function DashboardAvatar() {
       case 'superadmin':
         return {
           label: locale === 'fa' ? 'سوپر ادمین' : 'Super Admin',
-          className: 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/35 font-bold',
+          className: 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/35 font-normal',
         };
       case 'admin':
         return {
           label: locale === 'fa' ? 'مدیر ارشد سامانه' : 'System Admin',
-          className: 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/35 font-bold',
+          className: 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/35 font-normal',
         };
       case 'dept_admin':
       case 'deptadmin':
         return {
           label: locale === 'fa' ? 'ادمین دپارتمان' : 'Department Admin',
-          className: 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 font-semibold',
+          className: 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 font-normal',
         };
       case 'office_admin':
       case 'officeadmin':
         return {
           label: locale === 'fa' ? 'ادمین اداری' : 'Office Admin',
-          className: 'bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/30 font-semibold',
+          className: 'bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/30 font-normal',
         };
       case 'manager':
         return {
           label: locale === 'fa' ? 'مدیر واحد' : 'Department Manager',
-          className: 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30 font-semibold',
+          className: 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30 font-normal',
         };
       case 'engineer':
         return {
           label: locale === 'fa' ? 'مهندس فنی' : 'Technical Engineer',
-          className: 'bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30 font-semibold',
+          className: 'bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30 font-normal',
         };
       case 'staff':
         return {
           label: locale === 'fa' ? 'پرسنل سازمانی' : 'Corporate Staff',
-          className: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 font-semibold',
+          className: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 font-normal',
         };
       case 'customer':
         return {
           label: locale === 'fa' ? 'کارفرما / مشتری' : 'Client / Customer',
-          className: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 font-semibold',
+          className: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 font-normal',
         };
       default:
         return {
           label: locale === 'fa' ? 'کاربر سامانه' : 'Standard User',
-          className: 'bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30 font-medium',
+          className: 'bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30 font-normal',
         };
     }
   };
@@ -187,17 +187,6 @@ export function DashboardAvatar() {
         open && "hover:bg-transparent"
       )}
     >
-      <span
-        aria-hidden="true"
-        className={cn(
-          "absolute -inset-1 sm:-inset-[4.5px] rounded-full p-[2.5px] sm:p-[3px] pointer-events-none z-0 transition-all",
-          getRoleGradient(user?.role),
-          getRoleGlowShadow(user?.role),
-          open ? "opacity-100 scale-105" : "opacity-0 scale-95 pointer-events-none"
-        )}
-      >
-        <span className="block size-full rounded-full bg-background" />
-      </span>
       <div className="relative z-10 size-[32px] sm:size-[36px] rounded-full flex items-center justify-center">
         <Avatar
           key={avatarUrl || user?.avatar || "avatar-btn"}
@@ -219,12 +208,6 @@ export function DashboardAvatar() {
             </AvatarFallback>
           )}
         </Avatar>
-        <span
-          className={cn(
-            "absolute bottom-0 end-0 size-2.5 sm:size-3 rounded-full border-2 border-background z-20 pointer-events-none",
-            STATUSES[status].color
-          )}
-        />
       </div>
     </button>
   );
@@ -291,8 +274,7 @@ export function DashboardAvatar() {
                 <div className="relative shrink-0 flex items-center justify-center p-[2px] rounded-full">
                   <div className={cn(
                     "absolute inset-0 rounded-full",
-                    getRoleGradient(user?.role),
-                    getRoleGlowShadow(user?.role)
+                    getRoleGradient(user?.role)
                   )} />
                   <div className="relative z-10 bg-white dark:bg-popover rounded-full p-[1px]">
                     <Avatar
@@ -374,7 +356,7 @@ export function DashboardAvatar() {
                      <div 
                        className={cn(
                          "absolute inset-0 rounded-full",
-                         getRoleGradient(user?.role), getRoleGlowShadow(user?.role)
+                         getRoleGradient(user?.role)
                        )} 
                      />
                      <div className="relative z-10 bg-white dark:bg-black rounded-full p-0.5">
@@ -420,11 +402,11 @@ export function DashboardAvatar() {
                      <div className="w-full flex items-center justify-start mt-0.5 overflow-hidden">
                        <span
                          className={cn(
-                           "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] border shadow-2xs shrink-0 select-none",
+                           "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] sm:text-[11.5px] font-normal border shadow-2xs shrink-0 select-none tracking-normal",
                            roleBadge.className
                          )}
                        >
-                         <ShieldCheck size={11} className="stroke-[2.2] shrink-0" />
+                         <ShieldCheck className="size-3.5 stroke-[1.75] shrink-0" />
                          <span>{roleBadge.label}</span>
                        </span>
                      </div>
