@@ -105,7 +105,8 @@ export function AdminUserDossierPanel({
       jobTitle: user.jobTitle || "",
       employeeId: user.employeeId || (user as any).personnelCode || "",
       personnelCode: (user as any).personnelCode || user.employeeId || "",
-      manager: user.manager || "",
+      manager: user.manager || (user as any).directManager || "",
+      directManager: (user as any).directManager || user.manager || "",
       workLocation: user.workLocation || "کارخانه پرند یورواسلات",
       joinedAt: user.joinedAt || user.createdAt || "",
       extensionNumber: (user as any).extensionNumber || "",
@@ -137,11 +138,15 @@ export function AdminUserDossierPanel({
     });
   };
 
-  // Init on mount or user change
+  // Init on mount or when user id changes (prevents background presence updates from wiping edit mode)
+  const currentUserIdRef = React.useRef(user.id);
   React.useEffect(() => {
-    initFormData();
-    setIsEditing(false);
-  }, [user]);
+    if (currentUserIdRef.current !== user.id) {
+      currentUserIdRef.current = user.id;
+      initFormData();
+      setIsEditing(false);
+    }
+  }, [user.id]);
 
   const handleSaveCurrentCategory = async () => {
     setIsSaving(true);
