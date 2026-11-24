@@ -60,7 +60,7 @@ export function AdminHeatmapModules({
   }
 
   return (
-    <div className="flex flex-col flex-1 h-full min-h-0">
+    <div className="flex flex-col flex-1 h-full min-h-0 overflow-hidden">
       <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col flex-1 h-full min-h-0 relative overflow-hidden shadow-2xs">
         
         {/* Header with Title & Count */}
@@ -89,17 +89,17 @@ export function AdminHeatmapModules({
             )}
           </div>
         ) : (
-          <div className="flex flex-col flex-1 min-h-0 overflow-y-auto pe-0.5 scrollbar-thin space-y-1.5 xl:space-y-2 relative z-10">
+          <div className="flex flex-col flex-1 min-h-0 overflow-y-auto pe-1 custom-scrollbar space-y-1.5 relative z-10">
             {grantedItems.map(item => (
               <div 
                 key={item.id} 
-                className="flex items-center gap-2.5 py-2 px-2.5 xl:py-2.5 xl:px-3 rounded-xl bg-background/50 border border-border/40 shadow-2xs hover:border-primary/20 transition-colors"
+                className="flex items-center gap-2.5 py-1.5 px-2.5 rounded-xl bg-background/50 border border-border/40 shadow-2xs hover:border-primary/20 transition-colors shrink-0"
               >
                 <div className="size-6 text-primary flex items-center justify-center shrink-0">
-                  {item.icon && <item.icon size={20} weight="duotone" />}
+                  {item.icon && <item.icon size={18} weight="duotone" />}
                 </div>
                 <div className="flex flex-col flex-1 min-w-0">
-                  <p className="font-medium text-[13px] text-foreground leading-tight truncate">
+                  <p className="font-medium text-[12px] sm:text-[12.5px] text-foreground leading-tight truncate">
                     {item.isGroup ? tMenu(`sections.${item.labelKey}` as any) || item.labelKey : tMenu(`items.${item.labelKey}` as any) || item.labelKey}
                   </p>
                 </div>

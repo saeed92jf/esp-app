@@ -173,9 +173,9 @@ export function AdminTasksTime({
   // Clean personnel data display without mock rings or skill bars
 
   return (
-    <div className="flex flex-col gap-3 w-full h-full">
+    <div className="flex flex-col w-full h-full min-h-0 select-none">
       {/* ── Main Layout: Personnel Profile (vertical down), Tasks beside it, and Heatmap + Access on 3rd col ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 flex-1 min-h-0 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 flex-1 min-h-0 items-stretch lg:overflow-hidden">
         
         {/* Module 1: Personnel, Education & Insurance Profile (عمودی تا پایین) */}
         <div className="col-span-1 md:col-span-1 lg:col-span-4 bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col shadow-2xs h-full min-h-0 overflow-hidden">
@@ -206,7 +206,7 @@ export function AdminTasksTime({
           </div>
 
           {/* All 8 Specs Stacked Vertically & Sequentially (بدون space-between - لیبل بالا و مقدار زیر هم) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 xl:gap-2.5 flex-1 justify-start py-1 overflow-y-auto pe-0.5 custom-scrollbar text-xs content-start">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 xl:gap-2.5 flex-1 min-h-0 justify-start py-1 overflow-y-auto pe-0.5 custom-scrollbar text-xs content-start">
             {/* National ID */}
             <div className="flex flex-col gap-1 p-2.5 rounded-xl bg-background/60 hover:bg-background/90 border border-border/30 hover:border-primary/30 transition-all shadow-2xs group">
               <span className="text-muted-foreground/80 text-[10.5px] font-medium flex items-center gap-1.5">
@@ -432,11 +432,11 @@ export function AdminTasksTime({
         </div>
 
         {/* Module 3 & 4: Online Heatmap & Module Access (ستون سوم: بهینه و متوازن‌شده به lg:col-span-4) */}
-        <div className="col-span-1 md:col-span-2 lg:col-span-4 flex flex-col gap-3 h-full min-h-0">
-          <div className="flex-1 min-h-0">
+        <div className="col-span-1 md:col-span-2 lg:col-span-4 flex flex-col gap-3 h-full min-h-0 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <AdminActivities selectedUser={selectedUser} />
           </div>
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <AdminHeatmapModules 
               selectedUser={selectedUser}
               availableModules={availableModules}

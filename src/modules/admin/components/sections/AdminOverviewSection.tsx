@@ -38,9 +38,9 @@ export function AdminOverviewSection() {
   };
 
   return (
-    <div className="flex flex-col w-full max-w-[1600px] mx-auto pb-4 flex-1">
+    <div className="flex flex-col w-full max-w-[1600px] mx-auto gap-2 lg:h-[calc(100vh-theme(spacing.24))] lg:max-h-[890px] lg:min-h-[630px] lg:overflow-hidden animate-in fade-in duration-150 flex-1">
       {/* Top Search & Avatars Header */}
-      <div className="w-full mb-3">
+      <div className="w-full shrink-0">
         <AdminUserSearchAvatars
           users={users}
           selectedUser={selectedUser}
@@ -48,16 +48,16 @@ export function AdminOverviewSection() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[330px_1fr] 2xl:grid-cols-[360px_1fr] gap-3 w-full items-stretch flex-1">
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[330px_1fr] 2xl:grid-cols-[360px_1fr] gap-3 w-full items-stretch flex-1 min-h-0 lg:overflow-hidden">
         {selectedUser ? (
-          <div className="col-span-1 w-full min-w-0 flex flex-col h-full">
+          <div className="col-span-1 w-full min-w-0 flex flex-col h-full min-h-0 overflow-hidden">
             <AdminProfileStats
               selectedUser={selectedUser}
               onUpdateRole={handleUpdateUserRole}
             />
           </div>
         ) : (
-          <div className="col-span-1 w-full min-w-0 flex flex-col h-full items-center justify-center p-6 bg-slate-100/90 dark:bg-slate-800/40 rounded-[1.75rem] border border-border/40 text-center">
+          <div className="col-span-1 w-full min-w-0 flex flex-col h-full min-h-0 items-center justify-center p-6 bg-slate-100/90 dark:bg-slate-800/40 rounded-[1.75rem] border border-border/40 text-center">
             <UserCircle2 className="size-12 text-muted-foreground/40 mb-3" />
             <h3 className="text-sm font-bold text-foreground mb-1">
               {isRtl ? "کاربری در سیستم یافت نشد" : "No Users Found"}
@@ -78,7 +78,7 @@ export function AdminOverviewSection() {
           </div>
         )}
 
-        <div className="col-span-1 w-full min-w-0 flex flex-col h-full">
+        <div className="col-span-1 w-full min-w-0 flex flex-col h-full min-h-0 overflow-hidden">
           <AdminTasksTime
             selectedUser={selectedUser}
             users={users}

@@ -234,10 +234,10 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
   };
 
   return (
-    <div className="flex flex-col gap-3 w-full h-full select-none">
+    <div className="flex flex-col gap-2.5 w-full h-full min-h-0 select-none overflow-y-auto pe-0.5 custom-scrollbar">
       
       {/* ── 1. Profile Header Card (Avatar, Badges & Contacts) ── */}
-      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 sm:p-5 flex flex-col items-center justify-center text-center shadow-2xs flex-1 min-h-[210px] overflow-hidden transition-all">
+      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 flex flex-col items-center justify-center text-center shadow-2xs shrink-0 overflow-hidden transition-all">
         {/* Avatar Ring with Photo & Download */}
         <div className="relative group/avatar">
           <div 
@@ -249,7 +249,7 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
           >
             <div className="p-1 rounded-full bg-white dark:bg-card">
               <div 
-                className="size-16 sm:size-20 lg:size-24 rounded-full flex items-center justify-center font-bold text-2xl sm:text-3xl lg:text-4xl text-white select-none shadow-inner overflow-hidden relative transition-all duration-300"
+                className="size-16 sm:size-18 lg:size-20 rounded-full flex items-center justify-center font-bold text-2xl sm:text-3xl text-white select-none shadow-inner overflow-hidden relative transition-all duration-300"
                 style={{ backgroundColor: avatarBgColor }}
               >
                 {userPhoto ? (
@@ -425,8 +425,8 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
 
       </div>
 
-      {/* ── Boxes Under Avatar: Expanded down to the end of the page ── */}
-      <div className="flex flex-col gap-2.5 sm:gap-3 shrink-0 w-full">
+      {/* ── Boxes Under Avatar ── */}
+      <div className="flex flex-col gap-2.5 shrink-0 w-full">
         
         {/* ── Performance & Career Stats Card ── */}
         <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 sm:p-3 flex flex-col justify-center shadow-2xs shrink-0 h-auto overflow-hidden w-full">
