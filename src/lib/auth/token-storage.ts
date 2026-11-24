@@ -54,6 +54,9 @@ export function setAuthToken(token: string, refreshToken?: string): void {
 
   // 2. Cookie for SSR and Edge Middleware
   setCookie(AUTH_TOKEN_KEY, cleanToken);
+  if (refreshToken && refreshToken.trim()) {
+    setCookie("esp-refresh-token", refreshToken.trim(), 60 * 60 * 24 * 30);
+  }
 }
 
 /**
@@ -92,6 +95,7 @@ export function removeAuthToken(): void {
   }
 
   deleteCookie(AUTH_TOKEN_KEY);
+  deleteCookie("esp-refresh-token");
   deleteCookie("esp_auth_token");
   deleteCookie("token");
 }
