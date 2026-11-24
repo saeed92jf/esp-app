@@ -48,6 +48,12 @@ import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { getLocalizedDocumentTitle } from "@/modules/profile/utils/document-helpers";
 import { addUserNotification } from "@/modules/dashboard/services/dashboard.service";
 import { resolveDegreeLabel } from "@/config/profile-options";
+import {
+  getOrganizationDepartmentOptions,
+  getOrganizationRoleOptions,
+  resolveOrganizationDepartment,
+  resolveOrganizationRole,
+} from "@/config/organization";
 import { exportPersonnelToExcel, exportPersonnelToJson } from "../utils/personnel-excel";
 import { AdminPersonnelImportModal } from "./AdminPersonnelImportModal";
 import { AdminQuickUserModal } from "./AdminQuickUserModal";
@@ -2130,11 +2136,14 @@ export function AdminUsersTable({
               const isSelected = selectedUser?.id === user.id;
               const wf = user.workingFormat || { office: 25, factory: 25, mission: 25, leave: 25 };
               const departmentKey = user.department || 'engineering';
-              let departmentName = departmentKey;
-              try {
-                departmentName = t.has(`departments.${departmentKey}`) ? t(`departments.${departmentKey}`) : departmentKey;
-              } catch {
-                departmentName = departmentKey;
+              const orgDept = resolveOrganizationDepartment(departmentKey);
+              let departmentName = orgDept ? (isRtl ? orgDept.nameFa : orgDept.nameEn) : departmentKey;
+              if (!orgDept) {
+                try {
+                  departmentName = t.has(`departments.${departmentKey}`) ? t(`departments.${departmentKey}`) : departmentKey;
+                } catch {
+                  departmentName = departmentKey;
+                }
               }
 
               const isAccordionOpen = activeAccordion?.userId === user.id;
@@ -2308,7 +2317,10 @@ export function AdminUsersTable({
                             {departmentName}
                           </span>
                           <span className="text-[11px] text-muted-foreground truncate max-w-[150px] font-normal leading-tight mt-0.5">
-                            {formatRoleName(user.jobTitle || t("userRole"), locale)}
+                            {(() => {
+                              const orgRole = resolveOrganizationRole(user.jobTitle);
+                              return orgRole ? (isRtl ? orgRole.titleFa : orgRole.titleEn) : formatRoleName(user.jobTitle || t("userRole"), locale);
+                            })()}
                           </span>
                         </div>
                       </td>
@@ -2783,9 +2795,19 @@ export function AdminUsersTable({
                                           {t("department")}
                                         </Label>
                                         <Combobox
-                                          options={departmentOptions}
-                                          value={editFormData.department || "engineering"}
-                                          onChange={(val) => setEditFormData(prev => ({ ...prev, department: val }))}
+                                          options={getOrganizationDepartmentOptions(isRtl)}
+                                          value={editFormData.department || "مهندسی و طراحی"}
+                                          onChange={(val) => {
+                                            const roles = getOrganizationRoleOptions(val, isRtl);
+                                            setEditFormData((prev) => {
+                                              const hasRole = roles.some((r) => r.value === prev.jobTitle);
+                                              return {
+                                                ...prev,
+                                                department: val,
+                                                jobTitle: hasRole ? prev.jobTitle : (roles[0]?.value || prev.jobTitle),
+                                              };
+                                            });
+                                          }}
                                           allowClear={false}
                                           size="sm"
                                           triggerClassName="w-full justify-between h-8.5 rounded-xl bg-background border-border/50 text-xs"
@@ -2811,10 +2833,13 @@ export function AdminUsersTable({
                                         <Label className="text-xs font-medium text-foreground">
                                           {t("jobTitle")}
                                         </Label>
-                                        <Input
+                                        <Combobox
+                                          options={getOrganizationRoleOptions(editFormData.department, isRtl)}
                                           value={editFormData.jobTitle || ""}
-                                          onChange={(e) => setEditFormData(prev => ({ ...prev, jobTitle: e.target.value }))}
-                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50"
+                                          onChange={(val) => setEditFormData(prev => ({ ...prev, jobTitle: val }))}
+                                          allowClear={false}
+                                          size="sm"
+                                          triggerClassName="w-full justify-between h-8.5 rounded-xl bg-background border-border/50 text-xs"
                                         />
                                       </div>
                                     </div>

@@ -87,6 +87,12 @@ import {
 import { toAsciiDigits } from "../utils/date-formatter";
 import { AdminModuleAccessStep } from "./AdminModuleAccessStep";
 import {
+  getOrganizationDepartmentOptions,
+  getOrganizationRoleOptions,
+  resolveOrganizationDepartment,
+  resolveOrganizationRole,
+} from "@/config/organization";
+import {
   getDepartmentsForCompany,
   getJobTitlesForDepartment,
   getManagerialTitlesWithOccupants,
@@ -574,44 +580,14 @@ export function AdminUserConfig({
     ? (fullNameFa && fullNameEn ? fullNameEn : "")
     : (fullNameEn && fullNameFa ? fullNameFa : "");
 
-  // Company-scoped dynamic options
+  // Canonical bilingual organization options
   const departmentOptions = React.useMemo(() => {
-    const list = getDepartmentsForCompany(form.companyId || detectedCompany.id, isRtl);
-    if (form.department) {
-      const trimmed = form.department.trim();
-      const match = list.find(
-        (d) =>
-          d.value.toLowerCase() === trimmed.toLowerCase() ||
-          d.label.toLowerCase() === trimmed.toLowerCase()
-      );
-      if (!match && trimmed) {
-        list.unshift({
-          value: trimmed,
-          label: trimmed,
-        });
-      }
-    }
-    return list;
-  }, [form.companyId, detectedCompany.id, form.department, isRtl]);
+    return getOrganizationDepartmentOptions(isRtl);
+  }, [isRtl]);
 
   const jobTitleOptions = React.useMemo(() => {
-    const list = getJobTitlesForDepartment(form.companyId || detectedCompany.id, form.department, isRtl);
-    if (form.jobTitle) {
-      const trimmed = form.jobTitle.trim();
-      const match = list.find(
-        (t) =>
-          t.value.toLowerCase() === trimmed.toLowerCase() ||
-          t.label.toLowerCase() === trimmed.toLowerCase()
-      );
-      if (!match && trimmed) {
-        list.unshift({
-          value: trimmed,
-          label: trimmed,
-        });
-      }
-    }
-    return list;
-  }, [form.companyId, detectedCompany.id, form.department, form.jobTitle, isRtl]);
+    return getOrganizationRoleOptions(form.department, isRtl);
+  }, [form.department, isRtl]);
 
   const managerOptions = React.useMemo(() => {
     return getManagerialTitlesWithOccupants(form.companyId || detectedCompany.id, users, isRtl);
@@ -1792,9 +1768,15 @@ export function AdminUserConfig({
                               <Combobox
                                 options={departmentOptions}
                                 value={form.department}
-                                onChange={(val) =>
-                                  setForm({ ...form, department: val })
-                                }
+                                onChange={(val) => {
+                                  const roles = getOrganizationRoleOptions(val, isRtl);
+                                  const hasRole = roles.some((r) => r.value === form.jobTitle);
+                                  setForm((prev) => ({
+                                    ...prev,
+                                    department: val,
+                                    jobTitle: hasRole ? prev.jobTitle : (roles[0]?.value || prev.jobTitle),
+                                  }));
+                                }}
                                 placeholder={t("selectDepartment")}
                                 emptyText={t("noResults")}
                                 className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
@@ -1824,7 +1806,7 @@ export function AdminUserConfig({
                                     : "Search or type new title..."
                                 }
                                 emptyText={t("noResults")}
-                                creatable={true}
+                                creatable={false}
                                 showSearch={true}
                                 className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />

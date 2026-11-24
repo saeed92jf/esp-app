@@ -39,6 +39,10 @@ import { api } from "@/services";
 import { cn } from "@/lib/utils";
 import { User } from "../types/admin.types";
 import {
+  getOrganizationDepartmentOptions,
+  getOrganizationRoleOptions,
+} from "@/config/organization";
+import {
   ESP_DEPARTMENTS,
   ESP_LOCATIONS,
   ESP_ROLES,
@@ -476,20 +480,33 @@ export function AdminUserDossierPanel({
                 <div className="space-y-1.5">
                   <Label className="text-xs">{isRtl ? "دپارتمان سازمانی" : "Department"}</Label>
                   <Combobox
-                    options={toComboboxOptions(ESP_DEPARTMENTS, isRtl)}
+                    options={getOrganizationDepartmentOptions(isRtl)}
                     value={formData.department || "مهندسی و طراحی"}
-                    onChange={(val) => setFormData((p) => ({ ...p, department: val }))}
+                    onChange={(val) => {
+                      setFormData((p) => {
+                        const roles = getOrganizationRoleOptions(val, isRtl);
+                        const hasRole = roles.some((r) => r.value === p.jobTitle);
+                        return {
+                          ...p,
+                          department: val,
+                          jobTitle: hasRole ? p.jobTitle : (roles[0]?.value || p.jobTitle),
+                        };
+                      });
+                    }}
                     allowClear={false}
                     size="sm"
                     triggerClassName="w-full justify-between h-8.5 rounded-xl text-xs"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">{isRtl ? "عنوان شغلی" : "Job Title"}</Label>
-                  <Input
+                  <Label className="text-xs">{isRtl ? "عنوان شغلی / سمت" : "Job Title / Role"}</Label>
+                  <Combobox
+                    options={getOrganizationRoleOptions(formData.department, isRtl)}
                     value={formData.jobTitle || ""}
-                    onChange={(e) => setFormData((p) => ({ ...p, jobTitle: e.target.value }))}
-                    className="h-8.5 text-xs rounded-xl"
+                    onChange={(val) => setFormData((p) => ({ ...p, jobTitle: val }))}
+                    allowClear={false}
+                    size="sm"
+                    triggerClassName="w-full justify-between h-8.5 rounded-xl text-xs"
                   />
                 </div>
                 <div className="space-y-1.5">

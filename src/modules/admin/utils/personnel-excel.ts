@@ -1,6 +1,7 @@
 // src/modules/admin/utils/personnel-excel.ts
 import * as XLSX from "xlsx";
 import type { User, UserRole, AccountStatus } from "../types/admin.types";
+import { resolveOrganizationDepartment, resolveOrganizationRole } from "@/config/organization";
 
 /**
  * Clean and normalize phone numbers (e.g. 09123456789 or 989123456789)
@@ -618,6 +619,10 @@ export async function parsePersonnelFile(file: File): Promise<{
           hasOvertimeBool = oStr === "true" || oStr === "بله" || oStr === "دارد" || oStr === "1";
         }
 
+        // Auto-normalize department and role to standard organization chart
+        const orgDept = userObj.department ? resolveOrganizationDepartment(userObj.department) : null;
+        const orgRole = userObj.jobTitle ? resolveOrganizationRole(userObj.jobTitle) : null;
+
         // Clean user
         const cleanUser: Partial<User> = {
           ...userObj,
@@ -625,6 +630,9 @@ export async function parsePersonnelFile(file: File): Promise<{
           nationalId: nationalId || undefined,
           mobile: normalizePhoneNumber(userObj.mobile || userObj.phone),
           phone: normalizePhoneNumber(userObj.phone),
+          department: orgDept ? orgDept.nameFa : userObj.department,
+          jobTitle: orgRole ? orgRole.titleFa : userObj.jobTitle,
+          jobTitleEn: orgRole ? orgRole.titleEn : (userObj.jobTitleEn || undefined),
           salary: salaryNum !== undefined && !isNaN(salaryNum) ? salaryNum : undefined,
           maxOvertimeHours: overtimeHoursNum !== undefined && !isNaN(overtimeHoursNum) ? overtimeHoursNum : undefined,
           monthlyBonusAmount: bonusNum !== undefined && !isNaN(bonusNum) ? bonusNum : undefined,

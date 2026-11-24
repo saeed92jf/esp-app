@@ -37,6 +37,10 @@ import {
   ESP_EMPLOYMENT_STATUSES,
   toComboboxOptions,
 } from "../data/esp-master-lists";
+import {
+  getOrganizationDepartmentOptions,
+  getOrganizationRoleOptions,
+} from "@/config/organization";
 
 export interface AdminQuickUserModalProps {
   isOpen: boolean;
@@ -302,25 +306,33 @@ export function AdminQuickUserModal({
                 {isRtl ? "دپارتمان سازمانی" : "Department"}
               </Label>
               <Combobox
-                options={toComboboxOptions(ESP_DEPARTMENTS, isRtl)}
+                options={getOrganizationDepartmentOptions(isRtl)}
                 value={department}
-                onChange={(val) => setDepartment(val)}
+                onChange={(val) => {
+                  setDepartment(val);
+                  const roles = getOrganizationRoleOptions(val, isRtl);
+                  if (roles.length > 0 && !roles.some((r) => r.value === jobTitle)) {
+                    setJobTitle(roles[0].value);
+                  }
+                }}
                 allowClear={false}
                 size="sm"
                 triggerClassName="w-full justify-between h-9 rounded-xl bg-background border-border/60 text-xs"
               />
             </div>
 
-            {/* 8. Job Title */}
+            {/* 8. Job Title (Combobox) */}
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-foreground">
                 {isRtl ? "عنوان شغلی / سمت" : "Job Title"}
               </Label>
-              <Input
+              <Combobox
+                options={getOrganizationRoleOptions(department, isRtl)}
                 value={jobTitle}
-                onChange={(e) => setJobTitle(e.target.value)}
-                placeholder="مثلاً: کارشناس ارشد مکانیک"
-                className="h-9 text-xs rounded-xl bg-background border-border/60"
+                onChange={(val) => setJobTitle(val)}
+                allowClear={false}
+                size="sm"
+                triggerClassName="w-full justify-between h-9 rounded-xl bg-background border-border/60 text-xs"
               />
             </div>
 

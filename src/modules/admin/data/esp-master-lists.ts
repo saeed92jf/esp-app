@@ -5,6 +5,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { ComboboxOption } from "@/components/ui/combobox";
+import {
+  ORGANIZATION_DEPARTMENTS,
+  ORGANIZATION_ROLES,
+  getOrganizationDepartmentOptions,
+  getOrganizationRoleOptions,
+} from "@/config/organization";
 
 export interface MasterOption {
   value: string;
@@ -13,23 +19,18 @@ export interface MasterOption {
   badgeClass?: string;
 }
 
-export const ESP_DEPARTMENTS: MasterOption[] = [
-  { value: "مدیریت ارشد و هیئت مدیره", labelFa: "مدیریت ارشد و هیئت مدیره", labelEn: "Executive Management & Board" },
-  { value: "مهندسی و طراحی", labelFa: "مهندسی و طراحی", labelEn: "Engineering & Design" },
-  { value: "مهندسی فرآیند", labelFa: "مهندسی فرآیند", labelEn: "Process Engineering" },
-  { value: "مهندسی کارخانه", labelFa: "مهندسی کارخانه", labelEn: "Factory Engineering" },
-  { value: "تولید و عملیات کارخانه", labelFa: "تولید و عملیات کارخانه", labelEn: "Factory Production & Operations" },
-  { value: "کنترل کیفیت کارخانه", labelFa: "کنترل کیفیت کارخانه", labelEn: "Factory Quality Control (QC)" },
-  { value: "نگهداری و تعمیرات", labelFa: "نگهداری و تعمیرات", labelEn: "Maintenance & Overhaul" },
-  { value: "ایمنی، بهداشت و محیط زیست", labelFa: "ایمنی، بهداشت و محیط زیست (HSE)", labelEn: "Health, Safety & Environment (HSE)" },
-  { value: "انبار و لجستیک", labelFa: "انبار و لجستیک", labelEn: "Warehouse & Logistics" },
-  { value: "توسعه بازار و فروش", labelFa: "توسعه بازار و فروش", labelEn: "Market Development & Sales" },
-  { value: "تدارکات، ساخت و خرید", labelFa: "تدارکات، ساخت و خرید", labelEn: "Procurement & Purchasing" },
-  { value: "برنامه‌ریزی و کنترل پروژه", labelFa: "برنامه‌ریزی و کنترل پروژه", labelEn: "Project Planning & Control" },
-  { value: "اداری و منابع انسانی", labelFa: "اداری و منابع انسانی", labelEn: "Administrative & Human Resources" },
-  { value: "فناوری اطلاعات (انفورماتیک)", labelFa: "فناوری اطلاعات (انفورماتیک)", labelEn: "Information Technology (IT)" },
-  { value: "مالی و حسابداری", labelFa: "مالی و حسابداری", labelEn: "Finance & Accounting" },
-];
+export const ESP_DEPARTMENTS: MasterOption[] = ORGANIZATION_DEPARTMENTS.map((d) => ({
+  value: d.nameFa,
+  labelFa: d.nameFa,
+  labelEn: d.nameEn,
+  badgeClass: d.badgeClass,
+}));
+
+export const ESP_JOB_TITLES: MasterOption[] = ORGANIZATION_ROLES.map((r) => ({
+  value: r.titleFa,
+  labelFa: r.titleFa,
+  labelEn: r.titleEn,
+}));
 
 export const ESP_LOCATIONS: MasterOption[] = [
   { value: "کارخانه پرند یورواسلات", labelFa: "کارخانه پرند یورواسلات", labelEn: "Parand Factory - Euroslot" },

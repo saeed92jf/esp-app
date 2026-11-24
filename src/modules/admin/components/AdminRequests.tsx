@@ -67,6 +67,12 @@ import {
   formatEmailWithDomain,
 } from "../utils/company";
 import {
+  getOrganizationDepartmentOptions,
+  getOrganizationRoleOptions,
+  resolveOrganizationDepartment,
+  resolveOrganizationRole,
+} from "@/config/organization";
+import {
   getDepartmentsForCompany,
   getJobTitlesForDepartment,
   getManagerialTitlesWithOccupants,
@@ -520,42 +526,12 @@ ${req.description || "بدون توضیحات تکمیلی"}
   }, [reviewData?.email]);
 
   const departmentOptions = useMemo(() => {
-    const list = getDepartmentsForCompany(detectedCompany.id, isRtl);
-    if (reviewData?.department) {
-      const trimmed = reviewData.department.trim();
-      const match = list.find(
-        (d) =>
-          d.value.toLowerCase() === trimmed.toLowerCase() ||
-          d.label.toLowerCase() === trimmed.toLowerCase()
-      );
-      if (!match && trimmed) {
-        list.unshift({
-          value: trimmed,
-          label: trimmed,
-        });
-      }
-    }
-    return list;
-  }, [detectedCompany.id, reviewData?.department, isRtl]);
+    return getOrganizationDepartmentOptions(isRtl);
+  }, [isRtl]);
 
   const jobTitleOptions = useMemo(() => {
-    const list = getJobTitlesForDepartment(detectedCompany.id, reviewData?.department, isRtl);
-    if (reviewData?.jobTitle) {
-      const trimmed = reviewData.jobTitle.trim();
-      const match = list.find(
-        (t) =>
-          t.value.toLowerCase() === trimmed.toLowerCase() ||
-          t.label.toLowerCase() === trimmed.toLowerCase()
-      );
-      if (!match && trimmed) {
-        list.unshift({
-          value: trimmed,
-          label: trimmed,
-        });
-      }
-    }
-    return list;
-  }, [detectedCompany.id, reviewData?.department, reviewData?.jobTitle, isRtl]);
+    return getOrganizationRoleOptions(reviewData?.department, isRtl);
+  }, [reviewData?.department, isRtl]);
 
   const managerOptions = useMemo(() => {
     return getManagerialTitlesWithOccupants(detectedCompany.id, users, isRtl);
@@ -2146,13 +2122,19 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                     </Label>
                                     <Combobox
                                       options={departmentOptions}
-                                      value={reviewData.department || "engineering"}
-                                      onChange={(val) =>
-                                        setReviewData({
-                                          ...reviewData,
-                                          department: val,
-                                        })
-                                      }
+                                      value={reviewData.department || "مهندسی و طراحی"}
+                                      onChange={(val) => {
+                                        const roles = getOrganizationRoleOptions(val, isRtl);
+                                        setReviewData((prev) => {
+                                          if (!prev) return null;
+                                          const hasRole = roles.some((r) => r.value === prev.jobTitle);
+                                          return {
+                                            ...prev,
+                                            department: val,
+                                            jobTitle: hasRole ? prev.jobTitle : (roles[0]?.value || prev.jobTitle),
+                                          };
+                                        });
+                                      }}
                                       placeholder={t("selectDepartment")}
                                       emptyText={t("noResults")}
                                       className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
@@ -2179,7 +2161,7 @@ ${req.description || "بدون توضیحات تکمیلی"}
                                           : "Search or type new title..."
                                       }
                                       emptyText={t("noResults")}
-                                      creatable={true}
+                                      creatable={false}
                                       showSearch={true}
                                       className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                                     />
