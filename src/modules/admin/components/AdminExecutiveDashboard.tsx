@@ -141,9 +141,19 @@ export function AdminExecutiveDashboard({ users = [] }: AdminExecutiveDashboardP
           const cType = u.contractType || "تمام وقت";
           contractMap[cType] = (contractMap[cType] || 0) + 1;
 
-          // Degree
-          const deg = u.educationDegree || "کارشناسی";
-          degreeMap[deg] = (degreeMap[deg] || 0) + 1;
+          // Degree categorization
+          const rawDeg = (u.educationDegree || (u as any).education || "").trim().toLowerCase();
+          if (rawDeg.includes("دکت") || rawDeg.includes("ارشد") || rawDeg.includes("فوق لیسانس") || rawDeg.includes("master") || rawDeg.includes("doc")) {
+            degreeMap["higher"] = (degreeMap["higher"] || 0) + 1;
+          } else if (rawDeg.includes("کارشناس") || rawDeg.includes("لیسانس") || rawDeg.includes("bachelor")) {
+            degreeMap["bachelor"] = (degreeMap["bachelor"] || 0) + 1;
+          } else if (rawDeg.includes("کاردان") || rawDeg.includes("فوق دیپلم") || rawDeg.includes("associate")) {
+            degreeMap["associate"] = (degreeMap["associate"] || 0) + 1;
+          } else if (rawDeg.includes("دیپلم") && !rawDeg.includes("زیر")) {
+            degreeMap["diploma"] = (degreeMap["diploma"] || 0) + 1;
+          } else {
+            degreeMap["below_diploma"] = (degreeMap["below_diploma"] || 0) + 1;
+          }
         } else {
           inact++;
           const loc = u.workLocation || "کارخانه پرند یورواسلات";
@@ -225,11 +235,11 @@ export function AdminExecutiveDashboard({ users = [] }: AdminExecutiveDashboardP
           { labelFa: "فصلی / پروژه‌ای", labelEn: "Seasonal / Project", count: contractMap["فصلی / پروژه‌ای"] || 3, share: 1.1 },
         ],
         degreeData: [
-          { labelFa: "کارشناسی ارشد و دکتری", labelEn: "Master's & Ph.D.", count: (degreeMap["کارشناسی ارشد"] || 0) + (degreeMap["دکتری"] || 0) || 23, share: 8.7 },
-          { labelFa: "کارشناسی (لیسانس)", labelEn: "Bachelor's Degree", count: degreeMap["کارشناسی"] || 89, share: 33.6 },
-          { labelFa: "کاردانی (فوق دیپلم)", labelEn: "Associate Degree", count: degreeMap["کاردانی"] || 39, share: 14.7 },
-          { labelFa: "دیپلم متوسطه", labelEn: "High School Diploma", count: degreeMap["دیپلم"] || 112, share: 42.3 },
-          { labelFa: "زیر دیپلم / مهارتی", labelEn: "Below Diploma", count: degreeMap["زیر دیپلم"] || 2, share: 0.8 },
+          { labelFa: "کارشناسی ارشد و دکتری", labelEn: "Master's & Ph.D.", count: degreeMap["higher"] || 23, share: Math.round(((degreeMap["higher"] || 23) / (act || 1)) * 1000) / 10 },
+          { labelFa: "کارشناسی (لیسانس)", labelEn: "Bachelor's Degree", count: degreeMap["bachelor"] || 89, share: Math.round(((degreeMap["bachelor"] || 89) / (act || 1)) * 1000) / 10 },
+          { labelFa: "کاردانی (فوق دیپلم)", labelEn: "Associate Degree", count: degreeMap["associate"] || 39, share: Math.round(((degreeMap["associate"] || 39) / (act || 1)) * 1000) / 10 },
+          { labelFa: "دیپلم متوسطه", labelEn: "High School Diploma", count: degreeMap["diploma"] || 112, share: Math.round(((degreeMap["diploma"] || 112) / (act || 1)) * 1000) / 10 },
+          { labelFa: "زیر دیپلم / مهارتی", labelEn: "Below Diploma", count: degreeMap["below_diploma"] || 2, share: Math.round(((degreeMap["below_diploma"] || 2) / (act || 1)) * 1000) / 10 },
         ],
       };
     }

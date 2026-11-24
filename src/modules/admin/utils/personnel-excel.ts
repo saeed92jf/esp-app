@@ -2,6 +2,7 @@
 import * as XLSX from "xlsx";
 import type { User, UserRole, AccountStatus } from "../types/admin.types";
 import { resolveOrganizationDepartment, resolveOrganizationRole } from "@/config/organization";
+import { resolveDegreeLabel, resolveStudyFieldLabel, resolveUniversityLabel } from "@/config/profile-options";
 
 /**
  * Clean and normalize phone numbers (e.g. 09123456789 or 989123456789)
@@ -622,6 +623,9 @@ export async function parsePersonnelFile(file: File): Promise<{
         // Auto-normalize department and role to standard organization chart
         const orgDept = userObj.department ? resolveOrganizationDepartment(userObj.department) : null;
         const orgRole = userObj.jobTitle ? resolveOrganizationRole(userObj.jobTitle) : null;
+        const rawDeg = userObj.education || userObj.educationDegree;
+        const rawField = userObj.fieldOfStudy || userObj.educationField;
+        const rawUni = userObj.university;
 
         // Clean user
         const cleanUser: Partial<User> = {
@@ -633,6 +637,14 @@ export async function parsePersonnelFile(file: File): Promise<{
           department: orgDept ? orgDept.nameFa : userObj.department,
           jobTitle: orgRole ? orgRole.titleFa : userObj.jobTitle,
           jobTitleEn: orgRole ? orgRole.titleEn : (userObj.jobTitleEn || undefined),
+          education: rawDeg ? resolveDegreeLabel(rawDeg, "fa") : userObj.education,
+          educationDegree: rawDeg ? resolveDegreeLabel(rawDeg, "fa") : userObj.educationDegree,
+          educationDegreeEn: rawDeg ? resolveDegreeLabel(rawDeg, "en") : undefined,
+          fieldOfStudy: rawField ? resolveStudyFieldLabel(rawField, "fa") : userObj.fieldOfStudy,
+          educationField: rawField ? resolveStudyFieldLabel(rawField, "fa") : userObj.educationField,
+          educationFieldEn: rawField ? resolveStudyFieldLabel(rawField, "en") : undefined,
+          university: rawUni ? resolveUniversityLabel(rawUni, "fa") : userObj.university,
+          universityEn: rawUni ? resolveUniversityLabel(rawUni, "en") : undefined,
           salary: salaryNum !== undefined && !isNaN(salaryNum) ? salaryNum : undefined,
           maxOvertimeHours: overtimeHoursNum !== undefined && !isNaN(overtimeHoursNum) ? overtimeHoursNum : undefined,
           monthlyBonusAmount: bonusNum !== undefined && !isNaN(bonusNum) ? bonusNum : undefined,

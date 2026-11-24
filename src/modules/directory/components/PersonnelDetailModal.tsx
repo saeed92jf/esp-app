@@ -28,6 +28,11 @@ import {
   getLocalizedJobTitle,
   getSingleLocalizedName,
 } from "../utils";
+import {
+  resolveDegreeLabel,
+  resolveStudyFieldLabel,
+  resolveUniversityLabel,
+} from "@/config/profile-options";
 
 interface PersonnelDetailModalProps {
   person: PersonnelItem | null;
@@ -93,7 +98,12 @@ export function PersonnelDetailModal({
   const npcDept = getLocalizedText(person.npc.department, locale);
 
   // Education details
-  const localizedDegree = getLocalizedText(person.education.degree, locale);
+  const rawDegree = typeof person.education.degree === "string" ? person.education.degree : getLocalizedText(person.education.degree, locale);
+  const localizedDegree = resolveDegreeLabel(rawDegree, locale);
+  const rawField = typeof person.education.fieldOfStudy === "string" ? person.education.fieldOfStudy : getLocalizedText(person.education.fieldOfStudy as any, locale);
+  const localizedField = resolveStudyFieldLabel(rawField, locale);
+  const rawUni = typeof person.education.university === "string" ? person.education.university : getLocalizedText(person.education.university as any, locale);
+  const localizedUni = resolveUniversityLabel(rawUni, locale);
 
   // Gradient ring based on active role
   const ringGradient = isDual
@@ -684,7 +694,7 @@ export function PersonnelDetailModal({
                 <span>{t("modal.educationTitle")}</span>
               </div>
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-muted-foreground">
-                {person.education.degree && (
+                {localizedDegree && (
                   <span>
                     <strong className="text-foreground">
                       {t("modal.degree")}
@@ -692,20 +702,20 @@ export function PersonnelDetailModal({
                     {localizedDegree}
                   </span>
                 )}
-                {person.education.fieldOfStudy && (
+                {localizedField && localizedField !== "—" && (
                   <span>
                     <strong className="text-foreground">
                       {t("modal.field")}
                     </strong>{" "}
-                    {person.education.fieldOfStudy}
+                    {localizedField}
                   </span>
                 )}
-                {person.education.university && (
+                {localizedUni && localizedUni !== "—" && (
                   <span>
                     <strong className="text-foreground">
                       {t("modal.university")}
                     </strong>{" "}
-                    {person.education.university}
+                    {localizedUni}
                   </span>
                 )}
               </div>

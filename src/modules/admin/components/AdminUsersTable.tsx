@@ -47,7 +47,7 @@ import { getCompanyFromEmail } from "../utils/company";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { getLocalizedDocumentTitle } from "@/modules/profile/utils/document-helpers";
 import { addUserNotification } from "@/modules/dashboard/services/dashboard.service";
-import { resolveDegreeLabel } from "@/config/profile-options";
+import { resolveDegreeLabel, resolveStudyFieldLabel } from "@/config/profile-options";
 import {
   getOrganizationDepartmentOptions,
   getOrganizationRoleOptions,
@@ -2136,14 +2136,11 @@ export function AdminUsersTable({
               const isSelected = selectedUser?.id === user.id;
               const wf = user.workingFormat || { office: 25, factory: 25, mission: 25, leave: 25 };
               const departmentKey = user.department || 'engineering';
-              const orgDept = resolveOrganizationDepartment(departmentKey);
-              let departmentName = orgDept ? (isRtl ? orgDept.nameFa : orgDept.nameEn) : departmentKey;
-              if (!orgDept) {
-                try {
-                  departmentName = t.has(`departments.${departmentKey}`) ? t(`departments.${departmentKey}`) : departmentKey;
-                } catch {
-                  departmentName = departmentKey;
-                }
+              let departmentName = departmentKey;
+              try {
+                departmentName = t.has(`departments.${departmentKey}`) ? t(`departments.${departmentKey}`) : departmentKey;
+              } catch {
+                departmentName = departmentKey;
               }
 
               const isAccordionOpen = activeAccordion?.userId === user.id;
@@ -2190,11 +2187,14 @@ export function AdminUsersTable({
               const userDisplayName = formatPersonName(isRtl ? faName : enName, locale);
 
               const getEducationLabel = () => {
-                const deg = user.educationDegree;
+                const deg = user.educationDegree || (user as any).education;
                 const degTitle = deg ? resolveDegreeLabel(deg, locale) : "";
-                const field = user.educationField?.trim();
-                if (degTitle && field) return `${degTitle} (${field})`;
-                return degTitle || field || (isRtl ? "مدرک ثبت نشده" : "Degree not set");
+                const rawField = (user.educationField || (user as any).fieldOfStudy || "")?.trim();
+                const fieldTitle = rawField ? resolveStudyFieldLabel(rawField, locale) : "";
+                if (degTitle && fieldTitle && fieldTitle !== "—" && fieldTitle !== "-") {
+                  return `${degTitle} (${fieldTitle})`;
+                }
+                return degTitle || fieldTitle || (isRtl ? "مدرک ثبت نشده" : "Degree not set");
               };
               const educationText = getEducationLabel();
 
@@ -2317,10 +2317,7 @@ export function AdminUsersTable({
                             {departmentName}
                           </span>
                           <span className="text-[11px] text-muted-foreground truncate max-w-[150px] font-normal leading-tight mt-0.5">
-                            {(() => {
-                              const orgRole = resolveOrganizationRole(user.jobTitle);
-                              return orgRole ? (isRtl ? orgRole.titleFa : orgRole.titleEn) : formatRoleName(user.jobTitle || t("userRole"), locale);
-                            })()}
+                            {formatRoleName(user.jobTitle || t("userRole"), locale)}
                           </span>
                         </div>
                       </td>
@@ -2795,19 +2792,9 @@ export function AdminUsersTable({
                                           {t("department")}
                                         </Label>
                                         <Combobox
-                                          options={getOrganizationDepartmentOptions(isRtl)}
-                                          value={editFormData.department || "مهندسی و طراحی"}
-                                          onChange={(val) => {
-                                            const roles = getOrganizationRoleOptions(val, isRtl);
-                                            setEditFormData((prev) => {
-                                              const hasRole = roles.some((r) => r.value === prev.jobTitle);
-                                              return {
-                                                ...prev,
-                                                department: val,
-                                                jobTitle: hasRole ? prev.jobTitle : (roles[0]?.value || prev.jobTitle),
-                                              };
-                                            });
-                                          }}
+                                          options={departmentOptions}
+                                          value={editFormData.department || "engineering"}
+                                          onChange={(val) => setEditFormData(prev => ({ ...prev, department: val }))}
                                           allowClear={false}
                                           size="sm"
                                           triggerClassName="w-full justify-between h-8.5 rounded-xl bg-background border-border/50 text-xs"
@@ -2833,13 +2820,10 @@ export function AdminUsersTable({
                                         <Label className="text-xs font-medium text-foreground">
                                           {t("jobTitle")}
                                         </Label>
-                                        <Combobox
-                                          options={getOrganizationRoleOptions(editFormData.department, isRtl)}
+                                        <Input
                                           value={editFormData.jobTitle || ""}
-                                          onChange={(val) => setEditFormData(prev => ({ ...prev, jobTitle: val }))}
-                                          allowClear={false}
-                                          size="sm"
-                                          triggerClassName="w-full justify-between h-8.5 rounded-xl bg-background border-border/50 text-xs"
+                                          onChange={(e) => setEditFormData(prev => ({ ...prev, jobTitle: e.target.value }))}
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50"
                                         />
                                       </div>
                                     </div>

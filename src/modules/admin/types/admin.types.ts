@@ -66,7 +66,9 @@ export interface User {
   subordinates?: string[];
   education?: string;
   educationDegree?: string;
+  educationDegreeEn?: string;
   educationField?: string;
+  educationFieldEn?: string;
   jobTitle?: string;
   jobTitleEn?: string;
   age?: number;
@@ -90,6 +92,7 @@ export interface User {
   supplementaryProvider?: string;
   shebaNumber?: string;
   university?: string;
+  universityEn?: string;
   graduationYear?: string;
   personnelCode?: string;
   mobile?: string;
@@ -263,6 +266,7 @@ export interface PendingRequest {
   educationDegree?: string;
   educationField?: string;
   university?: string;
+  universityEn?: string;
   graduationYear?: string;
   educationRecords?: EducationRecord[];
   skills?: { id: string; name: string; level: number }[];

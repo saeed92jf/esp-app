@@ -20,7 +20,7 @@ import { getRoleGradient, getRoleGlowShadow } from "@/lib/role-avatar";
 import { api } from "@/services";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { resolveDegreeLabel } from "@/config/profile-options";
+import { resolveDegreeLabel, resolveStudyFieldLabel } from "@/config/profile-options";
 import {
   Dialog,
   DialogContent,
@@ -135,11 +135,13 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
   const insPlan = resolveInsurancePlan(selectedUser);
   const insDependents = childrenCount + (isMarried ? 1 : 0);
 
-  const educationField = selectedUser.educationField || selectedUser.fieldOfStudy || (selectedUser.education && selectedUser.education !== selectedUser.educationDegree ? selectedUser.education : "") || t("defaultEducationField");
+  const rawField = selectedUser.educationField || selectedUser.fieldOfStudy || (selectedUser.education && selectedUser.education !== selectedUser.educationDegree ? selectedUser.education : "");
+  const resolvedField = rawField ? resolveStudyFieldLabel(rawField, locale) : "";
+  const educationField = resolvedField || (isRtl ? t("defaultEducationField") : "Engineering");
   const rawDegree = selectedUser.educationDegree || selectedUser.education;
   const educationDegree = rawDegree
-    ? (t.has(`degreesOptions.${rawDegree}`) ? t(`degreesOptions.${rawDegree}`) : resolveDegreeLabel(rawDegree, locale))
-    : t("degreesOptions.master");
+    ? resolveDegreeLabel(rawDegree, locale)
+    : (isRtl ? "کارشناسی" : "Bachelor's Degree");
 
   const insuranceStyles: Record<'active' | 'inactive', Record<'golden' | 'silver' | 'special' | 'regular', { text: string; icon: any }>> = {
     active: {
@@ -304,7 +306,9 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
             >
               <GraduationCap size={13} className="stroke-[2.2] shrink-0" />
               <span className="truncate">
-                {isRtl ? `${educationDegree} ${educationField}` : `${educationDegree} of ${educationField}`}
+                {educationField && educationField !== "—" && educationField !== "-"
+                  ? (isRtl ? `${educationDegree} ${educationField}` : `${educationDegree} in ${educationField}`)
+                  : educationDegree}
               </span>
             </div>
           ) : (

@@ -2186,7 +2186,7 @@ export function AdminUserConfig({
                                 placeholder={t("educationFieldLabel")}
                                 searchPlaceholder={isRtl ? "جستجو یا تایپ رشته..." : "Search or type major..."}
                                 emptyText={t("noResults")}
-                                creatable={true}
+                                creatable={false}
                                 showSearch={true}
                                 className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />
@@ -2206,7 +2206,7 @@ export function AdminUserConfig({
                                 placeholder={t("universityLabel")}
                                 searchPlaceholder={t("universityPlaceholder")}
                                 emptyText={t("noResults")}
-                                creatable={true}
+                                creatable={false}
                                 showSearch={true}
                                 className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-end text-xs"
                               />

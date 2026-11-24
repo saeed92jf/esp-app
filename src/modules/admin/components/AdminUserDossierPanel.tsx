@@ -43,6 +43,14 @@ import {
   getOrganizationRoleOptions,
 } from "@/config/organization";
 import {
+  getDegreeOptions,
+  getStudyFieldOptions,
+  getUniversityOptions,
+  resolveDegreeLabel,
+  resolveStudyFieldLabel,
+  resolveUniversityLabel,
+} from "@/config/profile-options";
+import {
   ESP_DEPARTMENTS,
   ESP_LOCATIONS,
   ESP_ROLES,
@@ -723,19 +731,25 @@ export function AdminUserDossierPanel({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-1">
                   <span className="text-[10px] text-muted-foreground block">{isRtl ? "مدرک تحصیلی" : "Degree"}</span>
-                  <span className="font-bold text-foreground text-sm">{user.educationDegree || "کارشناسی"}</span>
+                  <span className="font-bold text-foreground text-sm">
+                    {resolveDegreeLabel(user.educationDegree || (user as any).education, locale) || (isRtl ? "ثبت نشده" : "Not specified")}
+                  </span>
                 </div>
                 <div className="space-y-1">
                   <span className="text-[10px] text-muted-foreground block">{isRtl ? "رشته تحصیلی" : "Field of Study"}</span>
-                  <span className="font-semibold text-foreground text-sm">{user.educationField || "مهندسی مکانیک"}</span>
+                  <span className="font-semibold text-foreground text-sm">
+                    {resolveStudyFieldLabel(user.educationField || (user as any).fieldOfStudy, locale) || (isRtl ? "ثبت نشده" : "Not specified")}
+                  </span>
                 </div>
                 <div className="space-y-1">
                   <span className="text-[10px] text-muted-foreground block">{isRtl ? "دانشگاه محل تحصیل" : "University"}</span>
-                  <span className="font-semibold text-foreground">{user.university || "دانشگاه صنعتی شریف"}</span>
+                  <span className="font-semibold text-foreground">
+                    {resolveUniversityLabel(user.university, locale) || (isRtl ? "ثبت نشده" : "Not specified")}
+                  </span>
                 </div>
                 <div className="space-y-1">
                   <span className="text-[10px] text-muted-foreground block">{isRtl ? "سال فارغ‌التحصیلی" : "Graduation Year"}</span>
-                  <span className="font-semibold text-foreground font-mono fa-num">{(user as any).graduationYear || "1395"}</span>
+                  <span className="font-semibold text-foreground font-mono fa-num">{(user as any).graduationYear || "—"}</span>
                 </div>
               </div>
             ) : (
@@ -744,8 +758,8 @@ export function AdminUserDossierPanel({
                 <div className="space-y-1.5">
                   <Label className="text-xs">{isRtl ? "مدرک تحصیلی" : "Education Degree"}</Label>
                   <Combobox
-                    options={toComboboxOptions(ESP_DEGREES, isRtl)}
-                    value={formData.educationDegree || "کارشناسی"}
+                    options={getDegreeOptions(locale)}
+                    value={formData.educationDegree || ""}
                     onChange={(val) => setFormData((p) => ({ ...p, educationDegree: val }))}
                     allowClear={false}
                     size="sm"
@@ -754,18 +768,24 @@ export function AdminUserDossierPanel({
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">{isRtl ? "رشته تحصیلی" : "Field of Study"}</Label>
-                  <Input
+                  <Combobox
+                    options={getStudyFieldOptions(locale)}
                     value={formData.educationField || ""}
-                    onChange={(e) => setFormData((p) => ({ ...p, educationField: e.target.value }))}
-                    className="h-8.5 text-xs rounded-xl"
+                    onChange={(val) => setFormData((p) => ({ ...p, educationField: val }))}
+                    allowClear={false}
+                    size="sm"
+                    triggerClassName="w-full justify-between h-8.5 rounded-xl text-xs"
                   />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">{isRtl ? "دانشگاه محل تحصیل" : "University"}</Label>
-                  <Input
+                  <Combobox
+                    options={getUniversityOptions(locale)}
                     value={formData.university || ""}
-                    onChange={(e) => setFormData((p) => ({ ...p, university: e.target.value }))}
-                    className="h-8.5 text-xs rounded-xl"
+                    onChange={(val) => setFormData((p) => ({ ...p, university: val }))}
+                    allowClear={false}
+                    size="sm"
+                    triggerClassName="w-full justify-between h-8.5 rounded-xl text-xs"
                   />
                 </div>
               </div>
