@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const department = searchParams.get("department") || undefined;
     const company = searchParams.get("company") || undefined;
     const page = searchParams.get("page") ? Number(searchParams.get("page")) : 1;
-    const limit = searchParams.get("limit") ? Number(searchParams.get("limit")) : 50;
+    const limit = searchParams.get("limit") ? Number(searchParams.get("limit")) : 2000;
 
     const authHeader = req.headers.get("authorization");
     try {

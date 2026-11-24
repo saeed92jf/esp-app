@@ -159,7 +159,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     setConnectionError(null);
     try {
       const [u, r] = await Promise.all([
-        api.admin.getUsers(),
+        api.admin.getUsers({ limit: 2000 }),
         api.admin.getPendingRequests(),
       ]);
       let userList: User[] = (u || []).filter(
