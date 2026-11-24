@@ -298,7 +298,7 @@ export function getServerAdminUsers(filters?: UserQueryParams): { data: User[]; 
 
   const total = list.length;
   const page = Number(filters?.page) || 1;
-  const limit = Number(filters?.limit) || 50;
+  const limit = Number(filters?.limit) || 2000;
   const startIndex = (page - 1) * limit;
   const paginated = list.slice(startIndex, startIndex + limit);
 

@@ -399,7 +399,7 @@ export function AdminUsersTable({
   const canEditModuleAccess = isSuperAdmin || currentUser?.role === 'admin';
 
   // Load More pagination state
-  const [displayLimit, setDisplayLimit] = useState(50);
+  const [displayLimit, setDisplayLimit] = useState(100);
 
   // Active accordion per user row
   const [activeAccordion, setActiveAccordion] = useState<{
@@ -426,7 +426,7 @@ export function AdminUsersTable({
 
   // Reset displayLimit on search or filter change
   useEffect(() => {
-    setDisplayLimit(50);
+    setDisplayLimit(100);
   }, [globalSearch, colFilters, sortState]);
 
   // Escape key listener for lightbox
@@ -1243,7 +1243,8 @@ export function AdminUsersTable({
     isFiltered,
     onClear,
     children,
-    align = "start"
+    align = "start",
+    className
   }: {
     title: string;
     field: string;
@@ -1251,6 +1252,7 @@ export function AdminUsersTable({
     onClear: () => void;
     children: React.ReactNode;
     align?: "start" | "center";
+    className?: string;
   }) => {
     const isSorted = sortState.field === field;
     const sortDir = sortState.direction;
@@ -1259,7 +1261,8 @@ export function AdminUsersTable({
       <th className={cn(
         "py-3.5 px-3 text-xs font-bold select-none group text-slate-800 dark:text-slate-100 first:rounded-ts-2xl first:rounded-bs-none last:rounded-te-2xl last:rounded-be-none rounded-b-none",
         align === "start" ? "text-start" : "text-center",
-        isFiltered && "bg-primary/10 text-primary"
+        isFiltered && "bg-primary/10 text-primary",
+        className
       )}>
         <div className={cn(
           "inline-flex items-center gap-1.5",
@@ -1620,9 +1623,10 @@ export function AdminUsersTable({
 
               {/* ── Column 2: Personnel Code (شماره پرسنلی) ── */}
               {renderExcelHeader({
-                title: isRtl ? "شماره پرسنلی" : "Personnel ID",
+                title: isRtl ? "کد پرسنلی" : "ID",
                 field: "personnelCode" as any,
-                align: "start",
+                align: "center",
+                className: "w-[100px]",
                 isFiltered: false,
                 onClear: () => {},
                 children: null,
@@ -1633,6 +1637,7 @@ export function AdminUsersTable({
                 title: isRtl ? "داخلی" : "EXT.",
                 field: "extensionNumber" as any,
                 align: "center",
+                className: "w-[80px]",
                 isFiltered: false,
                 onClear: () => {},
                 children: null,
@@ -1938,19 +1943,24 @@ export function AdminUsersTable({
                       </td>
 
                       {/* Column 2: Personnel Code (شماره پرسنلی) */}
-                      <td className="py-3 px-3.5 text-start align-middle">
-                        <div className="flex flex-col min-w-0">
-                          <span className={cn("font-mono font-bold text-xs text-foreground tracking-wider leading-snug", isRtl && "fa-num")} dir="ltr">
-                            {(user as any).personnelCode || user.employeeId || "-"}
+                      <td className="py-3 px-2 text-center align-middle w-[100px]">
+                        {((user as any).personnelCode || user.employeeId) ? (
+                          <span 
+                            className={cn(
+                              "inline-flex items-center justify-center font-mono font-bold text-xs px-2.5 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/25 shadow-2xs",
+                              isRtl && "fa-num"
+                            )}
+                            dir="ltr"
+                          >
+                            {(user as any).personnelCode || user.employeeId}
                           </span>
-                          <span className="text-[10px] text-muted-foreground font-normal leading-tight mt-0.5">
-                            {isRtl ? "کد پرسنلی" : "ID"}
-                          </span>
-                        </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground/40 font-mono">-</span>
+                        )}
                       </td>
 
                       {/* Column 3: EXT (داخلی) */}
-                      <td className="py-3 px-3 text-center align-middle">
+                      <td className="py-3 px-2 text-center align-middle w-[80px]">
                         {user.extensionNumber ? (
                           <span 
                             className={cn(
@@ -3288,11 +3298,11 @@ export function AdminUsersTable({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setDisplayLimit((prev) => prev + 50)}
+              onClick={() => setDisplayLimit((prev) => prev + 100)}
               className="h-8.5 px-4 rounded-xl font-bold border-primary/30 text-primary hover:bg-primary/10 gap-1.5 cursor-pointer shadow-xs transition-colors"
             >
               <ChevronDown className="size-4" />
-              <span>{isRtl ? "بارگذاری و نمایش ۵۰ کاربر بیشتر" : "Load 50 More Users"}</span>
+              <span>{isRtl ? "بارگذاری و نمایش ۱۰۰ کاربر بیشتر" : "Load 100 More Users"}</span>
             </Button>
             <Button
               type="button"
