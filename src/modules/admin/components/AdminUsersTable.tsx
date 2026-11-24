@@ -25,8 +25,16 @@ import {
   Building, Calendar, Users,
   Building2, Briefcase, DollarSign, Clock, MapPin,
   Heart, Shield, Layers, Trash2, Lock, Sparkles, Loader2, Send,
-  Download, Upload, FileSpreadsheet, FileJson
+  Download, Upload, FileSpreadsheet, FileJson, LogOut, ShieldAlert
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useConfirm } from "@/hooks/use-confirm";
 import type { UserRole } from "@/types/auth";
 import { cn } from "@/lib/utils";
@@ -406,8 +414,13 @@ export function AdminUsersTable({
   // Active accordion per user row
   const [activeAccordion, setActiveAccordion] = useState<{
     userId: string;
-    type: 'view' | 'password' | 'role' | 'edit' | 'access' | 'documents';
+    type: 'view' | 'password' | 'role' | 'edit' | 'access' | 'documents' | 'revoke';
   } | null>(null);
+
+  // Session Revocation States (Individual & Global)
+  const [isRevokingUser, setIsRevokingUser] = useState<string | null>(null);
+  const [isRevokeAllModalOpen, setIsRevokeAllModalOpen] = useState(false);
+  const [isRevokingAll, setIsRevokingAll] = useState(false);
 
   // Track clicked user row to display action icons tray on click (instead of hover)
   const [openTrayUserId, setOpenTrayUserId] = useState<string | null>(null);
@@ -472,6 +485,79 @@ export function AdminUsersTable({
     if (selectedUser?.id === userId) setSelectedUser(updatedUser);
     api.admin.updateUser(userId, updatedUser).catch(() => {});
     toast.success(isRtl ? "تمامی مدارک پرسنل با موفقیت تأیید شدند." : "All personnel documents verified successfully.");
+  };
+
+  const handleRevokeUserSession = async (targetUser: User) => {
+    try {
+      setIsRevokingUser(targetUser.id);
+      const res = await fetch(`/api/real/admin/users/${encodeURIComponent(targetUser.id)}/revoke-session`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) throw new Error("Failed to revoke session");
+
+      const uIdLower = String(targetUser.id || "").toLowerCase();
+      const uEmailLower = String(targetUser.email || "").toLowerCase();
+
+      // Immediately set user to offline locally
+      setUsers((prev) =>
+        prev.map((u) => {
+          const match =
+            String(u.id || "").toLowerCase() === uIdLower ||
+            (u.email && String(u.email).toLowerCase() === uEmailLower);
+          return match ? { ...u, isOnline: false, status: "offline" } : u;
+        })
+      );
+      if (selectedUser && (selectedUser.id === targetUser.id || selectedUser.email === targetUser.email)) {
+        setSelectedUser({ ...selectedUser, isOnline: false, status: "offline" });
+      }
+
+      toast.success(
+        isRtl
+          ? `نشست و توکن‌های ورود «${targetUser.fullNameFa || targetUser.name || targetUser.email}» با موفقیت باطل شد و دسترسی کاربر قطع گردید.`
+          : `Session successfully revoked for "${targetUser.fullName || targetUser.name || targetUser.email}".`
+      );
+      setActiveAccordion(null);
+    } catch {
+      toast.error(isRtl ? "خطا در ابطال نشست و خروج اجباری کاربر" : "Failed to revoke user session");
+    } finally {
+      setIsRevokingUser(null);
+    }
+  };
+
+  const handleRevokeAllSessions = async () => {
+    try {
+      setIsRevokingAll(true);
+      const res = await fetch("/api/real/admin/users/revoke-all-sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) throw new Error("Failed to revoke all sessions");
+
+      // Mark all other users offline locally
+      const myIdLower = String(currentUser?.id || "").toLowerCase();
+      const myEmailLower = String(currentUser?.email || "").toLowerCase();
+
+      setUsers((prev) =>
+        prev.map((u) => {
+          const isMe =
+            String(u.id || "").toLowerCase() === myIdLower ||
+            (u.email && String(u.email).toLowerCase() === myEmailLower);
+          return isMe ? u : { ...u, isOnline: false, status: "offline" };
+        })
+      );
+
+      toast.success(
+        isRtl
+          ? "فرمان خروج اجباری همگانی صادر شد. تمامی نشست‌های فعال کاربران در سراسر سامانه باطل شدند."
+          : "Global session revocation executed. All active user sessions have been terminated."
+      );
+      setIsRevokeAllModalOpen(false);
+    } catch {
+      toast.error(isRtl ? "خطا در صدور فرمان خروج اجباری همگانی" : "Failed to execute global revocation");
+    } finally {
+      setIsRevokingAll(false);
+    }
   };
 
   // State for Quick Edit accordion
@@ -758,7 +844,7 @@ export function AdminUsersTable({
   };
 
   // Accordion Toggle
-  const toggleAccordion = (userId: string, type: 'view' | 'password' | 'role' | 'edit' | 'access' | 'documents') => {
+  const toggleAccordion = (userId: string, type: 'view' | 'password' | 'role' | 'edit' | 'access' | 'documents' | 'revoke') => {
     const targetUser = users.find(x => x.id === userId);
     if (targetUser) {
       setSelectedUser(targetUser);
@@ -1507,6 +1593,20 @@ export function AdminUsersTable({
             <Upload className="size-3.5" />
             <span className="hidden sm:inline">{t("importPersonnel")}</span>
           </Button>
+
+          {/* Global Force Logout / Revoke All Sessions Button */}
+          {canEditModuleAccess && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsRevokeAllModalOpen(true)}
+              className="h-9 px-3 rounded-xl border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-semibold gap-1.5 bg-rose-500/5 hover:bg-rose-500/10 hover:border-rose-500/50 transition-colors cursor-pointer"
+              title={isRtl ? "خروج اجباری و ابطال نشست تمامی کاربران آنلاین" : "Force Logout / Revoke All Sessions"}
+            >
+              <ShieldAlert className="size-3.5 text-rose-500" />
+              <span className="hidden sm:inline">{isRtl ? "خروج اجباری همگانی" : "Revoke All"}</span>
+            </Button>
+          )}
 
           {activeFiltersCount > 0 && (
             <Button
@@ -3104,6 +3204,93 @@ export function AdminUsersTable({
                                     </div>
                                   );
                                 })()}
+
+                                {/* ── Mode F: Revoke Session & Force Logout (خروج اجباری و ابطال نشست) ── */}
+                                {activeAccordion.type === 'revoke' && (
+                                  <div className="flex flex-col gap-3.5 max-w-2xl">
+                                    <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                                      <div className="flex items-center gap-2.5">
+                                        <div className="size-8 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center">
+                                          <ShieldAlert size={18} />
+                                        </div>
+                                        <div>
+                                          <h4 className="text-xs font-bold text-foreground">
+                                            {isRtl ? "خروج اجباری و ابطال نشست" : "Force Logout & Revoke Session"} — {userDisplayName}
+                                          </h4>
+                                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                                            {isRtl ? "ابطال فوری توکن‌های فعال، قطع دسترسی و انتقال کاربر به صفحه ورود" : "Immediately invalidate active tokens and terminate user sessions"}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon-xs"
+                                        onClick={() => setActiveAccordion(null)}
+                                        className="size-7 text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
+                                        title={t("cancel")}
+                                      >
+                                        <X size={15} />
+                                      </Button>
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-rose-500/20 bg-rose-500/5">
+                                      <div className="space-y-1">
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-xs font-bold text-foreground">
+                                            {isRtl ? "وضعیت فعلی اتصال:" : "Connection Status:"}
+                                          </span>
+                                          <Badge
+                                            variant="outline"
+                                            className={cn(
+                                              "text-[10px] font-semibold px-2 py-0.5 rounded-full gap-1",
+                                              user.isOnline || user.status === "online"
+                                                ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
+                                                : "bg-slate-500/10 text-slate-500 border-slate-500/30"
+                                            )}
+                                          >
+                                            <span
+                                              className={cn(
+                                                "size-1.5 rounded-full",
+                                                user.isOnline || user.status === "online" ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
+                                              )}
+                                            />
+                                            <span>
+                                              {user.isOnline || user.status === "online"
+                                                ? (isRtl ? "هم‌اکنون آنلاین" : "Currently Online")
+                                                : (isRtl ? "آفلاین" : "Offline")}
+                                            </span>
+                                          </Badge>
+                                        </div>
+                                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                          {isRtl
+                                            ? "با فشردن دکمه زیر، کلیه نشست‌ها و توکن‌های ورود این کاربر در کلیه دستگاه‌ها منقضی گردیده و کاربر بلافاصله از سیستم خارج می‌شود."
+                                            : "All active sessions for this user across all devices will be invalidated immediately, forcing re-login."}
+                                        </p>
+                                      </div>
+
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        disabled={isRevokingUser === user.id}
+                                        onClick={() => handleRevokeUserSession(user)}
+                                        className="h-8.5 px-4 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white cursor-pointer shadow-xs transition-colors gap-1.5 shrink-0"
+                                      >
+                                        {isRevokingUser === user.id ? (
+                                          <>
+                                            <Loader2 size={13} className="animate-spin" />
+                                            <span>{isRtl ? "در حال ابطال نشست..." : "Revoking..."}</span>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <LogOut size={13} />
+                                            <span>{isRtl ? "خروج اجباری و ابطال توکن" : "Force Logout User"}</span>
+                                          </>
+                                        )}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
                               </TableAccordionPanel>
                               )}
                             </AnimatePresence>
@@ -3228,6 +3415,26 @@ export function AdminUsersTable({
                                     </Button>
                                   );
                                 })()}
+
+                                {/* 6. Revoke Session / Force Logout (خروج اجباری و ابطال نشست) */}
+                                {canEditModuleAccess && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="xs"
+                                    onClick={() => toggleAccordion(user.id, 'revoke')}
+                                    className={cn(
+                                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer h-auto",
+                                      isAccordionOpen && activeAccordion?.type === 'revoke'
+                                        ? "bg-rose-600 text-white shadow-2xs font-semibold hover:bg-rose-700"
+                                        : "text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10"
+                                    )}
+                                    title={isRtl ? "ابطال نشست و خروج اجباری کاربر" : "Revoke Session & Force Logout"}
+                                  >
+                                    <LogOut size={13} className="shrink-0 text-rose-500" />
+                                    <span className="hidden sm:inline">{isRtl ? "ابطال نشست" : "Revoke"}</span>
+                                  </Button>
+                                )}
 
                                 <div className="h-3.5 w-px bg-border/40 mx-0.5 shrink-0" />
 
@@ -3423,6 +3630,58 @@ export function AdminUsersTable({
           if (onRefresh) onRefresh();
         }}
       />
+
+      {/* Global Force Logout & Revoke All Sessions Confirmation Dialog */}
+      <Dialog open={isRevokeAllModalOpen} onOpenChange={setIsRevokeAllModalOpen}>
+        <DialogContent className="max-w-md p-6 rounded-2xl">
+          <DialogHeader className="gap-2">
+            <div className="size-11 rounded-2xl bg-rose-500/10 text-rose-600 flex items-center justify-center mb-1">
+              <ShieldAlert className="size-6" />
+            </div>
+            <DialogTitle className="text-base font-bold text-foreground">
+              {isRtl ? "خروج اجباری و ابطال نشست تمامی کاربران" : "Force Logout & Revoke All Sessions"}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              {isRtl
+                ? "آیا از صدور فرمان خروج اجباری و ابطال نشست تمامی کاربران اطمینان دارید؟ کلیه کاربران آنلاین و فعال در سراسر شرکت بلافاصله از سامانه خارج شده و ملزم به ورود مجدد خواهند بود (نشست کاربری شما حفظ خواهد شد)."
+                : "Are you sure you want to revoke all active user sessions across the entire system? All online users will be forcefully logged out immediately (your own session will be preserved)."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="gap-2 sm:gap-2 mt-4 pt-3 border-t border-border/40">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isRevokingAll}
+              onClick={() => setIsRevokeAllModalOpen(false)}
+              className="rounded-xl text-xs h-9"
+            >
+              {t("cancel")}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              disabled={isRevokingAll}
+              onClick={handleRevokeAllSessions}
+              className="rounded-xl text-xs h-9 gap-1.5 font-semibold bg-rose-600 hover:bg-rose-700 text-white"
+            >
+              {isRevokingAll ? (
+                <>
+                  <Loader2 className="size-3.5 animate-spin" />
+                  <span>{isRtl ? "در حال ابطال نشست‌ها..." : "Revoking..."}</span>
+                </>
+              ) : (
+                <>
+                  <ShieldAlert className="size-3.5" />
+                  <span>{isRtl ? "تأیید و ابطال کلیه نشست‌ها" : "Confirm Revoke All"}</span>
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -4,7 +4,9 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/modules/auth/hooks/use-auth';
 
 const HEARTBEAT_INTERVAL_MS = 25000; // 25 seconds regular ping
-const ACTIVITY_THROTTLE_MS = 20000;  // 20 seconds throttle on user activity triggers
+const ACTIVITY_THROTTLE_MS = 15000;  // 15 seconds throttle on user activity triggers
+const IDLE_TIMEOUT_MS = 2.5 * 60 * 1000; // 2.5 minutes of inactivity marks user as idle (stops heartbeats)
+const HIDDEN_TAB_TIMEOUT_MS = 45000; // 45 seconds of background/hidden tab stops heartbeats
 const MULTI_TAB_KEY = 'esp_active_browser_tabs';
 
 /**
@@ -75,16 +77,38 @@ function unregisterTab(tabId: string): number {
 export function usePresence() {
   const { user } = useAuth();
   const lastPingRef = useRef<number>(0);
+  const lastActivityRef = useRef<number>(Date.now());
+  const isIdleRef = useRef<boolean>(false);
+  const hiddenSinceRef = useRef<number>(0);
   const tabIdRef = useRef<string>('');
 
   useEffect(() => {
     tabIdRef.current = `tab_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    lastActivityRef.current = Date.now();
   }, []);
 
   const sendHeartbeat = useCallback(async () => {
     if (!user || !user.id) return;
     try {
       const now = Date.now();
+
+      // Background Tab Check: If tab is hidden for > HIDDEN_TAB_TIMEOUT_MS, pause heartbeats
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        if (!hiddenSinceRef.current) hiddenSinceRef.current = now;
+        if (now - hiddenSinceRef.current > HIDDEN_TAB_TIMEOUT_MS) {
+          return; // Tab is backgrounded/inactive; allow backend presence threshold to transition to offline
+        }
+      } else {
+        hiddenSinceRef.current = 0;
+      }
+
+      // Idle Timeout Check: genuine active usage required!
+      if (now - lastActivityRef.current > IDLE_TIMEOUT_MS) {
+        isIdleRef.current = true;
+        return; // User is idle/away; stop heartbeats
+      }
+      isIdleRef.current = false;
+
       // Throttle: avoid spamming heartbeats more than once per 5s
       if (now - lastPingRef.current < 5000) return;
       lastPingRef.current = now;
@@ -96,7 +120,7 @@ export function usePresence() {
 
       const token = typeof window !== 'undefined' ? localStorage.getItem('esp-auth-token') : null;
 
-      await fetch('/api/real/users/heartbeat', {
+      const res = await fetch('/api/real/users/heartbeat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,6 +133,15 @@ export function usePresence() {
           tabId: tabIdRef.current,
         }),
       });
+
+      // Handle token or session revocation (e.g. forced logout from admin panel)
+      if (res.status === 401) {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('esp-auth-token');
+          localStorage.removeItem('esp_user');
+          window.dispatchEvent(new CustomEvent('esp_auth_unauthorized'));
+        }
+      }
     } catch {
       // Ignore background network errors
     }
@@ -160,25 +193,37 @@ export function usePresence() {
 
     // 3. Tab visibility changes & window focus (instant refresh on revisit)
     const handleVisibilityChange = () => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
-        const now = Date.now();
-        if (now - lastPingRef.current > 5000) {
-          sendHeartbeat();
+      if (typeof document !== 'undefined') {
+        if (document.visibilityState === 'visible') {
+          hiddenSinceRef.current = 0;
+          lastActivityRef.current = Date.now();
+          const now = Date.now();
+          if (now - lastPingRef.current > 5000) {
+            sendHeartbeat();
+          }
+        } else {
+          hiddenSinceRef.current = Date.now();
         }
       }
     };
 
     const handleFocus = () => {
+      hiddenSinceRef.current = 0;
+      lastActivityRef.current = Date.now();
       const now = Date.now();
       if (now - lastPingRef.current > 5000) {
         sendHeartbeat();
       }
     };
 
-    // 4. User Interaction Listeners (activity awareness)
+    // 4. User Interaction Listeners (activity awareness: mouse, keyboard, scroll, touch)
     const handleUserInteraction = () => {
       const now = Date.now();
-      if (now - lastPingRef.current > ACTIVITY_THROTTLE_MS) {
+      lastActivityRef.current = now;
+      if (isIdleRef.current) {
+        isIdleRef.current = false;
+        sendHeartbeat();
+      } else if (now - lastPingRef.current > ACTIVITY_THROTTLE_MS) {
         sendHeartbeat();
       }
     };
@@ -193,9 +238,13 @@ export function usePresence() {
       window.addEventListener('focus', handleFocus);
       window.addEventListener('beforeunload', handleBeforeUnload);
 
-      // Throttled active interaction detection
+      // Multi-event active interaction detection
       window.addEventListener('pointerdown', handleUserInteraction, { passive: true });
       window.addEventListener('keydown', handleUserInteraction, { passive: true });
+      window.addEventListener('mousemove', handleUserInteraction, { passive: true });
+      window.addEventListener('wheel', handleUserInteraction, { passive: true });
+      window.addEventListener('touchstart', handleUserInteraction, { passive: true });
+      window.addEventListener('scroll', handleUserInteraction, { passive: true });
     }
 
     return () => {
@@ -206,6 +255,10 @@ export function usePresence() {
         window.removeEventListener('beforeunload', handleBeforeUnload);
         window.removeEventListener('pointerdown', handleUserInteraction);
         window.removeEventListener('keydown', handleUserInteraction);
+        window.removeEventListener('mousemove', handleUserInteraction);
+        window.removeEventListener('wheel', handleUserInteraction);
+        window.removeEventListener('touchstart', handleUserInteraction);
+        window.removeEventListener('scroll', handleUserInteraction);
       }
     };
   }, [user, sendHeartbeat, sendOffline]);
