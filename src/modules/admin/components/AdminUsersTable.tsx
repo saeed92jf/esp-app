@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { User, PendingRequest } from "../types/admin.types";
 import type { UserUploadedDocument } from "@/types/auth";
 import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
@@ -362,6 +363,7 @@ export function AdminUsersTable({
   const tMenu = useTranslations("Menu");
   const locale = useLocale();
   const isRtl = locale === "fa";
+  const router = useRouter();
 
   const operatorName = formatPersonName(currentUser?.fullName || currentUser?.fullNameFa || currentUser?.name || "سعید جلیلی فرد", locale);
   const operatorRoleLabel = currentUser?.role === "superadmin"
@@ -1485,7 +1487,7 @@ export function AdminUsersTable({
           {canEditModuleAccess && (
             <Button
               size="sm"
-              onClick={() => setIsQuickUserModalOpen(true)}
+              onClick={() => router.push("/admin/config")}
               className="h-9 px-3.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold gap-1.5 shadow-sm transition-all cursor-pointer"
               title={isRtl ? "افزودن و تعریف کاربر جدید" : "Add New User"}
             >
