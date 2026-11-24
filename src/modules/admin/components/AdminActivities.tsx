@@ -462,7 +462,7 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
                             onMouseEnter={() => cell && setHoveredCell(cell)}
                             onMouseLeave={() => setHoveredCell(null)}
                             className={cn(
-                              "aspect-square w-full max-w-[24px] sm:max-w-[28px] rounded sm:rounded-md transition-all duration-150 relative flex items-center justify-center",
+                              "aspect-square w-full max-w-[22px] sm:max-w-[24px] xl:max-w-[26px] rounded sm:rounded-md transition-all duration-150 relative flex items-center justify-center",
                               // 0. آینده (هنوز فرا نرسیده - بدون رنگ، بوردر خط‌چین ظریف)
                               isFuture && (
                                 "bg-slate-200/20 dark:bg-slate-900/15 border border-dashed border-slate-300/50 dark:border-slate-700/50 opacity-40 hover:opacity-75 cursor-default"
