@@ -28,6 +28,8 @@
   --color-surface-secondary: var(--surface-secondary);
   --color-surface-tertiary: var(--surface-tertiary);
   --color-surface-hover: var(--surface-hover);
+  --color-hover-segmented: var(--hover-segmented);
+  --color-hover-global: var(--hover-global);
   --color-surface-inverse: var(--bg-inverse);
   --color-surface-error: var(--bg-error);
   --color-surface-input: var(--bg-input);
@@ -139,11 +141,14 @@
     /* --- Ring --- */
     --ring: var(--color-primary);
 
-    /* --- Surface --- */
+    /* --- Surface & Hover --- */
+    --hover-segmented-base: #98c1d9;
+    --hover-segmented: rgba(152, 193, 217, 0.3);
+    --hover-global: var(--hover-segmented);
     --surface-primary: var(--color-white);
     --surface-secondary: var(--color-slate-50);
     --surface-tertiary: var(--color-slate-100);
-    --surface-hover: var(--color-slate-100);
+    --surface-hover: var(--hover-segmented);
   }
 
   .dark {
@@ -198,10 +203,13 @@
     --border-warning: var(--color-warning-500);
     --border-primary: var(--color-primary);
 
-    /* --- Surface --- */
+    /* --- Surface & Hover --- */
+    --hover-segmented-base: #98c1d9;
+    --hover-segmented: rgba(152, 193, 217, 0.3);
+    --hover-global: var(--hover-segmented);
     --surface-primary: var(--color-slate-900);
     --surface-secondary: var(--color-slate-800);
     --surface-tertiary: var(--color-slate-700);
-    --surface-hover: var(--color-slate-700);
+    --surface-hover: var(--hover-segmented);
   }
 }
