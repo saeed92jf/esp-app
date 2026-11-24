@@ -25,7 +25,7 @@ import {
   Building, Calendar, Users,
   Building2, Briefcase, DollarSign, Clock, MapPin,
   Heart, Shield, Layers, Trash2, Lock, Sparkles, Loader2, Send,
-  Download, Upload, FileSpreadsheet, FileJson, LogOut, ShieldAlert
+  Download, Upload, FileSpreadsheet, FileJson, LogOut, ShieldAlert, Activity
 } from "lucide-react";
 import {
   Dialog,
@@ -640,6 +640,52 @@ export function AdminUsersTable({
     if (uemail && cemail && uemail === cemail) return true;
     return false;
   }, [currentUser]);
+
+  // Overall Personnel & Presence Metrics (اطلاعات کلی پرسنل: کل، فعال، غیرفعال، آنلاین، آفلاین)
+  const userMetrics = useMemo(() => {
+    let active = 0;
+    let inactive = 0;
+    let online = 0;
+    let offline = 0;
+
+    users.forEach((user) => {
+      const isCurrent = checkIsCurrentUser(user);
+      const isUserInactive = user.accountStatus === 'inactive' || user.employmentStatus === 'قطع همکاری';
+      if (isUserInactive) {
+        inactive++;
+      } else {
+        active++;
+      }
+
+      const isUserOnline = isCurrent || user.status === 'online' || Boolean(user.isOnline);
+      if (isUserOnline) {
+        online++;
+      } else {
+        offline++;
+      }
+    });
+
+    return {
+      total: users.length,
+      active,
+      inactive,
+      online,
+      offline,
+    };
+  }, [users, checkIsCurrentUser]);
+
+  const handleToggleStatusMetricFilter = (statusKey: 'active' | 'inactive' | 'online' | 'offline') => {
+    setColFilters((prev) => ({
+      ...prev,
+      statuses: prev.statuses.includes(statusKey)
+        ? prev.statuses.filter((s) => s !== statusKey)
+        : [...prev.statuses, statusKey],
+    }));
+  };
+
+  const handleClearStatusFilters = () => {
+    setColFilters((prev) => ({ ...prev, statuses: [] }));
+  };
 
   // Filtered & Sorted Users
   const filteredUsers = useMemo(() => {
@@ -1666,6 +1712,183 @@ export function AdminUsersTable({
             </Button>
           </div>
         </div>
+      </div>
+
+      {/* ── Summary KPI Metric Cards (اطلاعات کلی پرسنل: کل، فعال، غیرفعال، آنلاین، آفلاین) ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 mt-3 shrink-0">
+        
+        {/* 1. کل پرسنل */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={handleClearStatusFilters}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleClearStatusFilters(); }}
+          className={cn(
+            "flex items-center justify-between p-2 sm:px-3 sm:py-2 rounded-2xl border transition-all cursor-pointer select-none shadow-2xs",
+            colFilters.statuses.length === 0
+              ? "bg-primary/10 border-primary/40 ring-1 ring-primary/30"
+              : "bg-background/80 hover:bg-background border-border/50 hover:border-border"
+          )}
+          title={isRtl ? "کل پرسنل ثبت‌شده در سامانه (کلیک برای نمایش همه)" : "Total registered personnel (Click to show all)"}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="size-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+              <Users className="size-4" />
+            </div>
+            <div className="min-w-0">
+              <span className="block text-[11px] font-semibold text-muted-foreground truncate">
+                {isRtl ? "کل پرسنل" : "Total Staff"}
+              </span>
+              <span className="block text-[10px] text-foreground/70 font-medium truncate">
+                {isRtl ? "تمام حساب‌ها" : "All Accounts"}
+              </span>
+            </div>
+          </div>
+          <span className="text-base sm:text-lg font-extrabold text-foreground fa-num ms-2">
+            {userMetrics.total}
+          </span>
+        </div>
+
+        {/* 2. پرسنل شاغل (فعال) */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => handleToggleStatusMetricFilter('active')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleToggleStatusMetricFilter('active'); }}
+          className={cn(
+            "flex items-center justify-between p-2 sm:px-3 sm:py-2 rounded-2xl border transition-all cursor-pointer select-none shadow-2xs",
+            colFilters.statuses.includes('active')
+              ? "bg-emerald-500/15 border-emerald-500/50 ring-1 ring-emerald-500/30"
+              : "bg-background/80 hover:bg-background border-border/50 hover:border-emerald-500/30"
+          )}
+          title={isRtl ? "پرسنل شاغل و فعال (کلیک برای فیلتر)" : "Active staff (Click to filter)"}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="size-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <UserCheck className="size-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span className="text-[11px] font-semibold text-muted-foreground truncate">
+                  {isRtl ? "شاغل (فعال)" : "Active"}
+                </span>
+              </div>
+              <span className="block text-[10px] text-foreground/70 font-medium truncate">
+                {isRtl ? "همکاری جاری" : "Employed"}
+              </span>
+            </div>
+          </div>
+          <span className="text-base sm:text-lg font-extrabold text-emerald-600 dark:text-emerald-400 fa-num ms-2">
+            {userMetrics.active}
+          </span>
+        </div>
+
+        {/* 3. قطع همکاری (غیرفعال) */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => handleToggleStatusMetricFilter('inactive')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleToggleStatusMetricFilter('inactive'); }}
+          className={cn(
+            "flex items-center justify-between p-2 sm:px-3 sm:py-2 rounded-2xl border transition-all cursor-pointer select-none shadow-2xs",
+            colFilters.statuses.includes('inactive')
+              ? "bg-rose-500/15 border-rose-500/50 ring-1 ring-rose-500/30"
+              : "bg-background/80 hover:bg-background border-border/50 hover:border-rose-500/30"
+          )}
+          title={isRtl ? "پرسنل غیرفعال و قطع همکاری (کلیک برای فیلتر)" : "Terminated / Inactive (Click to filter)"}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="size-8 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+              <UserX className="size-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-rose-500 shrink-0" />
+                <span className="text-[11px] font-semibold text-muted-foreground truncate">
+                  {isRtl ? "قطع همکاری" : "Inactive"}
+                </span>
+              </div>
+              <span className="block text-[10px] text-foreground/70 font-medium truncate">
+                {isRtl ? "غیرفعال" : "Terminated"}
+              </span>
+            </div>
+          </div>
+          <span className="text-base sm:text-lg font-extrabold text-rose-600 dark:text-rose-400 fa-num ms-2">
+            {userMetrics.inactive}
+          </span>
+        </div>
+
+        {/* 4. آنلاین در سامانه */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => handleToggleStatusMetricFilter('online')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleToggleStatusMetricFilter('online'); }}
+          className={cn(
+            "flex items-center justify-between p-2 sm:px-3 sm:py-2 rounded-2xl border transition-all cursor-pointer select-none shadow-2xs",
+            colFilters.statuses.includes('online')
+              ? "bg-emerald-500/15 border-emerald-500/50 ring-1 ring-emerald-500/30"
+              : "bg-background/80 hover:bg-background border-border/50 hover:border-emerald-500/30"
+          )}
+          title={isRtl ? "پرسنل هم‌اکنون آنلاین و فعال (کلیک برای فیلتر)" : "Currently online staff (Click to filter)"}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="size-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <Activity className="size-4 animate-pulse" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <span className="text-[11px] font-semibold text-muted-foreground truncate">
+                  {isRtl ? "آنلاین" : "Online"}
+                </span>
+              </div>
+              <span className="block text-[10px] text-foreground/70 font-medium truncate">
+                {isRtl ? "حضور فعال" : "Active Now"}
+              </span>
+            </div>
+          </div>
+          <span className="text-base sm:text-lg font-extrabold text-emerald-600 dark:text-emerald-400 fa-num ms-2">
+            {userMetrics.online}
+          </span>
+        </div>
+
+        {/* 5. آفلاین */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => handleToggleStatusMetricFilter('offline')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleToggleStatusMetricFilter('offline'); }}
+          className={cn(
+            "flex items-center justify-between p-2 sm:px-3 sm:py-2 rounded-2xl border transition-all cursor-pointer select-none shadow-2xs",
+            colFilters.statuses.includes('offline')
+              ? "bg-slate-500/15 border-slate-500/50 ring-1 ring-slate-500/30"
+              : "bg-background/80 hover:bg-background border-border/50 hover:border-slate-500/30"
+          )}
+          title={isRtl ? "پرسنل آفلاین (کلیک برای فیلتر)" : "Offline staff (Click to filter)"}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="size-8 rounded-xl bg-slate-500/10 text-slate-600 dark:text-slate-400 flex items-center justify-center shrink-0">
+              <Clock className="size-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-slate-400 shrink-0" />
+                <span className="text-[11px] font-semibold text-muted-foreground truncate">
+                  {isRtl ? "آفلاین" : "Offline"}
+                </span>
+              </div>
+              <span className="block text-[10px] text-foreground/70 font-medium truncate">
+                {isRtl ? "عدم حضور" : "Away"}
+              </span>
+            </div>
+          </div>
+          <span className="text-base sm:text-lg font-extrabold text-slate-600 dark:text-slate-400 fa-num ms-2">
+            {userMetrics.offline}
+          </span>
+        </div>
+
       </div>
 
       {/* ── Table Container with Perfect Rounded Fillet Corners & Stacking Isolation ── */}
