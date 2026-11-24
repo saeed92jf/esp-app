@@ -23,6 +23,9 @@ import {
   ArrowRight,
   ArrowLeft,
   Search,
+  ArrowUpDown,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -266,402 +269,395 @@ export function AdminExecutiveDashboard({ users = [] }: AdminExecutiveDashboardP
     };
   }, [users]);
 
-  const filteredDepts = useMemo(() => {
-    if (!deptSearch.trim()) return deptMatrix;
-    const q = deptSearch.trim().toLowerCase();
-    return deptMatrix.filter((d) => d.nameFa.toLowerCase().includes(q) || d.nameEn.toLowerCase().includes(q));
-  }, [deptMatrix, deptSearch]);
+  const [sortField, setSortField] = useState<"retentionRate" | "active" | "inactive" | "total" | "nameFa">("active");
+  const [sortAsc, setSortAsc] = useState<boolean>(false);
+
+  const handleSort = (field: "retentionRate" | "active" | "inactive" | "total" | "nameFa") => {
+    if (sortField === field) {
+      setSortAsc((prev) => !prev);
+    } else {
+      setSortField(field);
+      setSortAsc(false);
+    }
+  };
+
+  const processedDepts = useMemo(() => {
+    let list = deptMatrix;
+    if (deptSearch.trim()) {
+      const q = deptSearch.trim().toLowerCase();
+      list = list.filter((d) => d.nameFa.toLowerCase().includes(q) || d.nameEn.toLowerCase().includes(q));
+    }
+    return [...list].sort((a, b) => {
+      if (sortField === "nameFa") {
+        const cmp = a.nameFa.localeCompare(b.nameFa, "fa");
+        return sortAsc ? cmp : -cmp;
+      }
+      const valA = a[sortField] || 0;
+      const valB = b[sortField] || 0;
+      return sortAsc ? valA - valB : valB - valA;
+    });
+  }, [deptMatrix, deptSearch, sortField, sortAsc]);
 
   return (
-    <div className="flex flex-col w-full max-w-[1600px] mx-auto pb-8 gap-5 animate-in fade-in duration-150">
-      {/* ── Top Header Bar ── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-3xl bg-slate-100/90 dark:bg-slate-900/50 border border-border/50 shadow-xs">
-        <div className="flex items-center gap-3.5">
-          <div className="size-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20 shadow-xs">
-            <BarChart3 className="size-5.5" />
+    <div className="flex flex-col w-full max-w-[1600px] mx-auto gap-2 lg:h-[calc(100vh-theme(spacing.24))] lg:max-h-[890px] lg:min-h-[630px] lg:overflow-hidden animate-in fade-in duration-150">
+      {/* ── 1. Compact Engineering Header (h-10) ── */}
+      <div className="flex items-center justify-between gap-3 px-3.5 py-1.5 rounded-2xl bg-card/70 backdrop-blur-xs border border-border/50 shrink-0 shadow-xs">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+            <BarChart3 className="size-4.5" />
           </div>
-          <div>
-            <h1 className="text-base sm:text-lg font-bold text-foreground">
+          <div className="flex items-center gap-2 min-w-0">
+            <h1 className="text-xs sm:text-sm font-bold text-foreground truncate">
               {isRtl ? "داشبورد مدیریتی و تحلیلی منابع انسانی (ESP CORE)" : "Executive HR Analytics & Workforce Dashboard"}
             </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {isRtl
-                ? "تحلیل جامع وضعیت پرسنل فعال، قطع همکاری و ماتریس ماندگاری دپارتمان‌ها • شرکت یورواسلات پارس"
-                : "Comprehensive workforce analysis: active, separated, and retention matrix across departments • Euroslot Pars Co."}
-            </p>
+            <Badge variant="outline" className="hidden sm:inline-flex text-[10px] h-5 px-2 bg-muted/60 text-muted-foreground border-border/60 fa-num font-mono">
+              {totalHeadcount} {isRtl ? "پرسنل" : "staff"}
+            </Badge>
+            <div className="hidden md:flex items-center gap-1.5 text-[11px] text-muted-foreground/80">
+              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{isRtl ? "داده‌های متصل یورواسلات پارس" : "Live Euroslot Pars Data"}</span>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-end sm:self-center">
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="relative w-36 sm:w-48">
+            <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 size-3 text-muted-foreground pointer-events-none" />
+            <Input
+              value={deptSearch}
+              onChange={(e) => setDeptSearch(e.target.value)}
+              placeholder={isRtl ? "فیلتر دپارتمان..." : "Filter depts..."}
+              className="h-7 text-xs ps-7 pe-2 rounded-xl bg-muted/40 border-border/50"
+            />
+          </div>
           <Button
             variant="outline"
-            size="sm"
+            size="xs"
             onClick={() => router.push("/admin/users")}
-            className="h-9 px-3.5 rounded-xl border-border/60 text-xs font-semibold gap-2 cursor-pointer bg-background/80 hover:bg-background transition-all"
+            className="h-7 px-2.5 rounded-xl border-border/60 text-xs font-semibold gap-1.5 cursor-pointer bg-background/80 hover:bg-background"
           >
-            <TableProperties className="size-4 text-primary" />
-            <span>{isRtl ? "مشاهده جدول پرسنل" : "Personnel Table"}</span>
+            <TableProperties className="size-3.5 text-primary" />
+            <span className="hidden xs:inline">{isRtl ? "جدول پرسنل" : "Personnel Table"}</span>
           </Button>
         </div>
       </div>
 
-      {/* ── 8 High-Impact KPI Cards ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3.5">
-        {/* KPI 1: Total Headcount */}
-        <Card className="rounded-2xl border-border/50 bg-background/80 shadow-xs p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground">
-              {isRtl ? "کل پرسنل ثبت‌شده" : "Total Headcount"}
-            </span>
-            <div className="size-8 rounded-xl bg-slate-500/10 text-slate-600 dark:text-slate-300 flex items-center justify-center">
-              <Users className="size-4" />
-            </div>
+      {/* ── 2. Telemetry KPI Strip (8 Micro-Cards) ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1.5 shrink-0">
+        {/* KPI 1: Total */}
+        <div className="p-2 rounded-xl border border-border/50 bg-card/60 flex flex-col justify-between shadow-2xs hover:border-border transition-colors">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-muted-foreground truncate">{isRtl ? "کل پرسنل" : "Total"}</span>
+            <Users className="size-3.5 text-slate-500" />
           </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-black text-foreground fa-num">
-              {totalHeadcount} <span className="text-xs font-medium text-muted-foreground">{isRtl ? "نفر" : "staff"}</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground/90">
-              {isRtl ? "کل پایگاه داده پرسنلی یورواسلات" : "Complete staff records database"}
-            </p>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-base font-black text-foreground fa-num">{totalHeadcount}</span>
+            <span className="text-[10px] text-muted-foreground">{isRtl ? "نفر" : "pax"}</span>
           </div>
-        </Card>
+        </div>
 
-        {/* KPI 2: Active Staff */}
-        <Card className="rounded-2xl border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10 shadow-xs p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
-              {isRtl ? "پرسنل فعال (شاغل)" : "Active Staff"}
-            </span>
-            <div className="size-8 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-              <UserCheck className="size-4" />
-            </div>
+        {/* KPI 2: Active */}
+        <div className="p-2 rounded-xl border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-500/10 flex flex-col justify-between shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-emerald-800 dark:text-emerald-300 truncate">{isRtl ? "شاغلین فعال" : "Active"}</span>
+            <UserCheck className="size-3.5 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-black text-emerald-700 dark:text-emerald-300 fa-num">
-              {activeCount} <span className="text-xs font-medium text-emerald-600/80">{isRtl ? "نفر" : "active"}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Badge variant="outline" className="text-[10px] h-4.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 fa-num font-bold">
-                {retentionRate.toFixed(1)}% {isRtl ? "نرخ ماندگاری" : "Retention"}
-              </Badge>
-            </div>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-base font-black text-emerald-700 dark:text-emerald-300 fa-num">{activeCount}</span>
+            <Badge variant="outline" className="text-[9px] h-4 px-1 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 fa-num font-bold">
+              {retentionRate.toFixed(1)}%
+            </Badge>
           </div>
-        </Card>
+        </div>
 
-        {/* KPI 3: Separated Staff */}
-        <Card className="rounded-2xl border-rose-500/30 bg-rose-500/5 dark:bg-rose-500/10 shadow-xs p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-rose-800 dark:text-rose-300">
-              {isRtl ? "قطع همکاری / منفصل" : "Separated / Inactive"}
-            </span>
-            <div className="size-8 rounded-xl bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center">
-              <UserX className="size-4" />
-            </div>
+        {/* KPI 3: Inactive */}
+        <div className="p-2 rounded-xl border border-rose-500/25 bg-rose-500/5 dark:bg-rose-500/10 flex flex-col justify-between shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-rose-800 dark:text-rose-300 truncate">{isRtl ? "قطع همکاری" : "Separated"}</span>
+            <UserX className="size-3.5 text-rose-600 dark:text-rose-400" />
           </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-black text-rose-700 dark:text-rose-300 fa-num">
-              {inactiveCount} <span className="text-xs font-medium text-rose-600/80">{isRtl ? "نفر" : "inactive"}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Badge variant="outline" className="text-[10px] h-4.5 bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30 fa-num font-bold">
-                {attritionRate.toFixed(1)}% {isRtl ? "نرخ ریزش کل" : "Attrition"}
-              </Badge>
-            </div>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-base font-black text-rose-700 dark:text-rose-300 fa-num">{inactiveCount}</span>
+            <Badge variant="outline" className="text-[9px] h-4 px-1 bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30 fa-num font-bold">
+              {attritionRate.toFixed(1)}%
+            </Badge>
           </div>
-        </Card>
+        </div>
 
-        {/* KPI 4: Gender Distribution */}
-        <Card className="rounded-2xl border-border/50 bg-background/80 shadow-xs p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground">
-              {isRtl ? "توزیع جنسیت فعالان" : "Active Gender Ratio"}
-            </span>
-            <div className="size-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
-              <HeartHandshake className="size-4" />
-            </div>
+        {/* KPI 4: Parand Factory */}
+        <div className="p-2 rounded-xl border border-border/50 bg-card/60 flex flex-col justify-between shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-muted-foreground truncate">{isRtl ? "کارخانه پرند" : "Parand"}</span>
+            <Building2 className="size-3.5 text-amber-500" />
           </div>
-          <div className="space-y-1">
-            <div className="text-lg font-bold text-foreground fa-num">
-              {maleActive} <span className="text-xs font-normal text-muted-foreground">{isRtl ? "آقا" : "Male"}</span> • {femaleActive} <span className="text-xs font-normal text-muted-foreground">{isRtl ? "خانم" : "Female"}</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground fa-num">
-              {isRtl ? `سهم بانوان شاغل: ${femaleRatio.toFixed(1)}%` : `Female share: ${femaleRatio.toFixed(1)}%`}
-            </p>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-base font-black text-foreground fa-num">{locationData[0].active}</span>
+            <span className="text-[10px] text-muted-foreground font-mono">65.3%</span>
           </div>
-        </Card>
+        </div>
 
-        {/* KPI 5: Leadership */}
-        <Card className="rounded-2xl border-border/50 bg-background/80 shadow-xs p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground">
-              {isRtl ? "کادر مدیریت و سرپرستی" : "Leadership & Supervisors"}
-            </span>
-            <div className="size-8 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
-              <ShieldAlert className="size-4" />
-            </div>
+        {/* KPI 5: Tehran Office */}
+        <div className="p-2 rounded-xl border border-border/50 bg-card/60 flex flex-col justify-between shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-muted-foreground truncate">{isRtl ? "دفتر تهران" : "Tehran"}</span>
+            <Briefcase className="size-3.5 text-teal-500" />
           </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-black text-foreground fa-num">
-              {leadershipCount} <span className="text-xs font-medium text-muted-foreground">{isRtl ? "مدیر و سرپرست" : "leaders"}</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground fa-num">
-              {isRtl ? `نسبت به فعالان: ${leadershipRatio.toFixed(1)}%` : `${leadershipRatio.toFixed(1)}% of workforce`}
-            </p>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-base font-black text-foreground fa-num">{locationData[1].active}</span>
+            <span className="text-[10px] text-muted-foreground font-mono">34.7%</span>
           </div>
-        </Card>
+        </div>
 
-        {/* KPI 6: Insurance Coverage */}
-        <Card className="rounded-2xl border-border/50 bg-background/80 shadow-xs p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground">
-              {isRtl ? "پوشش بیمه تکمیلی" : "Insurance Coverage"}
-            </span>
-            <div className="size-8 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center">
-              <ShieldCheck className="size-4" />
-            </div>
+        {/* KPI 6: Leadership */}
+        <div className="p-2 rounded-xl border border-border/50 bg-card/60 flex flex-col justify-between shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-muted-foreground truncate">{isRtl ? "مدیر و سرپرست" : "Leaders"}</span>
+            <ShieldAlert className="size-3.5 text-indigo-500" />
           </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-black text-sky-700 dark:text-sky-300 fa-num">
-              {insuranceCount} <span className="text-xs font-medium text-sky-600/80">{isRtl ? "نفر" : "covered"}</span>
-            </div>
-            <p className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold fa-num">
-              {insuranceRatio.toFixed(0)}% {isRtl ? "پوشش ۱۰۰ درصدی خدمات" : "100% full coverage"}
-            </p>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-base font-black text-foreground fa-num">{leadershipCount}</span>
+            <span className="text-[10px] text-muted-foreground fa-num">{leadershipRatio.toFixed(1)}%</span>
           </div>
-        </Card>
+        </div>
 
-        {/* KPI 7: Primary Location */}
-        <Card className="rounded-2xl border-border/50 bg-background/80 shadow-xs p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground">
-              {isRtl ? "سهم کارخانه پرند" : "Parand Factory Share"}
-            </span>
-            <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
-              <Building2 className="size-4" />
-            </div>
+        {/* KPI 7: Gender */}
+        <div className="p-2 rounded-xl border border-border/50 bg-card/60 flex flex-col justify-between shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-muted-foreground truncate">{isRtl ? "ترکیب جنسیت" : "Gender"}</span>
+            <HeartHandshake className="size-3.5 text-purple-500" />
           </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-black text-foreground fa-num">
-              {locationData[0].active} <span className="text-xs font-medium text-muted-foreground">{isRtl ? "نفر فعال" : "active"}</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground fa-num">
-              {isRtl ? "۶۵.۳٪ از کل پرسنل شاغل شرکت" : "65.3% of total active workforce"}
-            </p>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-xs font-bold text-foreground fa-num">{maleActive}م / {femaleActive}ف</span>
+            <span className="text-[10px] text-muted-foreground fa-num">{femaleRatio.toFixed(1)}%</span>
           </div>
-        </Card>
+        </div>
 
-        {/* KPI 8: Head Office */}
-        <Card className="rounded-2xl border-border/50 bg-background/80 shadow-xs p-4 flex flex-col justify-between">
-          <div className="flex items-center justify-between pb-2">
-            <span className="text-xs font-semibold text-muted-foreground">
-              {isRtl ? "دفتر مرکزی تهران" : "Tehran Head Office"}
-            </span>
-            <div className="size-8 rounded-xl bg-teal-500/10 text-teal-600 flex items-center justify-center">
-              <Briefcase className="size-4" />
-            </div>
+        {/* KPI 8: Insurance */}
+        <div className="p-2 rounded-xl border border-sky-500/25 bg-sky-500/5 dark:bg-sky-500/10 flex flex-col justify-between shadow-2xs">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-sky-800 dark:text-sky-300 truncate">{isRtl ? "بیمه تکمیلی" : "Insurance"}</span>
+            <ShieldCheck className="size-3.5 text-sky-600 dark:text-sky-400" />
           </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-black text-foreground fa-num">
-              {locationData[1].active} <span className="text-xs font-medium text-muted-foreground">{isRtl ? "نفر فعال" : "active"}</span>
-            </div>
-            <p className="text-[11px] text-muted-foreground fa-num">
-              {isRtl ? "۳۴.۷٪ با نرخ ماندگاری ۴۸.۴٪" : "34.7% with 48.4% retention"}
-            </p>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-base font-black text-sky-700 dark:text-sky-300 fa-num">{insuranceCount}</span>
+            <Badge variant="outline" className="text-[9px] h-4 px-1 bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30 fa-num font-bold">
+              100%
+            </Badge>
           </div>
-        </Card>
+        </div>
       </div>
 
-      {/* ── Main Section: Department Retention Matrix ── */}
-      <Card className="rounded-3xl border-border/50 bg-background/80 shadow-xs overflow-hidden">
-        <CardHeader className="p-5 pb-3 border-b border-border/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div>
-            <CardTitle className="text-sm sm:text-base font-bold text-foreground">
-              {isRtl
-                ? "ماتریس جامع دپارتمان‌ها: تحلیل پرسنل فعال، قطع همکاری و نرخ ماندگاری"
-                : "Department Retention Matrix: Active vs. Separated Staff"}
-            </CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {isRtl
-                ? "تحلیل نرخ حفظ و ماندگاری نیروی انسانی به تفکیک ۱۵ واحد و دپارتمان تخصصی شرکت یورواسلات پارس"
-                : "Workforce retention rate and headcount distribution across 15 operational departments"}
-            </p>
-          </div>
+      {/* ── 3. Main Split Cockpit (Flexible Height, Zero Page Scroll) ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-2.5 flex-1 min-h-0">
+        {/* Left Column (xl:col-span-7): Department Retention Matrix */}
+        <Card className="xl:col-span-7 rounded-2xl border-border/50 bg-card/60 flex flex-col h-full overflow-hidden shadow-xs">
+          <CardHeader className="px-3.5 py-2 border-b border-border/40 flex flex-row items-center justify-between gap-2 shrink-0">
+            <div className="flex items-center gap-2">
+              <TableProperties className="size-3.5 text-primary" />
+              <CardTitle className="text-xs font-bold text-foreground">
+                {isRtl ? "ماتریس ماندگاری و شاخص دپارتمان‌ها" : "Department Retention & Headcount Matrix"}
+              </CardTitle>
+              <Badge variant="secondary" className="text-[9px] h-4 px-1.5 bg-muted fa-num font-mono">
+                {processedDepts.length} {isRtl ? "واحد" : "units"}
+              </Badge>
+            </div>
+            <span className="text-[10px] text-muted-foreground font-normal hidden sm:inline">
+              {isRtl ? "کلیک روی ستون‌ها جهت سورت هوشمند" : "Click column header to sort"}
+            </span>
+          </CardHeader>
 
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
-            <Input
-              value={deptSearch}
-              onChange={(e) => setDeptSearch(e.target.value)}
-              placeholder={isRtl ? "جستجوی دپارتمان..." : "Search department..."}
-              className="h-8.5 text-xs ps-8.5 pe-3 rounded-xl bg-muted/40 border-border/60"
-            />
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-xs text-start border-collapse">
-            <thead>
-              <tr className="bg-muted/40 border-b border-border/40 text-[11px] font-semibold text-muted-foreground">
-                <th className="py-3 px-4 text-start font-bold">#</th>
-                <th className="py-3 px-4 text-start font-bold">{isRtl ? "دپارتمان / واحد سازمانی" : "Department"}</th>
-                <th className="py-3 px-4 text-center font-bold text-emerald-700 dark:text-emerald-300">{isRtl ? "پرسنل فعال (شاغل)" : "Active Staff"}</th>
-                <th className="py-3 px-4 text-center font-bold text-rose-700 dark:text-rose-300">{isRtl ? "منفصل (قطع همکاری)" : "Separated"}</th>
-                <th className="py-3 px-4 text-center font-bold text-foreground">{isRtl ? "کل دپارتمان" : "Total Staff"}</th>
-                <th className="py-3 px-4 text-center font-bold">{isRtl ? "سهم از فعالان" : "Active Share"}</th>
-                <th className="py-3 px-4 text-start font-bold min-w-[180px]">{isRtl ? "نرخ ماندگاری (Retention %)" : "Retention Rate"}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/30">
-              {filteredDepts.map((d, idx) => (
-                <tr key={d.nameFa} className="hover:bg-muted/30 transition-colors">
-                  <td className="py-3 px-4 text-muted-foreground/70 font-mono fa-num text-start">{idx + 1}</td>
-                  <td className="py-3 px-4 text-start">
-                    <div className="font-semibold text-foreground">{isRtl ? d.nameFa : d.nameEn}</div>
-                    <div className="text-[10px] text-muted-foreground/80 font-mono">{isRtl ? d.nameEn : d.nameFa}</div>
-                  </td>
-                  <td className="py-3 px-4 text-center font-bold text-emerald-600 dark:text-emerald-400 fa-num">
-                    {d.active}
-                  </td>
-                  <td className="py-3 px-4 text-center font-medium text-rose-600 dark:text-rose-400 fa-num">
-                    {d.inactive}
-                  </td>
-                  <td className="py-3 px-4 text-center font-bold text-foreground fa-num">
-                    {d.total}
-                  </td>
-                  <td className="py-3 px-4 text-center text-muted-foreground fa-num font-medium">
-                    {d.activeShare.toFixed(1)}%
-                  </td>
-                  <td className="py-3 px-4 text-start">
-                    <div className="flex items-center gap-2.5">
-                      <Progress
-                        value={d.retentionRate}
-                        className={cn(
-                          "h-2 w-24 rounded-full bg-muted/60",
-                          d.retentionRate >= 50
-                            ? "[&>div]:bg-emerald-500"
-                            : d.retentionRate >= 35
-                            ? "[&>div]:bg-amber-500"
-                            : "[&>div]:bg-rose-500"
-                        )}
-                      />
-                      <span className="font-bold fa-num text-xs min-w-[45px] text-start">
-                        {d.retentionRate.toFixed(1)}%
-                      </span>
+          <CardContent className="p-0 flex-1 overflow-y-auto custom-scrollbar min-h-0">
+            <table className="w-full text-xs text-start border-collapse">
+              <thead className="sticky top-0 bg-muted/90 backdrop-blur-xs z-10 border-b border-border/40 text-[10px] font-bold text-muted-foreground">
+                <tr>
+                  <th className="py-2 px-2 text-start w-7">#</th>
+                  <th
+                    className="py-2 px-2.5 text-start cursor-pointer hover:text-foreground select-none"
+                    onClick={() => handleSort("nameFa")}
+                  >
+                    <div className="inline-flex items-center gap-1">
+                      <span>{isRtl ? "واحد سازمانی" : "Department"}</span>
+                      {sortField === "nameFa" && (sortAsc ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />)}
                     </div>
-                  </td>
+                  </th>
+                  <th
+                    className="py-2 px-2 text-center cursor-pointer hover:text-foreground select-none text-emerald-700 dark:text-emerald-300 w-16"
+                    onClick={() => handleSort("active")}
+                  >
+                    <div className="inline-flex items-center gap-1 justify-center">
+                      <span>{isRtl ? "فعال" : "Active"}</span>
+                      {sortField === "active" && (sortAsc ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />)}
+                    </div>
+                  </th>
+                  <th
+                    className="py-2 px-2 text-center cursor-pointer hover:text-foreground select-none text-rose-700 dark:text-rose-300 w-16"
+                    onClick={() => handleSort("inactive")}
+                  >
+                    <div className="inline-flex items-center gap-1 justify-center">
+                      <span>{isRtl ? "منفصل" : "Separated"}</span>
+                      {sortField === "inactive" && (sortAsc ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />)}
+                    </div>
+                  </th>
+                  <th
+                    className="py-2 px-2 text-center cursor-pointer hover:text-foreground select-none text-foreground w-14"
+                    onClick={() => handleSort("total")}
+                  >
+                    <div className="inline-flex items-center gap-1 justify-center">
+                      <span>{isRtl ? "کل" : "Total"}</span>
+                      {sortField === "total" && (sortAsc ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />)}
+                    </div>
+                  </th>
+                  <th className="py-2 px-2 text-center w-14 hidden sm:table-cell">{isRtl ? "سهم" : "Share"}</th>
+                  <th
+                    className="py-2 px-2.5 text-start cursor-pointer hover:text-foreground select-none w-32"
+                    onClick={() => handleSort("retentionRate")}
+                  >
+                    <div className="inline-flex items-center gap-1">
+                      <span>{isRtl ? "نرخ ماندگاری" : "Retention"}</span>
+                      {sortField === "retentionRate" && (sortAsc ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />)}
+                    </div>
+                  </th>
                 </tr>
+              </thead>
+              <tbody className="divide-y divide-border/25">
+                {processedDepts.map((d, idx) => (
+                  <tr key={d.nameFa} className="hover:bg-muted/30 transition-colors">
+                    <td className="py-1.5 px-2 text-muted-foreground/70 font-mono fa-num text-[11px]">{idx + 1}</td>
+                    <td className="py-1.5 px-2.5 text-start">
+                      <div className="font-semibold text-foreground text-xs leading-snug truncate max-w-[170px] lg:max-w-[210px]" title={d.nameFa}>
+                        {isRtl ? d.nameFa : d.nameEn}
+                      </div>
+                      <div className="text-[9px] text-muted-foreground/75 font-mono truncate max-w-[170px] lg:max-w-[210px]">
+                        {isRtl ? d.nameEn : d.nameFa}
+                      </div>
+                    </td>
+                    <td className="py-1.5 px-2 text-center font-bold text-emerald-600 dark:text-emerald-400 fa-num text-xs">
+                      {d.active}
+                    </td>
+                    <td className="py-1.5 px-2 text-center font-medium text-rose-600 dark:text-rose-400 fa-num text-xs">
+                      {d.inactive}
+                    </td>
+                    <td className="py-1.5 px-2 text-center font-bold text-foreground fa-num text-xs">
+                      {d.total}
+                    </td>
+                    <td className="py-1.5 px-2 text-center text-muted-foreground fa-num font-mono text-[11px] hidden sm:table-cell">
+                      {d.activeShare.toFixed(1)}%
+                    </td>
+                    <td className="py-1.5 px-2.5 text-start">
+                      <div className="flex items-center gap-2">
+                        <Progress
+                          value={d.retentionRate}
+                          className={cn(
+                            "h-1.5 w-16 lg:w-20 rounded-full bg-muted/60",
+                            d.retentionRate >= 50
+                              ? "[&>div]:bg-emerald-500"
+                              : d.retentionRate >= 35
+                              ? "[&>div]:bg-amber-500"
+                              : "[&>div]:bg-rose-500"
+                          )}
+                        />
+                        <span className="font-mono font-bold fa-num text-[11px] min-w-[36px] text-start">
+                          {d.retentionRate.toFixed(1)}%
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+
+          {/* Sticky Table Summary Footer */}
+          <div className="bg-muted/70 px-3.5 py-2 border-t border-border/50 text-[11px] font-bold flex items-center justify-between shrink-0">
+            <span className="text-foreground">{isRtl ? "مجموع کل دپارتمان‌ها:" : "Total All Departments:"}</span>
+            <div className="flex items-center gap-3 fa-num">
+              <span className="text-emerald-700 dark:text-emerald-300 font-black">{activeCount} {isRtl ? "شاغل" : "act"}</span>
+              <span className="text-rose-700 dark:text-rose-300 font-bold">{inactiveCount} {isRtl ? "منفصل" : "sep"}</span>
+              <span className="text-foreground font-black">{totalHeadcount} {isRtl ? "کل" : "tot"}</span>
+              <Badge variant="outline" className="text-[10px] h-4.5 px-1.5 bg-primary/10 text-primary border-primary/25 font-bold font-mono">
+                {retentionRate.toFixed(1)}% {isRtl ? "ماندگاری کل" : "Retention"}
+              </Badge>
+            </div>
+          </div>
+        </Card>
+
+        {/* Right Column (xl:col-span-5): 3 Analytics Breakdowns Stacked */}
+        <div className="xl:col-span-5 flex flex-col gap-2 h-full min-h-0 justify-between">
+          {/* Card A: Location Comparative Analysis */}
+          <Card className="rounded-2xl border-border/50 bg-card/60 p-3 shadow-xs flex flex-col justify-between shrink-0">
+            <div className="flex items-center justify-between pb-2 border-b border-border/40">
+              <div className="flex items-center gap-1.5">
+                <MapPin className="size-3.5 text-primary" />
+                <span className="text-xs font-bold text-foreground">{isRtl ? "تحلیل تطبیقی محل خدمت" : "Location Breakdown"}</span>
+              </div>
+              <span className="text-[10px] text-muted-foreground font-mono">Parand vs Tehran</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              {locationData.map((loc) => (
+                <div key={loc.nameFa} className="p-2 rounded-xl bg-muted/30 border border-border/40 flex flex-col justify-between gap-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[11px] text-foreground truncate">{isRtl ? loc.nameFa.split(" ")[0] + " " + (loc.nameFa.split(" ")[1] || "") : loc.nameEn.split(" ")[0]}</span>
+                    <Badge variant="outline" className="text-[9px] h-4 px-1 bg-primary/10 text-primary border-primary/25 fa-num font-bold">
+                      {loc.retention}%
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-xs pt-0.5">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold fa-num">{loc.active} <span className="text-[9px] font-normal text-muted-foreground">{isRtl ? "فعال" : "act"}</span></span>
+                    <span className="text-rose-600 dark:text-rose-400 font-medium fa-num">{loc.inactive} <span className="text-[9px] font-normal text-muted-foreground">{isRtl ? "منفصل" : "sep"}</span></span>
+                    <span className="text-foreground font-bold fa-num">{loc.total}</span>
+                  </div>
+                </div>
               ))}
-            </tbody>
-            <tfoot>
-              <tr className="bg-muted/70 font-bold border-t-2 border-border/60 text-xs">
-                <td className="py-3.5 px-4 text-center" colSpan={2}>
-                  {isRtl ? "جمع کل دپارتمان‌ها (پایگاه داده کامل یورواسلات)" : "Total Departments (Euroslot Full Workforce)"}
-                </td>
-                <td className="py-3.5 px-4 text-center text-emerald-700 dark:text-emerald-300 fa-num text-sm">
-                  {activeCount}
-                </td>
-                <td className="py-3.5 px-4 text-center text-rose-700 dark:text-rose-300 fa-num text-sm">
-                  {inactiveCount}
-                </td>
-                <td className="py-3.5 px-4 text-center text-foreground fa-num text-sm">
-                  {totalHeadcount}
-                </td>
-                <td className="py-3.5 px-4 text-center fa-num">100.0%</td>
-                <td className="py-3.5 px-4 text-start fa-num text-sm text-primary">
-                  {retentionRate.toFixed(1)}% {isRtl ? "میانگین ماندگاری کل" : "Overall Avg"}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </CardContent>
-      </Card>
+            </div>
+          </Card>
 
-      {/* ── Bottom Section: Location & Contract / Degrees Analysis ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Card A: Location Comparative Analysis */}
-        <Card className="rounded-3xl border-border/50 bg-background/80 shadow-xs p-5">
-          <CardHeader className="p-0 pb-3 mb-3 border-b border-border/40">
-            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-              <MapPin className="size-4 text-primary" />
-              <span>{isRtl ? "تحلیل تطبیقی محل خدمت پرسنل" : "Work Location Comparative Analysis"}</span>
-            </CardTitle>
-          </CardHeader>
-          <div className="space-y-3.5">
-            {locationData.map((loc) => (
-              <div key={loc.nameFa} className="p-3.5 rounded-2xl bg-muted/30 border border-border/40 flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="size-4 text-muted-foreground" />
-                    <span className="font-semibold text-xs text-foreground">{isRtl ? loc.nameFa : loc.nameEn}</span>
-                  </div>
-                  <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/25 fa-num font-bold">
-                    {loc.retention}% {isRtl ? "ماندگاری" : "Retention"}
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-3 gap-2 text-center pt-1 text-xs">
-                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-                    <span className="text-[10px] block opacity-80">{isRtl ? "فعال" : "Active"}</span>
-                    <span className="font-bold text-sm fa-num">{loc.active}</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-rose-500/10 text-rose-700 dark:text-rose-300">
-                    <span className="text-[10px] block opacity-80">{isRtl ? "قطع همکاری" : "Separated"}</span>
-                    <span className="font-bold text-sm fa-num">{loc.inactive}</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-background border border-border/50 text-foreground">
-                    <span className="text-[10px] block opacity-80 text-muted-foreground">{isRtl ? "کل پرسنل" : "Total"}</span>
-                    <span className="font-bold text-sm fa-num">{loc.total}</span>
+          {/* Card B: Education Level Breakdown */}
+          <Card className="rounded-2xl border-border/50 bg-card/60 p-3 shadow-xs flex flex-col flex-1 min-h-0 justify-between">
+            <div className="flex items-center justify-between pb-1.5 border-b border-border/40 shrink-0">
+              <div className="flex items-center gap-1.5">
+                <GraduationCap className="size-3.5 text-primary" />
+                <span className="text-xs font-bold text-foreground">{isRtl ? "هرم تحصیلی نیروی انسانی شاغل" : "Education Pyramid"}</span>
+              </div>
+              <span className="text-[10px] text-muted-foreground font-mono">۲۶۵ شاغل</span>
+            </div>
+            <div className="flex flex-col justify-around flex-1 py-1 gap-1">
+              {degreeData.map((d) => (
+                <div key={d.labelFa} className="flex items-center justify-between text-xs gap-2">
+                  <span className="text-foreground text-[11px] truncate w-36">{isRtl ? d.labelFa : d.labelEn}</span>
+                  <div className="flex items-center gap-2 flex-1 justify-end">
+                    <Progress value={d.share} className="h-1.5 flex-1 max-w-[80px] rounded-full bg-muted/60 [&>div]:bg-primary/80" />
+                    <span className="font-bold fa-num text-[11px] text-muted-foreground min-w-[24px] text-end">{d.count}</span>
+                    <Badge variant="secondary" className="text-[9px] h-4 px-1 bg-muted fa-num font-mono min-w-[38px] justify-center">
+                      {d.share.toFixed(1)}%
+                    </Badge>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Card B: Contract & Education Distribution */}
-        <Card className="rounded-3xl border-border/50 bg-background/80 shadow-xs p-5">
-          <CardHeader className="p-0 pb-3 mb-3 border-b border-border/40">
-            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
-              <GraduationCap className="size-4 text-primary" />
-              <span>{isRtl ? "توزیع تحصیلات و نوع قرارداد پرسنل فعال" : "Active Staff Contracts & Degrees"}</span>
-            </CardTitle>
-          </CardHeader>
-          <div className="space-y-4">
-            {/* Degree Distribution */}
-            <div>
-              <span className="text-xs font-semibold text-muted-foreground block mb-2">
-                {isRtl ? "سطح تحصیلات نیروی انسانی شاغل:" : "Education Level Breakdown:"}
-              </span>
-              <div className="space-y-2">
-                {degreeData.map((d) => (
-                  <div key={d.labelFa} className="flex items-center justify-between text-xs">
-                    <span className="text-foreground">{isRtl ? d.labelFa : d.labelEn}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold fa-num text-muted-foreground">{d.count} {isRtl ? "نفر" : "staff"}</span>
-                      <Badge variant="secondary" className="text-[10px] h-4.5 bg-muted fa-num font-mono">
-                        {d.share.toFixed(1)}%
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
+          </Card>
 
-            <div className="border-t border-border/40 pt-3">
-              <span className="text-xs font-semibold text-muted-foreground block mb-2">
-                {isRtl ? "ترکیب نوع قرارداد شاغلین:" : "Contract Type Composition:"}
-              </span>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                {contractData.map((c) => (
-                  <div key={c.labelFa} className="p-2.5 rounded-xl bg-muted/30 border border-border/40 flex items-center justify-between">
-                    <span className="text-foreground text-[11px] truncate">{isRtl ? c.labelFa : c.labelEn}</span>
-                    <span className="font-bold fa-num text-primary ms-1">{c.count}</span>
-                  </div>
-                ))}
+          {/* Card C: Contracts Composition */}
+          <Card className="rounded-2xl border-border/50 bg-card/60 p-2.5 shadow-xs shrink-0">
+            <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-border/40">
+              <div className="flex items-center gap-1.5">
+                <Briefcase className="size-3.5 text-primary" />
+                <span className="text-xs font-bold text-foreground">{isRtl ? "ترکیب نوع قرارداد شاغلین" : "Contract Types"}</span>
               </div>
+              <span className="text-[10px] text-muted-foreground fa-num">۸۹.۸٪ تمام‌وقت</span>
             </div>
-          </div>
-        </Card>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              {contractData.map((c) => (
+                <div key={c.labelFa} className="p-1.5 rounded-xl bg-muted/30 border border-border/40 flex flex-col items-center text-center">
+                  <span className="text-[10px] text-muted-foreground truncate w-full">{isRtl ? c.labelFa : c.labelEn}</span>
+                  <div className="flex items-baseline gap-1 mt-0.5">
+                    <span className="font-black fa-num text-xs text-primary">{c.count}</span>
+                    <span className="text-[9px] text-muted-foreground font-mono">({c.share}%)</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );
