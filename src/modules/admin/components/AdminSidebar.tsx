@@ -176,10 +176,10 @@ export function AdminSidebar({
                     ? "داشبورد مدیریتی"
                     : "Executive Dashboard"
                   : item.id === "auditLogs"
-                  ? locale === "fa"
-                    ? "لاگ‌های سیستم"
-                    : "Audit Logs"
-                  : t(item.labelKey);
+                    ? locale === "fa"
+                      ? "لاگ‌های سیستم"
+                      : "Audit Logs"
+                    : t(item.labelKey);
 
               const linkElement = (
                 <Link
