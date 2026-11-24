@@ -138,9 +138,9 @@ interface FormState {
   // 3. Personal & Insurance
   age: number;
   birthDate?: string;
-  maritalStatus: "single" | "married";
+  maritalStatus: "single" | "married" | string;
   childrenCount: number;
-  insuranceType: "none" | "socialSecurity" | "complementary";
+  insuranceType: "none" | "socialSecurity" | "complementary" | string;
   insuranceCode?: string;
   supplementaryPlan?: "golden" | "silver" | "special" | "none";
   supplementaryProvider?: string;

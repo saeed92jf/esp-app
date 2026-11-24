@@ -22,6 +22,7 @@ import { useAuth } from "@/modules/auth/hooks/use-auth";
 
 export type AdminTab =
   | "home"
+  | "executiveDashboard"
   | "usersTable"
   | "add"
   | "requests"
@@ -32,6 +33,7 @@ export type AdminTab =
 
 export const ADMIN_TAB_ROUTES: Record<AdminTab, string> = {
   home: "/admin",
+  executiveDashboard: "/admin/dashboard",
   usersTable: "/admin/users",
   add: "/admin/config",
   requests: "/admin/requests",
@@ -97,6 +99,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   // Compute activeTab from pathname
   const activeTab: AdminTab = useMemo(() => {
     if (!pathname) return "home";
+    if (pathname.includes("/admin/dashboard")) return "executiveDashboard";
     if (pathname.includes("/admin/users")) return "usersTable";
     if (pathname.includes("/admin/config")) return "add";
     if (pathname.includes("/admin/requests")) return "requests";
