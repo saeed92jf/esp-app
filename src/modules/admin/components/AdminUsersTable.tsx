@@ -19,7 +19,7 @@ import {
   FileCheck, CheckCheck, XCircle, ZoomIn, ZoomOut, RotateCw, FileText, CheckCircle2,
   TableProperties, Mail, Phone, 
   FolderKanban, Award, Filter,
-  ArrowUp, ArrowDown, ArrowUpDown, Check, RotateCcw,
+  ArrowUp, ArrowDown, ArrowUpDown, Check, RotateCcw, ChevronDown,
   AlertCircle, KeyRound, Edit2, ShieldCheck, UserCheck, UserCog, UserX, UserPlus,
   Building, Calendar, Users,
   Building2, Briefcase, DollarSign, Clock, MapPin,
@@ -398,6 +398,9 @@ export function AdminUsersTable({
   const isSuperAdmin = currentUser?.role === 'superadmin' || isSaeed;
   const canEditModuleAccess = isSuperAdmin || currentUser?.role === 'admin';
 
+  // Load More pagination state
+  const [displayLimit, setDisplayLimit] = useState(50);
+
   // Active accordion per user row
   const [activeAccordion, setActiveAccordion] = useState<{
     userId: string;
@@ -420,6 +423,11 @@ export function AdminUsersTable({
   const [lightboxDoc, setLightboxDoc] = useState<{ src: string; title: string; fileName: string } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
+
+  // Reset displayLimit on search or filter change
+  useEffect(() => {
+    setDisplayLimit(50);
+  }, [globalSearch, colFilters, sortState]);
 
   // Escape key listener for lightbox
   React.useEffect(() => {
@@ -679,7 +687,34 @@ export function AdminUsersTable({
 
       return true;
     }).sort((a, b) => {
-      // 🟢 Rule: Online users are ALWAYS placed at the top of the table!
+      // 🟢 Priority 1: Explicit user-driven sorting by name or tenure
+      if (sortState.field === 'name' || sortState.field === 'fullName' || sortState.field === 'alphabetical') {
+        const nameA = a.fullNameFa || a.name || a.fullName || '';
+        const nameB = b.fullNameFa || b.name || b.fullName || '';
+        const cmp = nameA.localeCompare(nameB, isRtl ? 'fa' : 'en', { sensitivity: 'base' });
+        return sortState.direction === 'asc' ? cmp : -cmp;
+      }
+
+      if (sortState.field === 'daysInCompany' || sortState.field === 'tenure') {
+        const daysA = Number(a.daysInCompany) || 0;
+        const daysB = Number(b.daysInCompany) || 0;
+        return sortState.direction === 'asc' ? daysA - daysB : daysB - daysA;
+      }
+
+      if (sortState.field === 'personnelCode' || sortState.field === 'employeeId') {
+        const numA = parseInt(String((a as any).personnelCode || a.employeeId || '0').replace(/\D/g, '')) || 0;
+        const numB = parseInt(String((b as any).personnelCode || b.employeeId || '0').replace(/\D/g, '')) || 0;
+        return sortState.direction === 'asc' ? numA - numB : numB - numA;
+      }
+
+      if (sortState.field === 'directManager' || sortState.field === 'manager') {
+        const mgrA = (a as any).directManager || a.manager || '';
+        const mgrB = (b as any).directManager || b.manager || '';
+        const cmp = mgrA.localeCompare(mgrB, isRtl ? 'fa' : 'en', { sensitivity: 'base' });
+        return sortState.direction === 'asc' ? cmp : -cmp;
+      }
+
+      // 🟢 Priority 2: Default sorting (Online first, then recent activity)
       const isCurrentA = checkIsCurrentUser(a);
       const isOnlineA = isCurrentA || a.status === 'online' || Boolean(a.isOnline);
 
@@ -689,46 +724,10 @@ export function AdminUsersTable({
       if (isOnlineA && !isOnlineB) return -1;
       if (!isOnlineA && isOnlineB) return 1;
 
-      // Rule: Offline users sorted by who went offline more recently (2 min ago before 3 min ago)!
-      if (!isOnlineA && !isOnlineB) {
-        if (!sortState.field || sortState.field === 'id') {
-          const timeA = a.lastSeenAt ? new Date(a.lastSeenAt).getTime() : 0;
-          const timeB = b.lastSeenAt ? new Date(b.lastSeenAt).getTime() : 0;
-          if (timeA !== timeB) return timeB - timeA;
-        }
-      }
+      const timeA = (a.onlineSince || a.lastSeenAt) ? new Date(a.onlineSince || a.lastSeenAt!).getTime() : 0;
+      const timeB = (b.onlineSince || b.lastSeenAt) ? new Date(b.onlineSince || b.lastSeenAt!).getTime() : 0;
+      if (timeA !== timeB) return timeB - timeA;
 
-      // Online users: most recently active / online first by default
-      if (isOnlineA && isOnlineB) {
-        if (!sortState.field || sortState.field === 'id') {
-          const timeA = (a.onlineSince || a.lastSeenAt) ? new Date(a.onlineSince || a.lastSeenAt!).getTime() : 0;
-          const timeB = (b.onlineSince || b.lastSeenAt) ? new Date(b.onlineSince || b.lastSeenAt!).getTime() : 0;
-          if (timeA !== timeB) return timeB - timeA;
-        }
-      }
-
-      // Within same status group, apply column sort
-      let valA: any = a[sortState.field as keyof User];
-      let valB: any = b[sortState.field as keyof User];
-
-      if (sortState.field === 'id') {
-        valA = parseInt(a.id) || 0;
-        valB = parseInt(b.id) || 0;
-      } else if (sortState.field === 'company') {
-        valA = getCompanyFromEmail(a.email).nameFa;
-        valB = getCompanyFromEmail(b.email).nameFa;
-      } else if (sortState.field === 'primaryFormat') {
-        const wfA = a.workingFormat || { office: 0, factory: 0, mission: 0, leave: 0 };
-        const wfB = b.workingFormat || { office: 0, factory: 0, mission: 0, leave: 0 };
-        valA = Math.max(...Object.values(wfA));
-        valB = Math.max(...Object.values(wfB));
-      } else if (typeof valA === 'string') {
-        valA = valA.toLowerCase();
-        valB = (valB || '').toLowerCase();
-      }
-
-      if (valA < valB) return sortState.direction === 'asc' ? -1 : 1;
-      if (valA > valB) return sortState.direction === 'asc' ? 1 : -1;
       return 0;
     });
   }, [users, globalSearch, colFilters, sortState]);
@@ -1519,15 +1518,48 @@ export function AdminUsersTable({
             </Button>
           )}
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowSalaries(!showSalaries)}
-            className="h-9 px-3 rounded-xl border-border/50 text-xs font-semibold gap-2 bg-background/80 hover:bg-background transition-colors cursor-pointer"
-          >
-            {showSalaries ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-            <span>{t("monthlySalary")}</span>
-          </Button>
+          {/* Quick Sort Options */}
+          <div className="flex items-center gap-1 bg-muted/60 dark:bg-muted/30 p-0.5 rounded-xl border border-border/40">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleSort("name")}
+              className={cn(
+                "h-8 px-2.5 rounded-lg text-xs font-semibold gap-1.5 transition-colors cursor-pointer",
+                sortState.field === "name"
+                  ? "bg-primary text-primary-foreground shadow-2xs hover:bg-primary/90"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              title={isRtl ? "مرتب‌سازی بر اساس حروف الفبا" : "Sort Alphabetically"}
+            >
+              <ArrowUpDown className="size-3" />
+              <span>{isRtl ? "الفبا" : "A-Z"}</span>
+              {sortState.field === "name" && (
+                sortState.direction === "asc" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />
+              )}
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleSort("daysInCompany")}
+              className={cn(
+                "h-8 px-2.5 rounded-lg text-xs font-semibold gap-1.5 transition-colors cursor-pointer",
+                sortState.field === "daysInCompany"
+                  ? "bg-primary text-primary-foreground shadow-2xs hover:bg-primary/90"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              title={isRtl ? "مرتب‌سازی بر اساس روزهای سابقه" : "Sort by Tenure"}
+            >
+              <Clock className="size-3" />
+              <span>{isRtl ? "سابقه" : "Tenure"}</span>
+              {sortState.field === "daysInCompany" && (
+                sortState.direction === "asc" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -1586,7 +1618,17 @@ export function AdminUsersTable({
                 )
               })}
 
-              {/* ── Column 2: EXT (ستون مستقل بعد از اسم) ── */}
+              {/* ── Column 2: Personnel Code (شماره پرسنلی) ── */}
+              {renderExcelHeader({
+                title: isRtl ? "شماره پرسنلی" : "Personnel ID",
+                field: "personnelCode" as any,
+                align: "start",
+                isFiltered: false,
+                onClear: () => {},
+                children: null,
+              })}
+
+              {/* ── Column 3: EXT (ستون داخلی بعد از کد پرسنلی) ── */}
               {renderExcelHeader({
                 title: isRtl ? "داخلی" : "EXT.",
                 field: "extensionNumber" as any,
@@ -1596,7 +1638,7 @@ export function AdminUsersTable({
                 children: null,
               })}
 
-              {/* ── Column 3: Department & Title ── */}
+              {/* ── Column 4: Department & Title (دپارتمان و سمت) ── */}
               {renderExcelHeader({
                 title: t("roleAndDeptCol"),
                 field: "department",
@@ -1635,7 +1677,17 @@ export function AdminUsersTable({
                 )
               })}
 
-              {/* ── Column 3: Contact (مستقیماً بعد از دپارتمان) ── */}
+              {/* ── Column 5: Direct Manager (مدیر مستقیم) ── */}
+              {renderExcelHeader({
+                title: isRtl ? "مدیر مستقیم" : "Direct Manager",
+                field: "directManager" as any,
+                align: "start",
+                isFiltered: false,
+                onClear: () => {},
+                children: null,
+              })}
+
+              {/* ── Column 6: Contact (تلفن و ایمیل) ── */}
               {renderExcelHeader({
                 title: t("contactCol"),
                 field: "phone",
@@ -1656,67 +1708,7 @@ export function AdminUsersTable({
                 )
               })}
 
-              {/* ── Column 4: Company & Role (شرکت و نقش) ── */}
-              {renderExcelHeader({
-                title: isRtl ? "شرکت و نقش" : "Company & Role",
-                field: "company",
-                align: "start",
-                isFiltered: colFilters.companies.length > 0,
-                onClear: () => setColFilters(prev => ({ ...prev, companies: [] })),
-                children: (
-                  <div className="flex flex-col gap-1.5">
-                    <span className="font-semibold text-foreground/80 text-[10px]">{t("filterByCompany")}</span>
-                    {[
-                      { id: "euroslot", label: t("companyEuroslot") },
-                      { id: "npceram", label: t("companyNpceram") },
-                      { id: "holding", label: isRtl ? "هلدینگ" : "Holding" }
-                    ].map((comp) => (
-                      <label key={comp.id} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
-                        <Checkbox
-                          checked={colFilters.companies.includes(comp.id)}
-                          onCheckedChange={() => setColFilters(prev => ({
-                            ...prev,
-                            companies: toggleArrayItem(prev.companies, comp.id)
-                          }))}
-                        />
-                        <span className="text-xs">{comp.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                )
-              })}
-
-              {/* ── Column 5: Projects & Experience (پروژه و تجربه در یک ستون) ── */}
-              {renderExcelHeader({
-                title: isRtl ? "پروژه و تجربه" : "Projects & Exp",
-                field: "doneProjects",
-                align: "start",
-                isFiltered: colFilters.projectRanges.length > 0,
-                onClear: () => setColFilters(prev => ({ ...prev, projectRanges: [] })),
-                children: (
-                  <div className="flex flex-col gap-1.5">
-                    <span className="font-semibold text-foreground/80 text-[10px]">{t("filterValues")}</span>
-                    {[
-                      { key: 'ge10', label: t("projectsGe10") },
-                      { key: '5to10', label: t("projects5to10") },
-                      { key: 'lt5', label: t("projectsLt5") }
-                    ].map(item => (
-                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
-                        <Checkbox
-                          checked={colFilters.projectRanges.includes(item.key)}
-                          onCheckedChange={() => setColFilters(prev => ({
-                            ...prev,
-                            projectRanges: toggleArrayItem(prev.projectRanges, item.key)
-                          }))}
-                        />
-                        <span>{item.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                )
-              })}
-
-              {/* ── Column 6: Tenure (Days in company) ── */}
+              {/* ── Column 7: Tenure (روزهای سابقه) ── */}
               {renderExcelHeader({
                 title: t("tenureCol"),
                 field: "daysInCompany",
@@ -1737,36 +1729,6 @@ export function AdminUsersTable({
                           onCheckedChange={() => setColFilters(prev => ({
                             ...prev,
                             tenureRanges: toggleArrayItem(prev.tenureRanges, item.key)
-                          }))}
-                        />
-                        <span>{item.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                )
-              })}
-
-              {/* ── Column 7: Salary ── */}
-              {renderExcelHeader({
-                title: t("salaryCol"),
-                field: "salary",
-                align: "start",
-                isFiltered: colFilters.salaryRanges.length > 0,
-                onClear: () => setColFilters(prev => ({ ...prev, salaryRanges: [] })),
-                children: (
-                  <div className="flex flex-col gap-1.5">
-                    <span className="font-semibold text-foreground/80 text-[10px]">{t("filterValues")}</span>
-                    {[
-                      { key: 'ge15k', label: t("salaryGe15k") },
-                      { key: '10to15k', label: t("salary10to15k") },
-                      { key: 'lt10k', label: t("salaryLt10k") }
-                    ].map(item => (
-                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
-                        <Checkbox
-                          checked={colFilters.salaryRanges.includes(item.key)}
-                          onCheckedChange={() => setColFilters(prev => ({
-                            ...prev,
-                            salaryRanges: toggleArrayItem(prev.salaryRanges, item.key)
                           }))}
                         />
                         <span>{item.label}</span>
@@ -1815,7 +1777,7 @@ export function AdminUsersTable({
           {filteredUsers.length === 0 ? (
             <tbody className="divide-y divide-border/20">
               <tr>
-                <td colSpan={9} className="py-16 text-center text-muted-foreground text-xs">
+                <td colSpan={8} className="py-16 text-center text-muted-foreground text-xs">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <AlertCircle className="size-6 text-muted-foreground/60" />
                     <span>{t("noUsersFound")}</span>
@@ -1834,7 +1796,7 @@ export function AdminUsersTable({
               </tr>
             </tbody>
           ) : (
-            filteredUsers.map((user) => {
+            filteredUsers.slice(0, displayLimit).map((user) => {
               const isSelected = selectedUser?.id === user.id;
               const wf = user.workingFormat || { office: 25, factory: 25, mission: 25, leave: 25 };
               const departmentKey = user.department || 'engineering';
@@ -1975,7 +1937,19 @@ export function AdminUsersTable({
                         </div>
                       </td>
 
-                      {/* Column 2: EXT (ستون مستقل بعد از اسم - فقط یک تگ عددی شیک) */}
+                      {/* Column 2: Personnel Code (شماره پرسنلی) */}
+                      <td className="py-3 px-3.5 text-start align-middle">
+                        <div className="flex flex-col min-w-0">
+                          <span className={cn("font-mono font-bold text-xs text-foreground tracking-wider leading-snug", isRtl && "fa-num")} dir="ltr">
+                            {(user as any).personnelCode || user.employeeId || "-"}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-normal leading-tight mt-0.5">
+                            {isRtl ? "کد پرسنلی" : "ID"}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Column 3: EXT (داخلی) */}
                       <td className="py-3 px-3 text-center align-middle">
                         {user.extensionNumber ? (
                           <span 
@@ -1992,7 +1966,7 @@ export function AdminUsersTable({
                         )}
                       </td>
 
-                      {/* Column 3: Department & Title (دپارتمان و سمت سازمانی) */}
+                      {/* Column 4: Department & Title (دپارتمان و سمت) */}
                       <td className="py-3 px-3.5 text-start align-middle">
                         <div className="flex flex-col min-w-0">
                           <span className="text-xs font-bold text-foreground truncate max-w-[150px] leading-snug">
@@ -2004,7 +1978,19 @@ export function AdminUsersTable({
                         </div>
                       </td>
 
-                      {/* Column 4: Contact (خط اول: شماره تلفن / خط دوم زیر آن: ایمیل) */}
+                      {/* Column 5: Direct Manager (مدیر مستقیم) */}
+                      <td className="py-3 px-3.5 text-start align-middle">
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-bold text-foreground truncate max-w-[150px] leading-snug">
+                            {(user as any).directManager || user.manager || (isRtl ? "ثبت نشده" : "-")}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-normal leading-tight mt-0.5">
+                            {isRtl ? "مدیر مستقیم" : "Manager"}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Column 6: Contact (تلفن و ایمیل) */}
                       <td className="py-3 px-3.5 text-start align-middle">
                         <div className="flex flex-col min-w-0">
                           {user.phone ? (
@@ -2029,36 +2015,7 @@ export function AdminUsersTable({
                         </div>
                       </td>
 
-                      {/* Column 4: Company & Role (خط اول: کمپانی بولد / خط دوم: نقش کمرنگ) */}
-                      <td className="py-3 px-3.5 text-start align-middle">
-                        {(() => {
-                          const comp = getCompanyFromEmail(user.email);
-                          return (
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-xs font-bold text-foreground truncate max-w-[140px] leading-snug">
-                                {isRtl ? comp.nameFa : comp.nameEn}
-                              </span>
-                              <span className="text-[11px] text-muted-foreground truncate max-w-[140px] font-normal leading-tight mt-0.5">
-                                {getRoleLabel(user.role)}
-                              </span>
-                            </div>
-                          );
-                        })()}
-                      </td>
-
-                      {/* Column 5: Projects & Experience (خط اول: پروژه‌ها بولد / خط دوم: عدد و تجربه کمرنگ بدون آیکون) */}
-                      <td className="py-3 px-3.5 text-start align-middle">
-                        <div className="flex flex-col min-w-0">
-                          <span className={cn("text-xs font-bold text-foreground leading-snug", isRtl && "fa-num")}>
-                            {user.doneProjects || 0} {isRtl ? "پروژه" : t("projectsCol")}
-                          </span>
-                          <span className={cn("text-[11px] text-muted-foreground font-normal leading-tight mt-0.5", isRtl && "fa-num")}>
-                            {user.score || 350} {isRtl ? "تجربه" : "Exp"}
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Column 6: Tenure (سابقه) */}
+                      {/* Column 7: Tenure (روزهای سابقه) */}
                       <td className="py-3 px-3.5 text-start align-middle">
                         <div className="flex flex-col min-w-0">
                           <span className={cn("text-xs font-bold text-foreground font-mono leading-snug", isRtl && "fa-num")}>
@@ -2066,20 +2023,6 @@ export function AdminUsersTable({
                           </span>
                           <span className="text-[11px] text-muted-foreground font-normal leading-tight mt-0.5">
                             {isRtl ? "روز سابقه" : t("daysUnit")}
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Column 7: Salary (خط اول: حقوق بولد / خط دوم: ریال) */}
-                      <td className="py-3 px-3.5 text-start align-middle">
-                        <div className="flex flex-col min-w-0">
-                          <span className={cn("font-mono text-xs font-bold text-foreground leading-snug", isRtl && "fa-num")}>
-                            {showSalaries 
-                              ? (user.salary || 0).toLocaleString() 
-                              : "••••••••"}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground font-normal leading-tight mt-0.5">
-                            {isRtl ? "ریال" : "IRR"}
                           </span>
                         </div>
                       </td>
@@ -2143,7 +2086,7 @@ export function AdminUsersTable({
 
                     {/* ── 2. Paper Pull-out & Folder Tab (سمت راست در فارسی، سمت چپ در انگلیسی) ── */}
                     <tr className="border-0 relative z-0">
-                      <td colSpan={9} className="p-0 border-0">
+                      <td colSpan={8} className="p-0 border-0">
                         <div 
                           className={cn(
                             "grid transition-[grid-template-rows,opacity] duration-200 ease-out",
@@ -2217,73 +2160,41 @@ export function AdminUsersTable({
                                       </Button>
                                     </div>
 
-                                    {/* Section 1: Current Password & Direct Email Dispatch Option */}
-                                    <div className="p-3.5 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                                    {/* Section 1: Hashed Password Security Banner & Fresh Credentials Dispatch */}
+                                    <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
                                       <div className="flex items-center gap-3 min-w-0">
-                                        <div className="size-8 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                                          <Lock size={16} />
+                                        <div className="size-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-xs">
+                                          <ShieldCheck size={18} />
                                         </div>
                                         <div className="min-w-0">
-                                          <span className="text-[11px] font-medium text-muted-foreground block">
-                                            {isRtl ? "کلمه عبور فعلی کاربر در سامانه:" : "Current Password on File:"}
+                                          <span className="text-[11px] font-bold text-foreground block">
+                                            {isRtl ? "امنیت رمز عبور: محافظت با استاندارد هش یک‌طرفه (Hashed)" : "Password Security: Protected by one-way secure hash"}
                                           </span>
-                                          <div className="flex items-center gap-2 mt-0.5">
-                                            <span className="font-mono text-xs font-bold text-foreground tracking-wider select-all" dir="ltr">
-                                              {user.password
-                                                ? (showCurrentPassword ? user.password : "••••••••••••")
-                                                : (isRtl ? "در حال دریافت / پیش‌فرض" : "Default / Fetching...")}
-                                            </span>
-                                            {user.password && (
-                                              <>
-                                                <Button
-                                                  type="button"
-                                                  variant="ghost"
-                                                  size="icon-xs"
-                                                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                                  className="size-6 p-1 text-muted-foreground hover:text-foreground rounded transition-colors cursor-pointer"
-                                                  title={showCurrentPassword ? (isRtl ? "مخفی کردن" : "Hide") : (isRtl ? "نمایش رمز" : "Show")}
-                                                  aria-label={showCurrentPassword ? (isRtl ? "مخفی کردن" : "Hide") : (isRtl ? "نمایش رمز" : "Show")}
-                                                >
-                                                  {showCurrentPassword ? <EyeOff size={13} /> : <Eye size={13} />}
-                                                </Button>
-                                                <Button
-                                                  type="button"
-                                                  variant="ghost"
-                                                  size="icon-xs"
-                                                  onClick={() => {
-                                                    navigator.clipboard.writeText(user.password || "");
-                                                    toast.success(isRtl ? "رمز عبور کپی شد." : "Password copied.");
-                                                  }}
-                                                  className="size-6 p-1 text-muted-foreground hover:text-foreground rounded transition-colors cursor-pointer"
-                                                  title={isRtl ? "کپی رمز" : "Copy"}
-                                                  aria-label={isRtl ? "کپی رمز" : "Copy"}
-                                                >
-                                                  <Copy size={13} />
-                                                </Button>
-                                              </>
-                                            )}
-                                          </div>
+                                          <span className="text-[10px] text-muted-foreground block mt-0.5 leading-tight">
+                                            {isRtl
+                                              ? `برای ورود کاربر به سامانه، می‌توانید مستقیماً یک رمز عبور جدید امن صادر و به ایمیل سازمانی وی (${user.email || ''}) ارسال نمایید.`
+                                              : `You can generate and email a fresh secure password to ${user.email}.`}
+                                          </span>
                                         </div>
                                       </div>
 
-                                      {/* THE REQUESTED OPTION: Send Current Password via Corporate Email */}
                                       <Button
                                         type="button"
-                                        variant="outline"
+                                        variant="default"
                                         size="sm"
                                         onClick={() => handleSendCurrentPassword(user.id)}
                                         disabled={isSendingCurrentPassword || isSavingPassword}
-                                        className="h-8.5 px-3.5 rounded-xl text-xs font-semibold border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/15 gap-2 cursor-pointer shrink-0 w-full sm:w-auto transition-all"
+                                        className="h-9 px-4 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white gap-2 cursor-pointer shrink-0 w-full sm:w-auto shadow-xs transition-all"
                                       >
                                         {isSendingCurrentPassword ? (
-                                          <Loader2 size={14} className="animate-spin text-amber-600" />
+                                          <Loader2 size={14} className="animate-spin text-white" />
                                         ) : (
-                                          <Mail size={14} className="text-amber-600 dark:text-amber-400" />
+                                          <Mail size={14} className="text-white" />
                                         )}
                                         <span>
                                           {isSendingCurrentPassword
-                                            ? (isRtl ? "در حال ارسال ایمیل..." : "Sending Email...")
-                                            : (isRtl ? "ارسال رمز فعلی به ایمیل کاربر" : "Send Current Password via Email")}
+                                            ? (isRtl ? "در حال ایجاد و ارسال..." : "Generating & Sending...")
+                                            : (isRtl ? "ریست و ارسال رمز جدید به ایمیل کاربر" : "Reset & Email New Password")}
                                         </span>
                                       </Button>
                                     </div>
@@ -3355,6 +3266,47 @@ export function AdminUsersTable({
             )}
         </table>
       </div>
+
+      {/* ── Load More & Total Count Footer ── */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3.5 mt-2 border-t border-border/40 text-xs text-muted-foreground shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="font-medium">
+            {isRtl
+              ? `نمایش ${Math.min(displayLimit, filteredUsers.length)} از ${filteredUsers.length} پرسنل و کاربر`
+              : `Showing ${Math.min(displayLimit, filteredUsers.length)} of ${filteredUsers.length} users`}
+          </span>
+          {displayLimit < filteredUsers.length && (
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-muted font-mono font-medium">
+              {filteredUsers.length - displayLimit} {isRtl ? "کاربر دیگر" : "more"}
+            </span>
+          )}
+        </div>
+
+        {displayLimit < filteredUsers.length && (
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setDisplayLimit((prev) => prev + 50)}
+              className="h-8.5 px-4 rounded-xl font-bold border-primary/30 text-primary hover:bg-primary/10 gap-1.5 cursor-pointer shadow-xs transition-colors"
+            >
+              <ChevronDown className="size-4" />
+              <span>{isRtl ? "بارگذاری و نمایش ۵۰ کاربر بیشتر" : "Load 50 More Users"}</span>
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setDisplayLimit(filteredUsers.length)}
+              className="h-8.5 px-3 rounded-xl text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              <span>{isRtl ? "نمایش همه" : "Show All"}</span>
+            </Button>
+          </div>
+        )}
+      </div>
+
       {/* ─── Fullscreen Lightbox Modal ─────────────────────────────── */}
       {lightboxDoc && (
         <div
