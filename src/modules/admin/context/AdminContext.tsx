@@ -186,37 +186,20 @@ export function AdminProvider({ children }: { children: ReactNode }) {
           currentUser.name ||
           currentUser.fullName ||
           "سعید جلیلی فرد";
-        const isSaeed = Boolean(
-          (adminEmail &&
-            (adminEmail.includes("jalili") ||
-              adminEmail === "s.jalili@euroslotpars.com" ||
-              adminEmail === "saeed@euroslotpars.com") &&
-            !adminEmail.includes("saeedkhani")) ||
-            currentUser.id === "u-saeed" ||
-            currentUser.id === "usr_9801"
-        );
+        const isSaeed =
+          currentUser.id === "u-saeed" ||
+          currentUser.id === "usr_9801" ||
+          adminEmail === "s.jalili@euroslotpars.com" ||
+          adminEmail === "s.jalilifard@euroslotpars.com" ||
+          adminEmail === "saeed@euroslotpars.com";
         const assignedRole: UserRole =
           isSaeed || currentUser.role === "superadmin"
             ? "superadmin"
             : currentUser.role || "admin";
 
         const foundIdx = userList.findIndex((item) => {
+          if (currentUser.id && item.id === currentUser.id) return true;
           if (adminEmail && item.email?.toLowerCase() === adminEmail) return true;
-          if (
-            currentUser.id &&
-            (item.id === currentUser.id ||
-              (isSaeed && (item.id === "u-saeed" || item.id === "usr_9801")))
-          )
-            return true;
-          if (
-            isSaeed &&
-            item.email &&
-            (item.email.includes("jalili") ||
-              item.email === "s.jalili@euroslotpars.com" ||
-              item.email === "saeed@euroslotpars.com") &&
-            !item.email.includes("saeedkhani")
-          )
-            return true;
           return false;
         });
 
@@ -353,32 +336,13 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         userList = [...userList, shafieeAsUser];
       }
 
-      // Deduplicate Saeed Jalili
+      // Strict unique user deduplication by canonical user.id
       const seenIds = new Set<string>();
-      const seenEmails = new Set<string>();
       userList = userList.filter((item) => {
-        const idKey = (item.id || "").toLowerCase();
-        const rawEmail = (item.email || "").toLowerCase();
-        const isItemSaeed =
-          (idKey === "u-saeed" ||
-            idKey === "usr_9801" ||
-            rawEmail.includes("jalili") ||
-            rawEmail === "s.jalili@euroslotpars.com" ||
-            rawEmail === "saeed@euroslotpars.com") &&
-          !rawEmail.includes("saeedkhani") &&
-          idKey !== "u-msaeedkhani";
-
-        if (isItemSaeed) {
-          if (seenIds.has("saeed_canonical")) return false;
-          seenIds.add("saeed_canonical");
-          return true;
-        }
-
-        if (idKey && seenIds.has(idKey)) return false;
-        if (rawEmail && seenEmails.has(rawEmail)) return false;
-
-        if (idKey) seenIds.add(idKey);
-        if (rawEmail) seenEmails.add(rawEmail);
+        if (!item || !item.id) return false;
+        const idKey = item.id.toLowerCase().trim();
+        if (seenIds.has(idKey)) return false;
+        seenIds.add(idKey);
         return true;
       });
 
@@ -429,30 +393,15 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   // Real-time presence poller
   useEffect(() => {
-    const isSaeed = (u?: { id?: string; email?: string } | null) => {
-      if (!u) return false;
-      const uid = String(u.id || "").toLowerCase();
-      const uemail = String(u.email || "").toLowerCase();
-      if (uid === "u-msaeedkhani" || uemail.includes("saeedkhani")) return false;
-      return (
-        uid === "u-saeed" ||
-        uid === "usr_9801" ||
-        uemail.includes("jalili") ||
-        uemail === "s.jalili@euroslotpars.com" ||
-        uemail === "saeed@euroslotpars.com"
-      );
-    };
-
     const isCurrentMatch = (u?: { id?: string; email?: string } | null) => {
       if (!u || !currentUser) return false;
-      if (u.id && currentUser.id && u.id === currentUser.id) return true;
+      if (u.id && currentUser.id && u.id.toLowerCase() === currentUser.id.toLowerCase()) return true;
       if (
         u.email &&
         currentUser.email &&
         u.email.toLowerCase() === currentUser.email.toLowerCase()
       )
         return true;
-      if (isSaeed(u) && isSaeed(currentUser)) return true;
       return false;
     };
 
@@ -475,16 +424,12 @@ export function AdminProvider({ children }: { children: ReactNode }) {
               presenceMap[existing.id] ||
               presenceMap[uidLower] ||
               presenceMap[emailLower] ||
-              (isSaeed(existing)
-                ? presenceMap["u-saeed"] || presenceMap["usr_9801"]
-                : null);
+              null;
 
             const isOnline = isCurrent
               ? true
               : onlineSet.has(uidLower) ||
                 onlineSet.has(emailLower) ||
-                (isSaeed(existing) &&
-                  (onlineSet.has("u-saeed") || onlineSet.has("usr_9801"))) ||
                 Boolean(pInfo?.isOnline || pInfo?.status === "online");
 
             return {
@@ -712,14 +657,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
           prev.map((u) => (u.id === userId ? { ...u, ...mergedUser } : u))
         );
 
-        if (
-          currentUser &&
-          (currentUser.id === userId ||
-            (currentUser.email &&
-              mergedUser.email &&
-              currentUser.email.toLowerCase() ===
-                mergedUser.email.toLowerCase()))
-        ) {
+        if (currentUser && currentUser.id === userId) {
           const computedFullNameFa =
             mergedUser.fullNameFa ||
             (mergedUser.firstNameFa && mergedUser.lastNameFa
@@ -731,15 +669,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
               ? `${mergedUser.firstName} ${mergedUser.lastName}`
               : mergedUser.name);
 
-          const isSaeed = Boolean(
-            (currentUser.email &&
-              (currentUser.email.includes("jalili") ||
-                currentUser.email === "s.jalili@euroslotpars.com" ||
-                currentUser.email === "saeed@euroslotpars.com") &&
-              !currentUser.email.includes("saeedkhani")) ||
-              currentUser.id === "u-saeed" ||
-              userId === "u-saeed"
-          );
+          const isSaeed = currentUser.id === "u-saeed";
           const resolvedRole: UserRole =
             isSaeed || currentUser.role === "superadmin"
               ? "superadmin"
