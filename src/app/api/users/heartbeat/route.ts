@@ -28,6 +28,13 @@ export async function POST(req: NextRequest) {
         const data = await remoteRes.json();
         return NextResponse.json(data);
       }
+
+      if (remoteRes.status === 401) {
+        return NextResponse.json(
+          { error: "Unauthorized", detail: "نشست کاربر منقضی یا باطل شده است.", revoked: true },
+          { status: 401 }
+        );
+      }
     } catch {
       // Backend temporarily unreachable
     }
