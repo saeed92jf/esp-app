@@ -9,7 +9,9 @@ export type AccountStatus =
   | 'pending_manager'
   | 'pending_approval'
   | 'active'
-  | 'rejected';
+  | 'rejected'
+  | 'inactive'
+  | 'suspended';
 
 export type DocumentCategory =
   | 'national_card_front'

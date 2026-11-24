@@ -9,7 +9,7 @@ export interface UserModuleAccess {
   usagePercentage?: number;
 }
 
-export type AccountStatus = 'pending_profile' | 'pending_approval' | 'active' | 'rejected';
+export type AccountStatus = 'pending_profile' | 'pending_approval' | 'active' | 'rejected' | 'inactive' | 'suspended';
 
 export interface User {
   id: string;
@@ -22,12 +22,16 @@ export interface User {
   fullName?: string;
   email: string;
   role: UserRole;
-  status: 'online' | 'offline';
+  status: 'online' | 'offline' | 'active' | 'inactive' | string;
   isOnline?: boolean;
   lastSeenAt?: string;
   lastActiveAt?: string;
   onlineSince?: string;
   accountStatus?: AccountStatus;
+  employmentStatus?: string;
+  gender?: 'male' | 'female' | 'آقا' | 'خانم' | string;
+  militaryStatus?: string;
+  createdAt?: string;
   avatar?: string;
   avatarColor?: string;
   avatarBgColor?: string;
@@ -66,9 +70,9 @@ export interface User {
   jobTitle?: string;
   jobTitleEn?: string;
   age?: number;
-  maritalStatus?: 'single' | 'married';
+  maritalStatus?: 'single' | 'married' | 'مجرد' | 'متاهل' | string;
   childrenCount?: number;
-  insuranceType?: 'none' | 'socialSecurity' | 'complementary';
+  insuranceType?: 'none' | 'socialSecurity' | 'complementary' | string;
   recentActivities?: { id: string; title: string; date: string; status: 'pending' | 'approved' | 'rejected'; grade?: number }[];
   checklists?: { id: string; title: string; completed: boolean }[];
   skills?: { name: string; rate: number }[];
@@ -234,7 +238,7 @@ export interface PendingRequest {
   lastName?: string;
   birthDate?: string;
   address?: string;
-  maritalStatus?: 'single' | 'married';
+  maritalStatus?: 'single' | 'married' | 'مجرد' | 'متاهل' | string;
   childrenCount?: number;
   phoneVerified?: boolean;
 

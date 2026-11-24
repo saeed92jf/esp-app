@@ -23,5 +23,10 @@ export {
 } from "./context/AdminContext";
 export { useAdmin } from "./hooks/useAdmin";
 
+export { AdminExecutiveDashboard } from "./components/AdminExecutiveDashboard";
+export { AdminExecutiveDashboardWrapper } from "./components/AdminExecutiveDashboardWrapper";
+export { AdminQuickUserModal } from "./components/AdminQuickUserModal";
+export * from "./data/esp-master-lists";
+
 // Types
 export * from "./types/admin.types";

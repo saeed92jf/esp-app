@@ -3,6 +3,7 @@
 import React from "react";
 import {
   Briefcase,
+  BarChart3,
   TableProperties,
   Users,
   ShieldAlert,
@@ -37,6 +38,14 @@ export const ADMIN_NAV_ITEMS = [
     exact: true,
     icon: Briefcase,
     labelKey: "userInfo",
+    superAdminOnly: false,
+  },
+  {
+    id: "executiveDashboard" as const,
+    href: "/admin/dashboard",
+    exact: false,
+    icon: BarChart3,
+    labelKey: "executiveDashboard",
     superAdminOnly: false,
   },
   {
@@ -161,7 +170,11 @@ export function AdminSidebar({
               const isActive = activeTab ? activeTab === item.id : isRouteActive;
 
               const label =
-                item.id === "auditLogs"
+                item.id === "executiveDashboard"
+                  ? locale === "fa"
+                    ? "داشبورد مدیریتی"
+                    : "Executive Dashboard"
+                  : item.id === "auditLogs"
                   ? locale === "fa"
                     ? "لاگ‌های سیستم"
                     : "Audit Logs"

@@ -20,7 +20,7 @@ import {
   TableProperties, Mail, Phone, 
   FolderKanban, Award, Filter,
   ArrowUp, ArrowDown, ArrowUpDown, Check, RotateCcw,
-  AlertCircle, KeyRound, Edit2, ShieldCheck, UserCheck, UserCog,
+  AlertCircle, KeyRound, Edit2, ShieldCheck, UserCheck, UserCog, UserX, UserPlus,
   Building, Calendar, Users,
   Building2, Briefcase, DollarSign, Clock, MapPin,
   Heart, Shield, Layers, Trash2, Lock, Sparkles, Loader2, Send,
@@ -41,6 +41,8 @@ import { addUserNotification } from "@/modules/dashboard/services/dashboard.serv
 import { resolveDegreeLabel } from "@/config/profile-options";
 import { exportPersonnelToExcel, exportPersonnelToJson } from "../utils/personnel-excel";
 import { AdminPersonnelImportModal } from "./AdminPersonnelImportModal";
+import { AdminQuickUserModal } from "./AdminQuickUserModal";
+import { AdminUserDossierPanel } from "./AdminUserDossierPanel";
 
 interface AdminUsersTableProps {
   users: User[];
@@ -405,6 +407,9 @@ export function AdminUsersTable({
   // Track clicked user row to display action icons tray on click (instead of hover)
   const [openTrayUserId, setOpenTrayUserId] = useState<string | null>(null);
 
+  // Quick User Creation Modal State
+  const [isQuickUserModalOpen, setIsQuickUserModalOpen] = useState(false);
+
   // State for Password Change accordion
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -677,11 +682,16 @@ export function AdminUsersTable({
         if (!colFilters.workingFormats.includes(primaryFocus)) return false;
       }
 
-      // 9. Column 9: Status (Accurate live presence evaluation)
+      // 9. Column 9: Status (Active, Inactive, Online, Offline evaluation)
       if (colFilters.statuses.length > 0) {
         const isCurrent = checkIsCurrentUser(user);
-        const effectiveStatus = (isCurrent || user.status === 'online' || Boolean(user.isOnline)) ? 'online' : 'offline';
-        if (!colFilters.statuses.includes(effectiveStatus)) return false;
+        const isInactive = user.accountStatus === 'inactive' || user.employmentStatus === 'قطع همکاری';
+        const isOnline = isCurrent || user.status === 'online' || Boolean(user.isOnline);
+        const presence = isOnline ? 'online' : 'offline';
+        const empStatus = isInactive ? 'inactive' : 'active';
+
+        const matches = colFilters.statuses.includes(empStatus) || colFilters.statuses.includes(presence);
+        if (!matches) return false;
       }
 
       return true;
@@ -955,45 +965,79 @@ export function AdminUsersTable({
     }
   };
 
-  // Delete user with explicit warning dialog
-  const handleDeleteUser = (targetUser: User) => {
+  // Deactivation / Terminate Collaboration (قطع همکاری) or Reactivation (فعال‌سازی مجدد)
+  const handleToggleEmploymentStatus = (targetUser: User) => {
     const isTargetSaeed = targetUser.id === 'u-saeed' || (targetUser.email && targetUser.email.toLowerCase().includes('jalili'));
     if (targetUser.role === 'superadmin' || isTargetSaeed) {
-      toast.error(isRtl ? "امکان حذف حساب کاربری مدیر ارشد سیستم وجود ندارد." : "Cannot delete Super Admin account.");
+      toast.error(isRtl ? "امکان تغییر وضعیت حساب کاربری مدیر ارشد سیستم وجود ندارد." : "Cannot deactivate Super Admin account.");
       return;
     }
 
-    confirm({
-      title: isRtl ? `حذف کامل کاربر «${formatPersonName(targetUser.name, locale)}»` : `Delete User "${formatPersonName(targetUser.name, locale)}"`,
-      description: isRtl
-        ? `هشدار حذف اطلاعات: آیا از حذف کامل حساب کاربری «${formatPersonName(targetUser.name, locale)}» و تمام اطلاعات پروفایل، مدارک، سوابق و دسترسی‌های وی اطمینان دارید؟ این عملیات دائمی بوده و اطلاعات قابل بازیابی نخواهند بود.`
-        : `Data Deletion Warning: Are you sure you want to completely delete "${formatPersonName(targetUser.name, locale)}" along with all profile data, documents, and permissions? This action is permanent and cannot be undone.`,
-      confirmText: isRtl ? "حذف کامل و دائمی" : "Delete Permanently",
-      cancelText: isRtl ? "انصراف" : "Cancel",
-      variant: "destructive",
-      onConfirm: async () => {
-        try {
-          await api.admin.deleteUser(targetUser.id);
-          setUsers((prev: User[]) => prev.filter((u: User) => u.id !== targetUser.id));
-          if (selectedUser?.id === targetUser.id) {
-            setSelectedUser(null);
+    const isCurrentlyActive = targetUser.accountStatus === 'active' || targetUser.status === 'active' || targetUser.employmentStatus === 'فعال';
+
+    if (isCurrentlyActive) {
+      confirm({
+        title: isRtl ? `ثبت قطع همکاری با «${formatPersonName(targetUser.name, locale)}»` : `Terminate Collaboration with "${formatPersonName(targetUser.name, locale)}"`,
+        description: isRtl
+          ? `آیا از تغییر وضعیت حساب کاربری «${formatPersonName(targetUser.name, locale)}» به حالت «غیرفعال (قطع همکاری)» اطمینان دارید؟ با این اقدام، دسترسی کاربر به سیستم مسدود گردیده اما کلیه اطلاعات، پرونده و سوابق وی در پایگاه داده جهت مراجعات قانونی و اداری حفظ خواهند شد.`
+          : `Are you sure you want to deactivate "${formatPersonName(targetUser.name, locale)}"? System access will be revoked while preserving all profile records and documents.`,
+        confirmText: isRtl ? "ثبت قطع همکاری" : "Deactivate / Terminate",
+        cancelText: isRtl ? "انصراف" : "Cancel",
+        variant: "destructive",
+        onConfirm: async () => {
+          try {
+            const updates: Partial<User> = {
+              accountStatus: 'inactive' as any,
+              status: 'offline',
+              employmentStatus: 'قطع همکاری',
+            };
+            await api.admin.updateUser(targetUser.id, updates);
+            setUsers((prev: User[]) => prev.map((u: User) => u.id === targetUser.id ? { ...u, ...updates } : u));
+            if (selectedUser?.id === targetUser.id) {
+              setSelectedUser({ ...selectedUser, ...updates });
+            }
+            toast.success(
+              isRtl
+                ? `وضعیت حساب «${formatPersonName(targetUser.name, locale)}» با موفقیت به «غیرفعال (قطع همکاری)» تغییر یافت.`
+                : `User "${formatPersonName(targetUser.name, locale)}" deactivated successfully.`
+            );
+          } catch (err: any) {
+            toast.error(err?.message || (isRtl ? "خطا در ثبت قطع همکاری" : "Failed to deactivate user"));
           }
-          if (openTrayUserId === targetUser.id) {
-            setOpenTrayUserId(null);
+        },
+      });
+    } else {
+      confirm({
+        title: isRtl ? `فعال‌سازی مجدد حساب «${formatPersonName(targetUser.name, locale)}»` : `Reactivate Account for "${formatPersonName(targetUser.name, locale)}"`,
+        description: isRtl
+          ? `آیا مایل به فعال‌سازی مجدد حساب کاربری «${formatPersonName(targetUser.name, locale)}» و برقراری مجدد دسترسی‌های سیستم هستید؟`
+          : `Do you want to reactivate "${formatPersonName(targetUser.name, locale)}" account and restore system permissions?`,
+        confirmText: isRtl ? "فعال‌سازی حساب" : "Reactivate",
+        cancelText: isRtl ? "انصراف" : "Cancel",
+        variant: "default",
+        onConfirm: async () => {
+          try {
+            const updates: Partial<User> = {
+              accountStatus: 'active' as any,
+              status: 'offline',
+              employmentStatus: 'فعال',
+            };
+            await api.admin.updateUser(targetUser.id, updates);
+            setUsers((prev: User[]) => prev.map((u: User) => u.id === targetUser.id ? { ...u, ...updates } : u));
+            if (selectedUser?.id === targetUser.id) {
+              setSelectedUser({ ...selectedUser, ...updates });
+            }
+            toast.success(
+              isRtl
+                ? `حساب کاربری «${formatPersonName(targetUser.name, locale)}» با موفقیت فعال شد.`
+                : `User "${formatPersonName(targetUser.name, locale)}" reactivated successfully.`
+            );
+          } catch (err: any) {
+            toast.error(err?.message || (isRtl ? "خطا در فعال‌سازی کاربر" : "Failed to reactivate user"));
           }
-          if (activeAccordion?.userId === targetUser.id) {
-            setActiveAccordion(null);
-          }
-          toast.success(
-            isRtl
-              ? `حساب کاربری «${formatPersonName(targetUser.name, locale)}» با موفقیت حذف گردید.`
-              : `User "${formatPersonName(targetUser.name, locale)}" successfully deleted.`
-          );
-        } catch (err: any) {
-          toast.error(err?.message || (isRtl ? "خطا در حذف کاربر" : "Failed to delete user"));
-        }
-      },
-    });
+        },
+      });
+    }
   };
 
   // Toggle user module access directly from table accordion
@@ -1456,6 +1500,19 @@ export function AdminUsersTable({
             </PopoverContent>
           </Popover>
 
+          {/* Quick Add User Button */}
+          {canEditModuleAccess && (
+            <Button
+              size="sm"
+              onClick={() => setIsQuickUserModalOpen(true)}
+              className="h-9 px-3.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold gap-1.5 shadow-sm transition-all cursor-pointer"
+              title={isRtl ? "افزودن و تعریف کاربر جدید" : "Add New User"}
+            >
+              <UserPlus className="size-3.5" />
+              <span>{isRtl ? "افزودن کاربر جدید" : "Add User"}</span>
+            </Button>
+          )}
+
           {/* Import Button */}
           <Button
             variant="outline"
@@ -1751,6 +1808,8 @@ export function AdminUsersTable({
                   <div className="flex flex-col gap-1.5">
                     <span className="font-semibold text-foreground/80 text-[10px]">{t("filterValues")}</span>
                     {[
+                      { key: 'active', label: isRtl ? "شاغل (فعال)" : "Active Staff", dot: "bg-emerald-500" },
+                      { key: 'inactive', label: isRtl ? "قطع همکاری (غیرفعال)" : "Terminated / Inactive", dot: "bg-rose-500" },
                       { key: 'online', label: t("online"), dot: "bg-emerald-500" },
                       { key: 'offline', label: t("offline"), dot: "bg-slate-400" }
                     ].map(item => (
@@ -2046,9 +2105,24 @@ export function AdminUsersTable({
                         </div>
                       </td>
 
-                      {/* Column 8: Status (تشخیص آنلاین بودن فوق‌حرفه‌ای و زنده) */}
+                      {/* Column 8: Status (وضعیت اشتغال / قطع همکاری و آنلاین بودن) */}
                       <td className="py-3 px-3.5 text-start align-middle">
                         {(() => {
+                          const isInactive = user.accountStatus === 'inactive' || user.employmentStatus === 'قطع همکاری';
+                          if (isInactive) {
+                            return (
+                              <div className="flex items-center">
+                                <span
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 select-none shadow-2xs"
+                                  title={isRtl ? "پرسنل غیرفعال / خاتمه همکاری" : "Terminated / Inactive Staff"}
+                                >
+                                  <span className="size-2 rounded-full bg-rose-500 shrink-0" />
+                                  <span>{isRtl ? "قطع همکاری" : "Inactive"}</span>
+                                </span>
+                              </div>
+                            );
+                          }
+
                           const isCurrent = checkIsCurrentUser(user);
                           const isOnline = isCurrent || user.status === 'online' || Boolean(user.isOnline);
 
@@ -2119,295 +2193,19 @@ export function AdminUsersTable({
                                 activeType={activeAccordion.type}
                                 isRtl={isRtl}
                               >
-                                {/* ── Mode A: View Details (اطلاعات کامل و جامع کاربر) ── */}
-                                {activeAccordion.type === 'view' && (() => {
-                                  const comp = getCompanyFromEmail(user.email);
-                                  return (
-                                    <div className="flex flex-col gap-3.5">
-                                      {/* Top Header Bar */}
-                                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
-                                        <div className="flex items-center gap-3">
-                                          {user.avatar || (user as any).photoUrl || (user as any).imageUrl ? (
-                                            <img
-                                              src={user.avatar || (user as any).photoUrl || (user as any).imageUrl}
-                                              alt={user.name || "User"}
-                                              className="size-10 rounded-2xl object-cover shrink-0 shadow-xs border border-border/50"
-                                            />
-                                          ) : (
-                                            <div 
-                                              className="size-10 rounded-2xl flex items-center justify-center font-medium text-sm text-white shrink-0 shadow-xs"
-                                              style={{ backgroundColor: user.avatarColor || '#0284c7' }}
-                                            >
-                                              {user.name ? user.name.slice(0, 2) : "US"}
-                                            </div>
-                                          )}
-                                          <div className="flex flex-col">
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                              <h4 className="text-sm font-medium text-foreground">
-                                                {user.name}
-                                              </h4>
-                                              <Badge variant="outline" className="text-[10px] h-5 font-mono bg-muted/60 text-muted-foreground border-border/50">
-                                                #{user.id}
-                                              </Badge>
-                                              <Badge 
-                                                variant="secondary"
-                                                className={cn(
-                                                  "text-[10px] h-5 font-medium whitespace-nowrap",
-                                                  comp.id === "npceram"
-                                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20"
-                                                    : comp.id === "holding"
-                                                    ? "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20"
-                                                    : "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20"
-                                                )}
-                                              >
-                                                {isRtl ? comp.nameFa : comp.nameEn}
-                                              </Badge>
-                                              <Badge 
-                                                variant="secondary"
-                                                className={cn(
-                                                  "text-[10px] h-5 font-semibold",
-                                                  user.role === 'superadmin'
-                                                    ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/35 font-bold"
-                                                  : user.role === 'admin'
-                                                    ? "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/35 font-bold"
-                                                  : user.role === 'dept_admin'
-                                                    ? "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/25"
-                                                  : user.role === 'office_admin'
-                                                    ? "bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/25"
-                                                    : user.role === 'manager'
-                                                    ? "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/25"
-                                                    : user.role === 'engineer'
-                                                    ? "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/25"
-                                                    : user.role === 'staff'
-                                                    ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25"
-                                                    : user.role === 'customer'
-                                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/25"
-                                                    : "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/25"
-                                                )}
-                                              >
-                                                {getRoleLabel(user.role)}
-                                              </Badge>
-                                              {(() => {
-                                                const isCurrent = checkIsCurrentUser(user);
-                                                const isOnline = isCurrent || user.status === 'online' || Boolean(user.isOnline);
-
-                                                return (
-                                                  <span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                                                    {isOnline ? (
-                                                      <>
-                                                        <span className="relative flex size-2 shrink-0">
-                                                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                                                          <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
-                                                        </span>
-                                                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">{t("online")}</span>
-                                                        <span className="text-[10px] text-muted-foreground/80 fa-num">({formatOnlineDuration(user.onlineSince || user.lastSeenAt, isRtl)})</span>
-                                                      </>
-                                                    ) : (
-                                                      <>
-                                                        <span className="size-2 rounded-full bg-slate-400 shrink-0" />
-                                                        <span>{t("offline")}</span>
-                                                        {user.lastSeenAt && (
-                                                          <span className="text-[9px] text-muted-foreground/80">
-                                                            ({formatLastSeen(user.lastSeenAt, isRtl)})
-                                                          </span>
-                                                        )}
-                                                      </>
-                                                    )}
-                                                  </span>
-                                                );
-                                              })()}
-                                            </div>
-                                            <p className="text-[11px] text-muted-foreground mt-0.5 truncate" dir="ltr">
-                                              {user.email}
-                                            </p>
-                                          </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-1.5 self-end sm:self-center">
-                                          <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleCreateEditRequest(user)}
-                                            disabled={creatingReqUserId === user.id}
-                                            className={cn(
-                                              "h-8 px-2.5 rounded-xl flex items-center gap-1.5 text-xs font-semibold cursor-pointer transition-all shadow-2xs",
-                                              "bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/25",
-                                              creatingReqUserId === user.id && "opacity-70 pointer-events-none"
-                                            )}
-                                            title={isRtl ? "ویرایش مشخصات کاربر" : "Edit User Profile"}
-                                            aria-label={isRtl ? "ویرایش مشخصات کاربر" : "Edit User Profile"}
-                                          >
-                                            {creatingReqUserId === user.id ? (
-                                              <RotateCw className="size-3.5 animate-spin" />
-                                            ) : (
-                                              <Edit2 className="size-3.5" />
-                                            )}
-                                            <span className="hidden sm:inline">{isRtl ? "ویرایش" : "Edit"}</span>
-                                          </Button>
-                                          <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon-sm"
-                                            onClick={() => handleSelectAndGoHome(user)}
-                                            className="size-8 rounded-xl flex items-center justify-center text-primary bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer"
-                                            title={t("viewInDashboard")}
-                                            aria-label={t("viewInDashboard")}
-                                          >
-                                            <LayoutDashboard size={14} className="shrink-0" />
-                                          </Button>
-                                          <Button 
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon-xs"
-                                            onClick={() => setActiveAccordion(null)}
-                                            className="size-7 text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
-                                            title={t("cancel")}
-                                            aria-label={t("cancel")}
-                                          >
-                                            <X size={15} />
-                                          </Button>
-                                        </div>
-                                      </div>
-
-                                      {/* 4 Clean Dossier Cards */}
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                                        {/* Card 1: Identity & Contact */}
-                                        <div className="flex flex-col p-3 rounded-2xl bg-background/70 dark:bg-slate-800/60 border border-border/50 shadow-xs">
-                                          <div className="pb-2 mb-2 border-b border-border/40">
-                                            <span className="font-medium text-xs text-foreground/80">{t("identityInfo")}</span>
-                                          </div>
-                                          <div className="space-y-2">
-                                            <div>
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("nationalIdLabel")}</span>
-                                              <span className="font-normal text-foreground fa-num">{user.nationalId || "0012345678"}</span>
-                                            </div>
-                                            <div>
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("phoneLabel")}</span>
-                                              <span className="font-normal text-foreground fa-num" dir="ltr">{user.phone || "09120000000"}</span>
-                                            </div>
-                                            <div>
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("email")}</span>
-                                              <span className="font-normal text-foreground/90 truncate block text-[11px]" dir="ltr">{user.email}</span>
-                                            </div>
-                                          </div>
-                                        </div>
-
-                                        {/* Card 2: Organization & Position */}
-                                        <div className="flex flex-col p-3 rounded-2xl bg-background/70 dark:bg-slate-800/60 border border-border/50 shadow-xs">
-                                          <div className="pb-2 mb-2 border-b border-border/40">
-                                            <span className="font-medium text-xs text-foreground/80">{t("orgInfo")}</span>
-                                          </div>
-                                          <div className="space-y-2">
-                                            <div>
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("department")}</span>
-                                              <span className="font-normal text-foreground truncate block">
-                                                {t.has(`departments.${user.department}`) ? t(`departments.${user.department}`) : user.department}
-                                              </span>
-                                            </div>
-                                            <div>
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("jobTitle")}</span>
-                                              <span className="font-normal text-foreground truncate block">{user.jobTitle || t("unspecified")}</span>
-                                            </div>
-                                            <div>
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("workLocationLabel")}</span>
-                                              <span className="font-normal text-foreground">
-                                                {user.workLocation === 'factory' ? t("workLocationFactory") : user.workLocation === 'remote' ? t("workLocationRemote") : t("workLocationOffice")}
-                                              </span>
-                                            </div>
-                                            <div>
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("managerDirectLabel")}</span>
-                                              <span className="font-normal text-foreground truncate block">{user.manager || t("unspecified")}</span>
-                                            </div>
-                                            <div>
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("directSubordinatesTitle")}</span>
-                                              <span className="font-normal text-foreground truncate block fa-num">
-                                                {(() => {
-                                                  const directReports = users.filter((u) => 
-                                                    (user.subordinates && user.subordinates.includes(u.id)) ||
-                                                    (u.manager && (u.manager.includes(user.name) || (user.employeeId && u.manager.includes(user.employeeId))))
-                                                  );
-                                                  if (directReports.length === 0) {
-                                                    return <span className="text-muted-foreground">{isRtl ? "فاقد پرسنل زیردست" : "No direct reports"}</span>;
-                                                  }
-                                                  return (
-                                                    <span className="text-primary font-semibold">
-                                                      {directReports.length} {isRtl ? "نفر تحت امر" : "reports"}
-                                                      {" ("}
-                                                      {directReports.slice(0, 2).map(r => r.name).join("، ")}
-                                                      {directReports.length > 2 ? "..." : ""}
-                                                      {")"}
-                                                    </span>
-                                                  );
-                                                })()}
-                                              </span>
-                                            </div>
-                                          </div>
-                                        </div>
-
-                                        {/* Card 3: Performance, Tenure & Salary */}
-                                        <div className="flex flex-col p-3 rounded-2xl bg-background/70 dark:bg-slate-800/60 border border-border/50 shadow-xs">
-                                          <div className="pb-2 mb-2 border-b border-border/40">
-                                            <span className="font-medium text-xs text-foreground/80">{t("statsInfo")}</span>
-                                          </div>
-                                          <div className="space-y-2">
-                                            <div className="flex items-center justify-between">
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal">{t("tenureCol")}</span>
-                                              <span className="font-normal text-foreground fa-num">
-                                                {user.daysInCompany || 0} {t("daysUnit")}
-                                              </span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal">{t("projectsCol")}</span>
-                                              <span className="font-normal text-foreground fa-num">
-                                                {user.doneProjects || 0}
-                                              </span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal">{t("score")}</span>
-                                              <span className="font-normal text-emerald-600 dark:text-emerald-400 fa-num">
-                                                {user.score || 90} / 100
-                                              </span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal">{t("salary")}</span>
-                                              <span className="font-normal text-foreground fa-num">
-                                                {(user.salary || 0).toLocaleString()} {isRtl ? "ریال" : "IRR"}
-                                              </span>
-                                            </div>
-                                          </div>
-                                        </div>
-
-                                        {/* Card 4: Personal, Education & Insurance */}
-                                        <div className="flex flex-col p-3 rounded-2xl bg-background/70 dark:bg-slate-800/60 border border-border/50 shadow-xs">
-                                          <div className="pb-2 mb-2 border-b border-border/40">
-                                            <span className="font-medium text-xs text-foreground/80">{t("personalInfo")}</span>
-                                          </div>
-                                          <div className="space-y-2">
-                                            <div>
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("userAge")} / {t("maritalStatus")}</span>
-                                              <span className="font-normal text-foreground fa-num">
-                                                {user.age || 32} {t("daysUnit") === "روز" ? "سال" : "yrs"} • {user.maritalStatus === 'married' ? t("married") : t("single")} ({user.childrenCount ?? 0} {t("child")})
-                                              </span>
-                                            </div>
-                                            <div>
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("insuranceTypeLabel")}</span>
-                                              <span className="font-normal text-foreground">
-                                                {user.insuranceType === 'complementary' ? t("insuranceOptions.complementary") : user.insuranceType === 'none' ? t("insuranceOptions.none") : t("insuranceOptions.socialSecurity")}
-                                              </span>
-                                            </div>
-                                            <div>
-                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("education")}</span>
-                                              <span className="font-normal text-foreground truncate block">
-                                                {user.educationDegree || t("degreesOptions.master")} - {user.educationField || user.education || t("defaultEducationField")}
-                                              </span>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  );
-                                })()}
+                                {/* ── Mode A: Categorized View & Edit Dossier with Icon Tabs & Comboboxes ── */}
+                                {activeAccordion.type === 'view' && (
+                                  <AdminUserDossierPanel
+                                    user={user}
+                                    onUserUpdated={(updatedUser) => {
+                                      setUsers((prev) => prev.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
+                                      if (selectedUser?.id === updatedUser.id) {
+                                        setSelectedUser(updatedUser);
+                                      }
+                                    }}
+                                    onClose={() => setActiveAccordion(null)}
+                                  />
+                                )}
 
                                 {/* ── Mode B: Change Password & Resend Credentials (تغییر رمز عبور و ارسال رمز فعلی) ── */}
                                 {activeAccordion.type === 'password' && (
@@ -3497,20 +3295,37 @@ export function AdminUsersTable({
                                   </Button>
                                 )}
 
-                                {/* 5. Delete User (حذف کامل کاربر با پیام هشدار حذف اطلاعات، فقط ادمین‌ها) */}
-                                {canEditModuleAccess && (
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="xs"
-                                    onClick={() => handleDeleteUser(user)}
-                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 h-auto"
-                                    title={isRtl ? "حذف کاربر" : "Delete User"}
-                                  >
-                                    <Trash2 size={13} className="shrink-0" />
-                                    <span className="hidden sm:inline">{isRtl ? "حذف کاربر" : "Delete User"}</span>
-                                  </Button>
-                                )}
+                                {/* 5. Deactivation / Terminate Collaboration or Reactivation (قطع همکاری / فعال‌سازی مجدد) */}
+                                {canEditModuleAccess && (() => {
+                                  const isCurrentlyActive = user.accountStatus === 'active' || user.status === 'active' || user.employmentStatus === 'فعال';
+                                  return (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="xs"
+                                      onClick={() => handleToggleEmploymentStatus(user)}
+                                      className={cn(
+                                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer h-auto",
+                                        isCurrentlyActive
+                                          ? "text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10"
+                                          : "text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-500/10"
+                                      )}
+                                      title={isCurrentlyActive ? (isRtl ? "قطع همکاری (غیرفعال‌سازی)" : "Terminate Collaboration") : (isRtl ? "فعال‌سازی مجدد" : "Reactivate")}
+                                    >
+                                      {isCurrentlyActive ? (
+                                        <>
+                                          <UserX size={13} className="shrink-0 text-rose-500" />
+                                          <span className="hidden sm:inline">{isRtl ? "قطع همکاری" : "Deactivate"}</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <UserCheck size={13} className="shrink-0 text-emerald-500" />
+                                          <span className="hidden sm:inline">{isRtl ? "فعال‌سازی" : "Reactivate"}</span>
+                                        </>
+                                      )}
+                                    </Button>
+                                  );
+                                })()}
 
                                 <div className="h-3.5 w-px bg-border/40 mx-0.5 shrink-0" />
 
@@ -3650,6 +3465,18 @@ export function AdminUsersTable({
         existingUsers={users}
         onImportSuccess={(updatedUsers) => {
           setUsers(updatedUsers);
+          if (onRefresh) onRefresh();
+        }}
+      />
+
+      {/* Quick User Creation Modal */}
+      <AdminQuickUserModal
+        isOpen={isQuickUserModalOpen}
+        onClose={() => setIsQuickUserModalOpen(false)}
+        existingUsersCount={users.length}
+        onUserCreated={(newUser) => {
+          setUsers((prev) => [newUser, ...prev]);
+          setSelectedUser(newUser);
           if (onRefresh) onRefresh();
         }}
       />
