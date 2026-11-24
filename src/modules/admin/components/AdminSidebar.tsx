@@ -11,6 +11,7 @@ import {
   ScrollText,
   Settings,
   ShieldCheck,
+  Network,
 } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
@@ -46,6 +47,14 @@ export const ADMIN_NAV_ITEMS = [
     exact: false,
     icon: TableProperties,
     labelKey: "usersTable",
+    superAdminOnly: false,
+  },
+  {
+    id: "orgChart" as const,
+    href: "/admin/org-chart",
+    exact: false,
+    icon: Network,
+    labelKey: "orgChart",
     superAdminOnly: false,
   },
   {

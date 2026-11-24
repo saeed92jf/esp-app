@@ -379,7 +379,20 @@ export function createServerAdminUser(payload: Partial<User> & { password?: stri
 
   users.unshift(newUser);
   globalThis.__espServerAdminUsers = users;
+  persistAdminUsersToDisk(users);
   return newUser;
+}
+
+function persistAdminUsersToDisk(users: User[]) {
+  try {
+    const liveDir = "C:\\ESP_DATA\\live\\data";
+    const liveFile = path.join(liveDir, "admin_users.json");
+    if (fs.existsSync(liveDir)) {
+      fs.writeFileSync(liveFile, JSON.stringify(users, null, 2), "utf-8");
+    }
+  } catch (err) {
+    console.error("Failed to persist admin_users to disk:", err);
+  }
 }
 
 export function updateServerAdminUser(id: string, updates: Partial<User>): User | null {
@@ -396,7 +409,35 @@ export function updateServerAdminUser(id: string, updates: Partial<User>): User 
 
   users[index] = updated;
   globalThis.__espServerAdminUsers = users;
+  persistAdminUsersToDisk(users);
   return updated;
+}
+
+export function batchUpdateServerAdminUsers(
+  batch: Array<{ id: string; updates: Partial<User> }>
+): { updatedCount: number; updatedUsers: User[] } {
+  const users = globalThis.__espServerAdminUsers || [];
+  const updatedUsers: User[] = [];
+
+  for (const item of batch) {
+    const index = users.findIndex(
+      (u) => u.id === item.id || (u.email && item.id && u.email.toLowerCase() === item.id.toLowerCase())
+    );
+    if (index !== -1) {
+      const current = users[index];
+      const updated: User = {
+        ...current,
+        ...item.updates,
+        id: current.id,
+      };
+      users[index] = updated;
+      updatedUsers.push(updated);
+    }
+  }
+
+  globalThis.__espServerAdminUsers = users;
+  persistAdminUsersToDisk(users);
+  return { updatedCount: updatedUsers.length, updatedUsers };
 }
 
 export function updateServerUserModules(id: string, modules: UserModuleAccess[]): User | null {

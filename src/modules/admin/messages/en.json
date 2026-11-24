@@ -185,6 +185,7 @@
     "monthlySalary": "Monthly Salary",
     "statsAndPerformance": "Stats & Performance",
     "usersTable": "Users Table",
+    "orgChart": "Org Chart",
     "totalUsersCount": "Total Users: {count}",
     "searchUsersPlaceholder": "Search user by name, email, personnel code, title...",
     "allDepartments": "All Departments",

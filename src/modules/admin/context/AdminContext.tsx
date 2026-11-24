@@ -24,6 +24,7 @@ export type AdminTab =
   | "home"
   | "executiveDashboard"
   | "usersTable"
+  | "orgChart"
   | "add"
   | "requests"
   | "moduleRequests"
@@ -34,6 +35,7 @@ export const ADMIN_TAB_ROUTES: Record<AdminTab, string> = {
   home: "/admin",
   executiveDashboard: "/admin/dashboard",
   usersTable: "/admin/users",
+  orgChart: "/admin/org-chart",
   add: "/admin/config",
   requests: "/admin/requests",
   moduleRequests: "/admin/module-requests",
@@ -99,6 +101,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     if (!pathname) return "home";
     if (pathname.includes("/admin/dashboard")) return "executiveDashboard";
     if (pathname.includes("/admin/users")) return "usersTable";
+    if (pathname.includes("/admin/org-chart")) return "orgChart";
     if (pathname.includes("/admin/config")) return "add";
     if (pathname.includes("/admin/requests")) return "requests";
     if (pathname.includes("/admin/module-requests")) return "moduleRequests";

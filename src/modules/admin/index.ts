@@ -7,6 +7,7 @@ export { AdminDashboard } from "./components/AdminDashboard";
 // Section Components
 export { AdminOverviewSection } from "./components/sections/AdminOverviewSection";
 export { AdminUsersSection } from "./components/sections/AdminUsersSection";
+export { AdminOrgChartSection } from "./components/sections/AdminOrgChartSection";
 export { AdminConfigSection } from "./components/sections/AdminConfigSection";
 export { AdminRequestsSection } from "./components/sections/AdminRequestsSection";
 export { AdminModuleRequestsSection } from "./components/sections/AdminModuleRequestsSection";
@@ -25,6 +26,7 @@ export { useAdmin } from "./hooks/useAdmin";
 
 export { AdminExecutiveDashboard } from "./components/AdminExecutiveDashboard";
 export { AdminExecutiveDashboardWrapper } from "./components/AdminExecutiveDashboardWrapper";
+export { AdminOrgChart } from "./components/AdminOrgChart";
 export { AdminQuickUserModal } from "./components/AdminQuickUserModal";
 export * from "./data/esp-master-lists";
 
