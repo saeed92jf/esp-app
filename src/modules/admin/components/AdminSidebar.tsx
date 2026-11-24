@@ -89,14 +89,6 @@ export const ADMIN_NAV_ITEMS = [
     superAdminOnly: true,
   },
   {
-    id: "qualityGuardian" as const,
-    href: "/admin/quality-guardian",
-    exact: false,
-    icon: ShieldCheck,
-    labelKey: "qualityGuardian",
-    superAdminOnly: false,
-  },
-  {
     id: "settings" as const,
     href: "/admin/settings",
     exact: false,
@@ -178,10 +170,6 @@ export function AdminSidebar({
                   ? locale === "fa"
                     ? "لاگ‌های سیستم"
                     : "Audit Logs"
-                  : item.id === "qualityGuardian"
-                  ? locale === "fa"
-                    ? "مدیریت کیفیت و کد"
-                    : "Quality Guardian"
                   : t(item.labelKey);
 
               const linkElement = (

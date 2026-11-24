@@ -17,13 +17,7 @@
     "test:watch": "tsx scripts/test-scheduler.ts --watch",
     "test:schedule": "tsx scripts/test-scheduler.ts --schedule",
     "test:quick": "tsx scripts/test-scheduler.ts --quick",
-    "test:report": "playwright show-report test-results/playwright-report",
-    "guardian:scan": "tsx scripts/quality-guardian.ts --scan",
-    "guardian:scan:full": "tsx scripts/quality-guardian.ts --full",
-    "guardian:fix": "tsx scripts/quality-guardian.ts --fix",
-    "guardian:check": "tsx scripts/quality-guardian.ts --strict",
-    "guardian:overnight": "tsx scripts/quality-guardian.ts --overnight --interval=30 --fix",
-    "guardian:daemon": "tsx scripts/quality-guardian.ts --daemon --interval=30 --fix"
+    "test:report": "playwright show-report test-results/playwright-report"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",
