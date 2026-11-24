@@ -110,11 +110,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   const isSuperAdmin = useMemo(() => {
-    return (
-      currentUser?.role === "superadmin" ||
-      currentUser?.email?.toLowerCase().includes("jalili") ||
-      currentUser?.id === "u-saeed"
-    );
+    return currentUser?.role === "superadmin";
   }, [currentUser]);
 
   const isOfficeAdmin = useMemo(() => {
@@ -186,16 +182,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
           currentUser.name ||
           currentUser.fullName ||
           "سعید جلیلی فرد";
-        const isSaeed =
-          currentUser.id === "u-saeed" ||
-          currentUser.id === "usr_9801" ||
-          adminEmail === "s.jalili@euroslotpars.com" ||
-          adminEmail === "s.jalilifard@euroslotpars.com" ||
-          adminEmail === "saeed@euroslotpars.com";
         const assignedRole: UserRole =
-          isSaeed || currentUser.role === "superadmin"
+          currentUser.role === "superadmin"
             ? "superadmin"
-            : currentUser.role || "admin";
+            : (currentUser.role as UserRole) || "admin";
 
         const foundIdx = userList.findIndex((item) => {
           if (currentUser.id && item.id === currentUser.id) return true;
@@ -215,7 +205,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
             lastName:
               currentUser.fullName?.split(" ").slice(1).join(" ") ||
               "Jalili Fard",
-            email: currentUser.email || "s.jalilifard@euroslotpars.com",
+            email: currentUser.email || "",
             role: assignedRole,
             status: "online",
             accountStatus: "active",
@@ -225,7 +215,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
             avatarMode: currentUser.avatarMode || "photo",
             primaryColor: currentUser.primaryColor || "red",
             phone: currentUser.mobile || "09123456789",
-            nationalId: "0012345678",
+            nationalId: "",
             department: "engineering",
             jobTitle: isRtl ? "سوپر ادمین / مالک سیستم" : "Super Administrator",
             company: isRtl ? "یورو اسلات پارس" : "Euroslot Pars",
@@ -281,59 +271,6 @@ export function AdminProvider({ children }: { children: ReactNode }) {
               currentUser.primaryColor || userList[foundIdx].primaryColor,
           };
         }
-      }
-
-      // Ensure Morteza Shafiee is present
-      const shafieeIdx = userList.findIndex(
-        (item) =>
-          item.id === "u-shafiee" ||
-          item.email?.toLowerCase() === "mshafiee@euroslotpars.com"
-      );
-      if (shafieeIdx === -1) {
-        const shafieeAsUser: User = {
-          id: "u-shafiee",
-          name: "مرتضی شفیعی",
-          fullNameFa: "مرتضی شفیعی",
-          fullName: "Morteza Shafiee",
-          firstNameFa: "مرتضی",
-          lastNameFa: "شفیعی",
-          firstName: "Morteza",
-          lastName: "Shafiee",
-          email: "mshafiee@euroslotpars.com",
-          role: "admin",
-          status: "offline",
-          isOnline: false,
-          accountStatus: "active",
-          avatarColor: "#8b5cf6",
-          primaryColor: "purple",
-          avatarMode: "photo",
-          phone: "09123480872",
-          nationalId: "0000000000",
-          department: "engineering",
-          jobTitle: isRtl ? "مدیر فنی و مهندسی" : "Engineering Manager",
-          company: isRtl ? "یورواسلات پارس" : "Euroslot Pars",
-          companyId: "euroslot",
-          joinedAt: "1403/01/01",
-          daysInCompany: 300,
-          doneProjects: 15,
-          salary: 620000000,
-          hasOvertime: false,
-          maxOvertimeHours: 0,
-          workLocation: "office",
-          contractType: "full_time",
-          employeeId: "ESP-002",
-          extensionNumber: "125",
-          workingFormat: { office: 70, factory: 20, mission: 5, leave: 5 },
-          modulesAccess: [],
-          recentActivities: [],
-          checklists: [],
-          isProfileCompleted: true,
-          adminApproved: true,
-          managerApproved: true,
-          documents: [],
-          subordinates: [],
-        };
-        userList = [...userList, shafieeAsUser];
       }
 
       // Strict unique user deduplication by canonical user.id
@@ -623,11 +560,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
           currentUser &&
           (currentUser.id === userId || currentUser.email === updated.email)
         ) {
-          const isCurrentSaeed =
-            currentUser.id === "u-saeed" ||
-            (currentUser.email &&
-              currentUser.email.toLowerCase().includes("jalili"));
-          updateUserStore({ role: isCurrentSaeed ? "superadmin" : newRole });
+          const keepSuperAdmin = currentUser.role === "superadmin";
+          updateUserStore({ role: keepSuperAdmin ? "superadmin" : newRole });
         }
         toast.success(
           isRtl
@@ -669,11 +603,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
               ? `${mergedUser.firstName} ${mergedUser.lastName}`
               : mergedUser.name);
 
-          const isSaeed = currentUser.id === "u-saeed";
           const resolvedRole: UserRole =
-            isSaeed || currentUser.role === "superadmin"
+            currentUser.role === "superadmin"
               ? "superadmin"
-              : mergedUser.role || currentUser.role;
+              : (mergedUser.role as UserRole) || currentUser.role;
 
           updateUserStore({
             ...updates,

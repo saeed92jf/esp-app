@@ -3,6 +3,25 @@
 // Application roles used for routing and access decisions
 export type UserRole = 'superadmin' | 'admin' | 'dept_admin' | 'office_admin' | 'manager' | 'engineer' | 'staff' | 'customer' | 'user';
 
+export const ROLE_PRIORITY: Record<string, number> = {
+  superadmin: 100,
+  admin: 80,
+  dept_admin: 60,
+  office_admin: 55,
+  manager: 50,
+  engineer: 40,
+  staff: 30,
+  customer: 20,
+  user: 10,
+};
+
+/** Returns true if requesterRole has at least the same permissions as minRole */
+export function canAccess(requesterRole: string | undefined, minRole: string): boolean {
+  const rp = ROLE_PRIORITY[requesterRole || 'user'] ?? 0;
+  const mp = ROLE_PRIORITY[minRole] ?? 0;
+  return rp >= mp;
+}
+
 export type AccountStatus =
   | 'pending_initial'
   | 'pending_profile'

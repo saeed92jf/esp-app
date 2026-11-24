@@ -42,7 +42,7 @@ function getInitialUser(): User | null {
       removeAuthToken();
       return null;
     }
-    const raw = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem('esp_auth_user');
+    const raw = localStorage.getItem(AUTH_USER_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed === 'object') {
@@ -61,7 +61,6 @@ const useAuthStore = create<AuthState>((set) => ({
     if (user && typeof window !== 'undefined') {
       try {
         localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
-        localStorage.setItem('esp_auth_user', JSON.stringify(user));
         window.dispatchEvent(new CustomEvent('esp:auth-user-changed', { detail: user }));
       } catch {}
     } else if (typeof window !== 'undefined') {
@@ -79,7 +78,6 @@ const useAuthStore = create<AuthState>((set) => ({
     if (updated && typeof window !== 'undefined') {
       try {
         localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updated));
-        localStorage.setItem('esp_auth_user', JSON.stringify(updated));
       } catch {}
     }
     return { user: updated };
@@ -89,7 +87,6 @@ const useAuthStore = create<AuthState>((set) => ({
     if (updated && typeof window !== 'undefined') {
       try {
         localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updated));
-        localStorage.setItem('esp_auth_user', JSON.stringify(updated));
       } catch {}
     }
     return { user: updated };
@@ -133,7 +130,6 @@ export function useAuth() {
             const preferredColor = (typeof window !== "undefined" ? localStorage.getItem('esp-global-primary-color') : null) || freshUser.primaryColor;
             const mergedUser = { ...freshUser, primaryColor: preferredColor || freshUser.primaryColor };
             localStorage.setItem(AUTH_USER_KEY, JSON.stringify(mergedUser));
-            localStorage.setItem('esp_auth_user', JSON.stringify(mergedUser));
             store.setUser(mergedUser);
             if (preferredColor) setColor(preferredColor as any);
           }
@@ -153,7 +149,6 @@ export function useAuth() {
             if (user) {
               if (typeof window !== "undefined") {
                 localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
-                localStorage.setItem("esp_auth_user", JSON.stringify(user));
               }
               if (user.primaryColor) {
                 setColor(user.primaryColor as any);
@@ -164,7 +159,7 @@ export function useAuth() {
           } catch (err: any) {
             // Check if we have a valid cached user in localStorage
             if (typeof window !== "undefined") {
-              const raw = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem("esp_auth_user");
+              const raw = localStorage.getItem(AUTH_USER_KEY);
               if (raw) {
                 try {
                   const cached = JSON.parse(raw) as User;
@@ -220,7 +215,6 @@ export function useAuth() {
             const preferredColor = localStorage.getItem("esp-global-primary-color") || freshUser.primaryColor;
             const merged = { ...freshUser, primaryColor: preferredColor || freshUser.primaryColor };
             localStorage.setItem(AUTH_USER_KEY, JSON.stringify(merged));
-            localStorage.setItem("esp_auth_user", JSON.stringify(merged));
             store.setUser(merged);
           }
         }
@@ -259,7 +253,6 @@ export function useAuth() {
       const { user: loggedIn, token } = await api.auth.login({ identifier, password });
       setAuthToken(token);
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(loggedIn));
-      localStorage.setItem("esp_auth_user", JSON.stringify(loggedIn));
       store.setUser(loggedIn);
       
       if (loggedIn.primaryColor) {
@@ -290,7 +283,7 @@ export function useAuth() {
     // Retrieve latest user from store or local storage fallback
     const currentUser = useAuthStore.getState().user || (
       typeof window !== 'undefined'
-        ? JSON.parse(localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem('esp_auth_user') || 'null')
+        ? JSON.parse(localStorage.getItem(AUTH_USER_KEY) || 'null')
         : null
     );
 
@@ -306,7 +299,6 @@ export function useAuth() {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updatedUser));
-        localStorage.setItem("esp_auth_user", JSON.stringify(updatedUser));
 
         // Sync with esp_user_profile if exists
         const storedProfile = localStorage.getItem("esp_user_profile");
