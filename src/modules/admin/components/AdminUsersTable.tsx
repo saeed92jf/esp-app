@@ -392,8 +392,8 @@ export function AdminUsersTable({
   const [isSavingRole, setIsSavingRole] = useState(false);
 
   const isSaeed = Boolean(
-    (currentUser?.email && (currentUser.email.includes("jalili") || currentUser.email === "s.jalili@euroslotpars.com" || currentUser.email === "saeed@euroslotpars.com") && !currentUser.email.includes("saeedkhani")) ||
-    currentUser?.id === "u-saeed"
+    currentUser?.id === "u-saeed" ||
+    (currentUser?.email && (currentUser.email === "s.jalili@euroslotpars.com" || currentUser.email === "s.jalilifard@euroslotpars.com" || currentUser.email === "saeed@euroslotpars.com"))
   );
   const isSuperAdmin = currentUser?.role === 'superadmin' || isSaeed;
   const canEditModuleAccess = isSuperAdmin || currentUser?.role === 'admin';
@@ -536,41 +536,24 @@ export function AdminUsersTable({
 
   const checkIsCurrentUser = useCallback((u?: { id?: string; email?: string } | null): boolean => {
     if (!u || !currentUser) return false;
-    const uid = String(u.id || '').toLowerCase();
-    const cid = String(currentUser.id || '').toLowerCase();
+    const uid = String(u.id || '').trim().toLowerCase();
+    const cid = String(currentUser.id || '').trim().toLowerCase();
     if (uid && cid && uid === cid) return true;
-    const uemail = String(u.email || '').toLowerCase();
-    const cemail = String(currentUser.email || '').toLowerCase();
+    const uemail = String(u.email || '').trim().toLowerCase();
+    const cemail = String(currentUser.email || '').trim().toLowerCase();
     if (uemail && cemail && uemail === cemail) return true;
-
-    const isUserSaeed = (uid === 'u-saeed' || uid === 'usr_9801' || uemail.includes('jalili') || uemail === 's.jalili@euroslotpars.com' || uemail === 'saeed@euroslotpars.com') && !uemail.includes('saeedkhani') && uid !== 'u-msaeedkhani';
-    const isCurrentSaeed = (cid === 'u-saeed' || cid === 'usr_9801' || cemail.includes('jalili') || cemail === 's.jalili@euroslotpars.com' || cemail === 'saeed@euroslotpars.com') && !cemail.includes('saeedkhani') && cid !== 'u-msaeedkhani';
-    if (isUserSaeed && isCurrentSaeed) return true;
-
     return false;
   }, [currentUser]);
 
   // Filtered & Sorted Users
   const filteredUsers = useMemo(() => {
-    // 🟢 Strict unique user deduplication by ID and canonical identity
+    // 🟢 Strict unique user deduplication by canonical user.id
     const seenUserIds = new Set<string>();
-    const seenUserEmails = new Set<string>();
     const uniqueUsers = users.filter((u) => {
-      const idKey = (u.id || "").toLowerCase();
-      const emailKey = (u.email || "").toLowerCase();
-      const isSaeedUser = (idKey === "u-saeed" || idKey === "usr_9801" || emailKey.includes("jalili") || emailKey === "s.jalili@euroslotpars.com" || emailKey === "saeed@euroslotpars.com") && !emailKey.includes("saeedkhani") && idKey !== "u-msaeedkhani";
-
-      if (isSaeedUser) {
-        if (seenUserIds.has("saeed_singleton")) return false;
-        seenUserIds.add("saeed_singleton");
-        return true;
-      }
-
-      if (idKey && seenUserIds.has(idKey)) return false;
-      if (emailKey && seenUserEmails.has(emailKey)) return false;
-
-      if (idKey) seenUserIds.add(idKey);
-      if (emailKey) seenUserEmails.add(emailKey);
+      if (!u || !u.id) return false;
+      const key = String(u.id).toLowerCase().trim();
+      if (seenUserIds.has(key)) return false;
+      seenUserIds.add(key);
       return true;
     });
 
@@ -967,7 +950,7 @@ export function AdminUsersTable({
 
   // Deactivation / Terminate Collaboration (قطع همکاری) or Reactivation (فعال‌سازی مجدد)
   const handleToggleEmploymentStatus = (targetUser: User) => {
-    const isTargetSaeed = targetUser.id === 'u-saeed' || (targetUser.email && targetUser.email.toLowerCase().includes('jalili'));
+    const isTargetSaeed = targetUser.id === 'u-saeed' || targetUser.personnelCode === '205';
     if (targetUser.role === 'superadmin' || isTargetSaeed) {
       toast.error(isRtl ? "امکان تغییر وضعیت حساب کاربری مدیر ارشد سیستم وجود ندارد." : "Cannot deactivate Super Admin account.");
       return;
@@ -1225,12 +1208,8 @@ export function AdminUsersTable({
       if (onRefresh) await onRefresh();
 
       // If the edited user is the currently logged in admin, update active session immediately
-      if (currentUser && (currentUser.id === userId || (currentUser.email && editFormData.email && currentUser.email.toLowerCase() === editFormData.email.toLowerCase()))) {
-        const isSaeed = Boolean(
-          (currentUser.email && (currentUser.email.includes("jalili") || currentUser.email === "s.jalili@euroslotpars.com" || currentUser.email === "saeed@euroslotpars.com") && !currentUser.email.includes("saeedkhani")) ||
-          currentUser.id === "u-saeed" ||
-          userId === "u-saeed"
-        );
+      if (currentUser && currentUser.id === userId) {
+        const isSaeed = currentUser.id === "u-saeed";
         const resolvedRole = isSaeed || currentUser.role === "superadmin" ? "superadmin" : (editFormData.role || currentUser.role);
         updateUserStore({
           name: editFormData.name,
