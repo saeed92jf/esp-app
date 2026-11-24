@@ -4,7 +4,7 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { 
+import {
   Search, X, Code, TrendingUp, FolderKanban, Briefcase, FlaskConical,
   ChevronsRight, ChevronRight, ChevronLeft,
   Clock, AlertTriangle, ExternalLink, Sparkles, CheckCircle2, GraduationCap, Building2, IdCard, CreditCard, Award,
@@ -31,11 +31,11 @@ interface AdminTasksTimeProps {
   hideSearchAvatarsOnMobile?: boolean;
 }
 
-export const AnimatedNumber = ({ 
-  value, 
-  format 
-}: { 
-  value: number; 
+export const AnimatedNumber = ({
+  value,
+  format
+}: {
+  value: number;
   format?: (val: number) => string | React.ReactNode;
 }) => {
   const [displayValue, setDisplayValue] = useState(value);
@@ -58,10 +58,10 @@ export const AnimatedNumber = ({
     const step = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
-      
+
       const currentVal = startValue + (endValue - startValue) * easeOutCubic(progress);
       setDisplayValue(Math.round(currentVal));
-      
+
       if (progress < 1) {
         animationFrame = requestAnimationFrame(step);
       } else {
@@ -69,7 +69,7 @@ export const AnimatedNumber = ({
         setDisplayValue(endValue);
       }
     };
-    
+
     animationFrame = requestAnimationFrame(step);
     return () => cancelAnimationFrame(animationFrame);
   }, [value]);
@@ -77,22 +77,22 @@ export const AnimatedNumber = ({
   return <>{format ? format(displayValue) : displayValue}</>;
 };
 
-export function AdminTasksTime({ 
-  selectedUser, 
-  users, 
-  setUsers, 
+export function AdminTasksTime({
+  selectedUser,
+  users,
+  setUsers,
   setSelectedUser,
   availableModules = [],
   tMenu,
-  handleToggleModuleAccess = () => {},
-  handleToggleAllModulesAccess = () => {},
+  handleToggleModuleAccess = () => { },
+  handleToggleAllModulesAccess = () => { },
   onNavigateToAccess,
   hideSearchAvatarsOnMobile = true,
 }: AdminTasksTimeProps) {
   const t = useTranslations("Admin");
   const locale = useLocale();
   const isRtl = locale === "fa";
-  
+
   const [animate, setAnimate] = useState(false);
   const [allTasks, setAllTasks] = useState<NewTask[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
@@ -176,7 +176,7 @@ export function AdminTasksTime({
     <div className="flex flex-col w-full h-full min-h-0 select-none">
       {/* ── Main Layout: Personnel Profile (vertical down), Tasks beside it, and Heatmap + Access on 3rd col ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 flex-1 min-h-0 items-stretch lg:overflow-hidden">
-        
+
         {/* Module 1: Personnel, Education & Insurance Profile (عمودی تا پایین) */}
         <div className="col-span-1 md:col-span-1 lg:col-span-4 bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col shadow-2xs h-full min-h-0 overflow-hidden">
           <div className="flex items-center justify-between mb-2.5 px-0.5 shrink-0 flex-nowrap gap-2 pb-2 border-b border-border/30 min-h-[34px] overflow-hidden">
@@ -355,19 +355,19 @@ export function AdminTasksTime({
                             task.status === "in_progress"
                               ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
                               : task.status === "review"
-                              ? "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20"
-                              : task.status === "done"
-                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                              : "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20"
+                                ? "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20"
+                                : task.status === "done"
+                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                                  : "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20"
                           )}
                         >
                           {task.status === "in_progress"
                             ? (isRtl ? "در حال انجام" : "In Progress")
                             : task.status === "review"
-                            ? (isRtl ? "بازبینی" : "Review")
-                            : task.status === "done"
-                            ? (isRtl ? "انجام‌شده" : "Done")
-                            : (isRtl ? "برای انجام" : "To Do")}
+                              ? (isRtl ? "بازبینی" : "Review")
+                              : task.status === "done"
+                                ? (isRtl ? "انجام‌شده" : "Done")
+                                : (isRtl ? "برای انجام" : "To Do")}
                         </span>
 
                         {isUrgent && (
@@ -415,8 +415,8 @@ export function AdminTasksTime({
                 <p className="text-xs font-semibold">
                   {selectedUser
                     ? (isRtl
-                        ? `هیچ تسکی به این کاربر اختصاص نیافته است.`
-                        : `No tasks assigned to this user.`)
+                      ? `هیچ تسکی به این کاربر اختصاص نیافته است.`
+                      : `No tasks assigned to this user.`)
                     : (isRtl ? "هیچ تسکی در سیستم یافت نشد." : "No tasks found.")}
                 </p>
                 <Link
@@ -437,7 +437,7 @@ export function AdminTasksTime({
             <AdminActivities selectedUser={selectedUser} />
           </div>
           <div className="flex-1 min-h-0 overflow-hidden">
-            <AdminHeatmapModules 
+            <AdminHeatmapModules
               selectedUser={selectedUser}
               availableModules={availableModules}
               tMenu={tMenu}
